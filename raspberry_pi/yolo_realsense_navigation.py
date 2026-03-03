@@ -585,7 +585,9 @@ class SceneDescriber:
 
     def _keyboard_worker(self):
         try:
-            import tty, termios, select as sel
+            import tty
+            import termios
+            import select as sel
         except ImportError:
             return
         fd = sys.stdin.fileno()
@@ -651,8 +653,6 @@ class SceneDescriber:
     def _describe_thread(self, frame, tracks_snapshot):
         self._processing = True
         try:
-            import anthropic
-
             self.voice.speak_info("Analyzing scene")
 
             depth_context = self._build_depth_context(tracks_snapshot, frame.shape[1])
