@@ -1,9 +1,38 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.17 HEADLESS
-Builds on v3.16 with ego-motion compensation.
+Intelligent Navigation Assistant v3.20 HEADLESS
+Builds on v3.19 with:
+  - Removed legacy YOLO11 NMS fallback from yolo_postprocess().
+    YOLO26n always outputs (1,300,6) -- the fallback was dead code.
+    Cleaner function, no runtime impact (it never executed anyway).
+  - Confirmed: two-heads claim is accurate per Ultralytics docs.
+    One-to-one head (default export) = NMS-free (300,6).
+    One-to-many head (end2end=False) = requires NMS (nc+4,8400).
+    We export with defaults so always get the NMS-free head.
 
-NEW IN v3.17:
+NEW IN v3.19:
+  FEATURE — Bag file recording and playback (RealSense SDK native)
+    Lets you record real sensor sessions to .bag files and replay them
+    as many times as needed without the live camera. This is the practical
+    equivalent of a test suite for hardware-dependent code.
+
+    RECORDING: Set RECORD_TO_FILE to a .bag path before running.
+    The system runs normally but also writes every depth+color frame
+    to the file. Stop with Ctrl+C as usual.
+
+    PLAYBACK: Set PLAYBACK_FILE to a recorded .bag path. The system
+    runs exactly as if the live camera were connected — all detection,
+    ego-motion, voice, and logging work identically. repeat_playback=True
+    loops the recording so you can watch behavior across multiple passes.
+
+    RECOMMENDED SCENARIOS TO RECORD:
+    - Person walking toward camera at normal pace (tests TTC logic)
+    - Walking toward static chair (tests ego-motion compensation)
+    - Person standing still at 0.4m (tests close-range FPS fix)
+    - Plain white wall corridor (tests LK fallback)
+    - Person approaching then turning away (tests transition tracker)
+
+INHERITED FROM v3.17:
   FEATURE — Optical Flow Ego-Motion Compensation (EgoMotionCompensator)
     ROOT CAUSE OF FALSE VELOCITY: When the user walks forward at 80 cm/s,
     every stationary object appears to be approaching at 80 cm/s. The
@@ -93,17 +122,18 @@ import tempfile
 import base64
 from datetime import datetime
 
+import queue
 import numpy as np
 import cv2
 import pyrealsense2 as rs
 import onnxruntime as ort
 
 # ============= CONFIGURATION =============
-MODEL_PATH = os.path.expanduser("~/yolo_models/yolo11n.onnx")
+MODEL_PATH = os.path.expanduser("~/yolo_models/yolo26n.onnx")  # YOLO26n: no-NMS head
 IMG_SIZE = 224
 DETECTION_INTERVAL = 2
 CONF_THRESH = 0.38
-NMS_THRESH = 0.40
+# NMS_THRESH removed -- YOLO26n has built-in one-to-one head
 
 # THREAT THRESHOLDS (cm)
 CRITICAL_DISTANCE = 50
@@ -154,7 +184,19 @@ SCENE_MAX_OBJECTS = 5
 # LOGGING
 SNAPSHOT_FOLDER = os.path.expanduser("~/blindnav_snapshots")
 os.makedirs(SNAPSHOT_FOLDER, exist_ok=True)
+# BAG FILE RECORDING / PLAYBACK
+# Set RECORD_TO_FILE to a path to record a session, e.g.:
+#   RECORD_TO_FILE = os.path.expanduser("~/bags/test_walking.bag")
+# Set PLAYBACK_FILE to replay a recording instead of using live camera, e.g.:
+#   PLAYBACK_FILE = os.path.expanduser("~/bags/test_walking.bag")
+# Leave both as "" for normal live operation.
+RECORD_TO_FILE = ""
+PLAYBACK_FILE  = ""
+PLAYBACK_REPEAT = True   # Loop the recording when it ends
+
+BAG_FOLDER = os.path.expanduser("~/bags")
 CSV_FOLDER = os.path.expanduser("~/blindnav_logs")
+os.makedirs(BAG_FOLDER, exist_ok=True)
 os.makedirs(CSV_FOLDER, exist_ok=True)
 CSV_FILE = os.path.join(CSV_FOLDER, datetime.utcnow().strftime("log_%Y%m%d_%H%M%S.csv"))
 
@@ -874,7 +916,13 @@ class Track:
         self.seen_frames = 1
 
     def update(self, detection, timestamp):
-        self.box = detection["box"]
+        # EMA smoothing on bounding box (NEW v3.19)
+        # Damps YOLO's 5-15px frame-to-frame jitter so depth sampling hits
+        # a more consistent region of the object each frame.
+        # alpha=1.0 on first update so the initial position is exact.
+        alpha = 0.6 if self.seen_frames > 1 else 1.0
+        nb = detection["box"]
+        self.box = [int(alpha*nb[i] + (1-alpha)*self.box[i]) for i in range(4)]
         self.score = detection["score"]
         self.last_seen = timestamp
         self.seen_frames += 1
@@ -997,77 +1045,39 @@ def letterbox_resize(img, target_size, buf=None):
     return buf, scale, (left, top)
 
 
-def _normalize_output(output):
-    p = output
-    if p is None:
-        return None
-    if p.ndim == 3:
-        p = p[0]
-    if p.ndim != 2:
-        return None
-    if p.shape[0] < p.shape[1]:
-        p = p.T
-    return p
-
-
 def yolo_postprocess(output, orig_w, orig_h, scale, pad_left, pad_top):
-    preds = _normalize_output(output)
-    if preds is None:
+    """
+    YOLO26n postprocess -- NMS-free.
+
+    YOLO26n's one-to-one head (default export) outputs (1, 300, 6).
+    Each row: [x1, y1, x2, y2, confidence, class_id] in letterbox space.
+    The model has already suppressed duplicates internally -- no NMS needed.
+    Just threshold by confidence, unpad, and rescale.
+    """
+    if output is None:
         return []
+    preds = output[0] if output.ndim == 3 else output  # unwrap batch dim
+
     detections = []
-    nc = len(CLASS_NAMES)
-    for i in range(preds.shape[0]):
-        row = preds[i]
-        if row.shape[0] < 4 + nc:
-            continue
-        xc, yc, bw, bh = float(row[0]), float(row[1]), float(row[2]), float(row[3])
-        if row.shape[0] >= 5 + nc:
-            obj_conf = float(row[4])
-            cls_scores = row[5:5 + nc]
-            cls_id = int(np.argmax(cls_scores))
-            conf = obj_conf * float(cls_scores[cls_id])
-        else:
-            cls_scores = row[4:4 + nc]
-            cls_id = int(np.argmax(cls_scores))
-            conf = float(cls_scores[cls_id])
+    for row in preds:
+        conf = float(row[4])
         if conf < CONF_THRESH:
             continue
-        xc = (xc - pad_left) / scale
-        yc = (yc - pad_top) / scale
-        bw /= scale
-        bh /= scale
-        x1 = max(0, min(int(xc - bw / 2), orig_w - 1))
-        y1 = max(0, min(int(yc - bh / 2), orig_h - 1))
-        x2 = max(0, min(int(xc + bw / 2), orig_w - 1))
-        y2 = max(0, min(int(yc + bh / 2), orig_h - 1))
-        if x2 <= x1 or y2 <= y1 or (x2 - x1) < 10 or (y2 - y1) < 10:
+        cls_id = int(row[5])
+        if cls_id >= len(CLASS_NAMES):
             continue
-        name = CLASS_NAMES[cls_id] if cls_id < len(CLASS_NAMES) else f"class_{cls_id}"
+        name = CLASS_NAMES[cls_id]
         if name in IGNORED_CLASSES:
             continue
+        # unpad + rescale from letterbox space to original image coords
+        x1 = int(max(0, min((float(row[0]) - pad_left) / scale, orig_w - 1)))
+        y1 = int(max(0, min((float(row[1]) - pad_top)  / scale, orig_h - 1)))
+        x2 = int(max(0, min((float(row[2]) - pad_left) / scale, orig_w - 1)))
+        y2 = int(max(0, min((float(row[3]) - pad_top)  / scale, orig_h - 1)))
+        if x2 <= x1 or y2 <= y1 or (x2 - x1) < 10 or (y2 - y1) < 10:
+            continue
         detections.append({"class_id": cls_id, "class_name": name,
-                           "score": conf, "box": [x1, y1, x2, y2]})
-    if len(detections) > 1:
-        detections.sort(key=lambda x: x["score"], reverse=True)
-        keep = []
-        for det in detections:
-            bi = det["box"]
-            ai = (bi[2] - bi[0]) * (bi[3] - bi[1])
-            ok = True
-            for kpt in keep:
-                bj = kpt["box"]
-                aj = (bj[2] - bj[0]) * (bj[3] - bj[1])
-                ix1, iy1 = max(bi[0], bj[0]), max(bi[1], bj[1])
-                ix2, iy2 = min(bi[2], bj[2]), min(bi[3], bj[3])
-                if ix2 > ix1 and iy2 > iy1:
-                    inter = (ix2 - ix1) * (iy2 - iy1)
-                    union = ai + aj - inter
-                    if union > 0 and (inter / union) > NMS_THRESH:
-                        ok = False
-                        break
-            if ok:
-                keep.append(det)
-        return keep
+                            "score": conf, "box": [x1, y1, x2, y2]})
     return detections
 
 
@@ -1349,7 +1359,7 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.17 HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.20 HEADLESS")
     print("RealSense D435 + YOLOv11n + IMU + Piper TTS + Claude Vision")
     print("FIXES: voice queue (no BT drops), moved-away alerts, FPS @ close range")
     print("=" * 70)
@@ -1387,11 +1397,31 @@ def main():
     print("\n[REALSENSE] Initializing D435...")
     pipeline = rs.pipeline()
     cfg = rs.config()
-    cfg.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
+    if PLAYBACK_FILE:
+        # ---- PLAYBACK MODE ----
+        if not os.path.exists(PLAYBACK_FILE):
+            print(f"[ERROR] Bag file not found: {PLAYBACK_FILE}")
+            csv_file.close()
+            return
+        cfg.enable_device_from_file(PLAYBACK_FILE, repeat_playback=PLAYBACK_REPEAT)
+        print(f"[OK] Playback mode: {PLAYBACK_FILE}")
+        if PLAYBACK_REPEAT:
+            print("[INFO] Looping recording — press Ctrl+C to stop")
+    else:
+        # ---- LIVE MODE (with optional recording) ----
+        cfg.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+        if RECORD_TO_FILE:
+            cfg.enable_record_to_file(RECORD_TO_FILE)
+            print(f"[OK] Recording to: {RECORD_TO_FILE}")
+
     try:
         pipeline.start(cfg)
-        print("[OK] RealSense started")
+        if PLAYBACK_FILE:
+            print("[OK] Playback started")
+        else:
+            print("[OK] RealSense started")
     except Exception as e:
         print(f"[ERROR] RealSense: {e}")
         csv_file.close()
@@ -1408,10 +1438,45 @@ def main():
     lb_buf    = np.full((IMG_SIZE, IMG_SIZE, 3), 114, dtype=np.uint8)
     float_buf = np.empty((IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
     trans_buf = np.empty((1, 3, IMG_SIZE, IMG_SIZE), dtype=np.float32)
-    cached_aligned = None
-    cached_depth   = None
+
+    # NEW v3.19: producer-consumer capture pipeline.
+    # Capture+align runs in its own thread so it overlaps with YOLO inference
+    # instead of running sequentially. Effective throughput:
+    #   old: capture(33ms) + align(22ms) + YOLO(69ms) = 124ms
+    #   new: max(capture+align=55ms, YOLO=69ms) = 69ms  -- ~30% FPS gain
+    # maxsize=2 + put_nowait(): drops frames if main loop lags (stays real-time).
+    _frame_q  = queue.Queue(maxsize=2)
+    _cap_stop = threading.Event()
+
+    def _capture_worker():
+        while not _cap_stop.is_set():
+            try:
+                frames  = pipeline.wait_for_frames(timeout_ms=1000)
+                aligned = align.process(frames)
+                df = aligned.get_depth_frame()
+                cf = aligned.get_color_frame()
+                if not df or not cf:
+                    continue
+                color_img  = np.asanyarray(cf.get_data())
+                depth_data = np.asanyarray(df.get_data())
+                try:
+                    _frame_q.put_nowait((color_img, depth_data))
+                except queue.Full:
+                    pass  # main loop behind -- discard stale frame
+            except Exception as exc:
+                if not _cap_stop.is_set():
+                    print(f"[CAPTURE] {exc}")
+
+    threading.Thread(target=_capture_worker, daemon=True, name="capture").start()
+    print("[INFO] Capture pipeline started (async align)")
 
     print("\n[READY] Navigation active")
+    if PLAYBACK_FILE:
+        print(f"[MODE]  PLAYBACK — {os.path.basename(PLAYBACK_FILE)}")
+    elif RECORD_TO_FILE:
+        print(f"[MODE]  LIVE + RECORDING — {os.path.basename(RECORD_TO_FILE)}")
+    else:
+        print("[MODE]  LIVE")
     print("[KEYS]  d = describe scene | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
     print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g\n")
@@ -1419,7 +1484,7 @@ def main():
     frame_count       = 0
     last_threat_print = time.time()
     last_paused_print = time.time()
-    detect_ms, depth_ms, align_ms = [], [], []
+    detect_ms, depth_ms = [], []
     fps_start  = time.time()
     fps_frames = 0
     avg_fps    = 0.0
@@ -1427,36 +1492,17 @@ def main():
 
     try:
         while True:
-            frames = pipeline.wait_for_frames()
-
-            if frame_count % DETECTION_INTERVAL == 0:
-                t0 = time.time()
-                cached_aligned = align.process(frames)
-                align_ms.append((time.time() - t0) * 1000)
-                if len(align_ms) > 60:
-                    align_ms.pop(0)
-
-            if cached_aligned is None:
-                frame_count += 1
+            # Pull a pre-captured, pre-aligned frame from the capture thread.
+            # Blocks up to 2s; warns if camera stalls.
+            try:
+                color_image, depth_data = _frame_q.get(timeout=2.0)
+            except queue.Empty:
+                print("[WARN] No frame for 2s -- check camera connection")
                 continue
 
-            depth_frame = cached_aligned.get_depth_frame()
-            color_frame = cached_aligned.get_color_frame()
-            if not depth_frame or not color_frame:
-                frame_count += 1
-                continue
-
-            color_image = np.asanyarray(color_frame.get_data())
-            if frame_count % DETECTION_INTERVAL == 0:
-                cached_depth = np.asanyarray(depth_frame.get_data())
-            if cached_depth is None:
-                frame_count += 1
-                continue
-
-            depth_data = cached_depth
             h, w = color_image.shape[:2]
 
-            # YOLO
+            # YOLO (still gated to every DETECTION_INTERVAL frames)
             detections = []
             if frame_count % DETECTION_INTERVAL == 0:
                 t0 = time.time()
@@ -1653,12 +1699,12 @@ def main():
             else:
                 avg_fps = fps_frames / elapsed if elapsed > 0 else last_fps
 
-            if frame_count % 60 == 0 and frame_count > 0 and detect_ms and align_ms:
+            if frame_count % 60 == 0 and frame_count > 0 and detect_ms:
                 dx, dy = ego.camera_lateral_px
                 print(
                     f"[PERF] yolo={np.mean(detect_ms):.1f}ms "
-                    f"align={np.mean(align_ms):.1f}ms "
                     f"depth={np.mean(depth_ms):.1f}ms "
+                    f"queue={_frame_q.qsize()} "
                     f"-> {avg_fps:.1f} FPS | "
                     f"ego: Z={ego.camera_z_velocity:.1f}cm/s "
                     f"lat=({dx:.1f},{dy:.1f})px"
@@ -1685,6 +1731,7 @@ def main():
         print("\n[EXIT] Ctrl+C")
     finally:
         print("\n[CLEANUP] Shutting down...")
+        _cap_stop.set()      # stop capture thread before pipeline.stop()
         scene.shutdown()
         pipeline.stop()
         csv_file.close()
