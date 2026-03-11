@@ -120,7 +120,7 @@ import math
 import subprocess
 import tempfile
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 
 import queue
 import numpy as np
@@ -198,7 +198,7 @@ BAG_FOLDER = os.path.expanduser("~/bags")
 CSV_FOLDER = os.path.expanduser("~/blindnav_logs")
 os.makedirs(BAG_FOLDER, exist_ok=True)
 os.makedirs(CSV_FOLDER, exist_ok=True)
-CSV_FILE = os.path.join(CSV_FOLDER, datetime.utcnow().strftime("log_%Y%m%d_%H%M%S.csv"))
+CSV_FILE = os.path.join(CSV_FOLDER, datetime.now(timezone.utc).strftime("log_%Y%m%d_%H%M%S.csv"))
 
 # ============= YOLO CLASS NAMES =============
 CLASS_NAMES = [
