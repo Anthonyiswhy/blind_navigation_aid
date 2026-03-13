@@ -39,18 +39,7 @@ Warnings are prioritized into three tiers based on distance and approach speed:
 
 ## How It Works
 
-```
-RealSense D435
-  ├── Color frame  ──▶  YOLO26n (224×224 ONNX)  ──▶  Object detections
-  └── Depth frame  ──▶  Distance per object  ──▶  Velocity calculation
-                                                         │
-                                              Ego-motion compensation
-                                              (subtracts camera's own
-                                               movement from readings)
-                                                         │
-                                              Threat scoring + TTS
-                                              (Piper neural TTS → aplay)
-```
+![BlindNav pipeline](docs/pipeline.svg)
 
 **Key design decisions:**
 - **No NMS post-processing** — YOLO26n uses a one-to-one head that outputs pre-filtered detections, removing an entire processing stage
