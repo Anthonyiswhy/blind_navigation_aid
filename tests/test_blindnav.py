@@ -93,7 +93,7 @@ for _name in ("anthropic", "smbus2", "icm20948"):
 # ---------------------------------------------------------------------------
 
 _SCRIPT = (pathlib.Path(__file__).parent.parent
-           / "yolo_realsense_navigation_v3.20_HEADLESS.py")
+           / "raspberry_pi/yolo_realsense_navigation.py")
 
 _spec = importlib.util.spec_from_file_location("blindnav", str(_SCRIPT))
 _mod  = importlib.util.module_from_spec(_spec)
