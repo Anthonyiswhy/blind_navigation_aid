@@ -1,7 +1,26 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.20 HEADLESS
-Builds on v3.19 with:
+Intelligent Navigation Assistant v3.22 HEADLESS
+Builds on v3.21 with:
+  FIX 1 — Stale distance in urgent voice messages.
+    Cooldown key now includes a distance bucket (every 30cm) so the message
+    updates as the object gets closer instead of repeating the original distance.
+  FIX 2 — ThreatTransitionTracker firing "stopped/moved away" too early.
+    MIN_THREAT_FRAMES raised 5 → 12. Also requires velocity to be near-zero
+    before saying "stopped" (was firing while vel was still -35cm/s).
+  FIX 3 — IMU flip-flopping MOVING/STILL every few frames.
+    Added hysteresis: must be in new state for IMU_HYSTERESIS_FRAMES=8
+    consecutive frames before switching. Stops suppression toggling mid-session.
+
+INHERITED FROM v3.21:
+  - Wall/obstacle fallback: if no YOLO detections but center-frame depth
+    median < WALL_DISTANCE_CM, announces "obstacle ahead" so blank walls
+    and featureless surfaces don't silently pass.
+  - Busy area detection: if >= BUSY_TRACK_THRESHOLD active tracks
+    (seen_frames >= 3), announces "busy area, slow down" so crowded
+    scenes are flagged even if the top threat alone seems manageable.
+
+INHERITED FROM v3.20:
   - Removed legacy YOLO11 NMS fallback from yolo_postprocess().
     YOLO26n always outputs (1,300,6) -- the fallback was dead code.
     Cleaner function, no runtime impact (it never executed anyway).
@@ -120,7 +139,7 @@ import math
 import subprocess
 import tempfile
 import base64
-from datetime import datetime, timezone
+from datetime import datetime
 
 import queue
 import numpy as np
@@ -160,6 +179,19 @@ IGNORED_CLASSES = {
 
 # VOICE SETTINGS
 VOICE_ENABLED = True
+
+# WALL FALLBACK (v3.21)
+# If no YOLO detections but the center 30% of the depth frame
+# has a median depth below this threshold, announce "obstacle ahead".
+WALL_DISTANCE_CM      = 80    # cm -- trigger distance
+WALL_CENTER_CROP      = 0.30  # fraction of frame to sample
+WALL_MIN_VALID_PX     = 200   # need at least this many valid depth pixels
+WALL_COOLDOWN_S       = 3.0   # seconds between wall announcements
+
+# BUSY AREA (v3.21)
+# If this many tracks have been seen for >= 3 frames, announce busy area.
+BUSY_TRACK_THRESHOLD  = 4
+BUSY_COOLDOWN_S       = 10.0  # seconds between busy announcements
 VOICE_COOLDOWN = 5.0
 
 # PIPER TTS SETTINGS
@@ -173,6 +205,7 @@ IMU_I2C_ADDR = 0x68
 IMU_MOTION_THRESHOLD = 0.05
 IMU_WINDOW_SIZE = 20
 IMU_READ_INTERVAL = 0.05
+IMU_HYSTERESIS_FRAMES = 8   # must hold new state this many frames before switching
 
 # SCENE DESCRIPTION SETTINGS
 SCENE_MODEL = "claude-haiku-4-5-20251001"
@@ -198,7 +231,7 @@ BAG_FOLDER = os.path.expanduser("~/bags")
 CSV_FOLDER = os.path.expanduser("~/blindnav_logs")
 os.makedirs(BAG_FOLDER, exist_ok=True)
 os.makedirs(CSV_FOLDER, exist_ok=True)
-CSV_FILE = os.path.join(CSV_FOLDER, datetime.now(timezone.utc).strftime("log_%Y%m%d_%H%M%S.csv"))
+CSV_FILE = os.path.join(CSV_FOLDER, datetime.utcnow().strftime("log_%Y%m%d_%H%M%S.csv"))
 
 # ============= YOLO CLASS NAMES =============
 CLASS_NAMES = [
@@ -496,7 +529,7 @@ class ThreatTransitionTracker:
         threatening again (prevents repeated "path clear" for same static object).
     """
 
-    MIN_THREAT_FRAMES = 5
+    MIN_THREAT_FRAMES = 12  # raised from 5 — need solid evidence before declaring cleared
 
     def __init__(self):
         # track_id → {"level": str, "threat_frames": int, "cleared_announced": bool, "last_dist": float}
@@ -562,17 +595,17 @@ class ThreatTransitionTracker:
         vel  = track.velocity if hasattr(track, "velocity") else 0
         dist_m = (track.distance / 100.0) if track.distance else 0
 
+        # Guard: if still clearly approaching, don't announce cleared yet
+        if track.velocity_valid and vel < -10:
+            return
+
         if vel > 30:
-            # Walking away briskly
             msg = f"{name} moved away, path is clear"
         elif vel > 10:
-            # Moving away slowly
             msg = f"{name} moving away"
         elif vel > 3:
-            # Drifting away / stepping aside
             msg = f"{name} moved aside"
         else:
-            # Stopped in place — tell user where they are
             msg = f"{name} stopped, {dist_m:.1f} meters away"
 
         voice.speak_cleared(msg, key=f"cleared_{track.id}")
@@ -807,6 +840,8 @@ class MotionDetector:
         self.last_read_time = 0
         self._last_moving_state = True
         self._was_moving = True
+        self._candidate_state = True
+        self._candidate_count = 0
 
     def update(self):
         if not self.available:
@@ -828,9 +863,20 @@ class MotionDetector:
             return True
         mean = sum(self.accel_history) / len(self.accel_history)
         variance = sum((x - mean) ** 2 for x in self.accel_history) / len(self.accel_history)
-        moving = math.sqrt(variance) > IMU_MOTION_THRESHOLD
-        self._last_moving_state = moving
-        return moving
+        raw_moving = math.sqrt(variance) > IMU_MOTION_THRESHOLD
+
+        # Hysteresis: only switch state after IMU_HYSTERESIS_FRAMES consecutive
+        # frames in the new state — prevents rapid MOVING/STILL toggling
+        if raw_moving == self._candidate_state:
+            self._candidate_count += 1
+        else:
+            self._candidate_state = raw_moving
+            self._candidate_count = 1
+
+        if self._candidate_count >= IMU_HYSTERESIS_FRAMES:
+            self._last_moving_state = raw_moving
+
+        return self._last_moving_state
 
     def state_changed(self):
         current = self._last_moving_state
@@ -1484,6 +1530,8 @@ def main():
     frame_count       = 0
     last_threat_print = time.time()
     last_paused_print = time.time()
+    last_wall_alert   = 0.0   # v3.21 wall fallback cooldown
+    last_busy_alert   = 0.0   # v3.21 busy area cooldown
     detect_ms, depth_ms = [], []
     fps_start  = time.time()
     fps_frames = 0
@@ -1549,6 +1597,52 @@ def main():
             # NEW v3.16: Check for threat transitions (moved away, stopped, disappeared)
             transition_tracker.update(threats, voice)
 
+            # ---- BUSY AREA DETECTION (v3.21) ----
+            # Count tracks that have been confirmed (seen >= 3 frames).
+            # If too many objects are present at once, warn the user regardless
+            # of individual threat scores.
+            confirmed_count = sum(1 for t in tracks if t.seen_frames >= 3)
+            if (confirmed_count >= BUSY_TRACK_THRESHOLD
+                    and user_moving
+                    and now - last_busy_alert > BUSY_COOLDOWN_S):
+                voice.speak_awareness(
+                    f"Busy area, {confirmed_count} objects around you, slow down",
+                    key="busy_area"
+                )
+                last_busy_alert = now
+                print(f"[BUSY] {confirmed_count} confirmed tracks — busy area alert fired")
+
+            # ---- WALL / DEPTH FALLBACK (v3.21) ----
+            # YOLO won't detect a plain wall, glass door, or low-contrast surface.
+            # Sample the center crop of the depth frame directly. If median depth
+            # is within WALL_DISTANCE_CM and there are no active YOLO tracks
+            # close enough to explain it, warn the user.
+            if user_moving and now - last_wall_alert > WALL_COOLDOWN_S:
+                h_d, w_d = depth_data.shape
+                cy0 = int(h_d * (0.5 - WALL_CENTER_CROP / 2))
+                cy1 = int(h_d * (0.5 + WALL_CENTER_CROP / 2))
+                cx0 = int(w_d * (0.5 - WALL_CENTER_CROP / 2))
+                cx1 = int(w_d * (0.5 + WALL_CENTER_CROP / 2))
+                center_crop = depth_data[cy0:cy1, cx0:cx1]
+                valid_px = center_crop[(center_crop > 100) & (center_crop < 8000)]
+                if len(valid_px) >= WALL_MIN_VALID_PX:
+                    wall_dist_cm = int(np.median(valid_px) / 10)
+                    # Only fire if no confirmed YOLO track is already within range
+                    # (avoids double-announcing an object YOLO already caught).
+                    yolo_covers = any(
+                        t.distance is not None
+                        and t.distance < (WALL_DISTANCE_CM + 20)
+                        and t.seen_frames >= 3
+                        for t in tracks
+                    )
+                    if wall_dist_cm < WALL_DISTANCE_CM and not yolo_covers:
+                        voice.speak_warning(
+                            f"Obstacle ahead, {wall_dist_cm / 100:.1f} meters",
+                            key="wall_fallback"
+                        )
+                        last_wall_alert = now
+                        print(f"[WALL] Depth fallback: {wall_dist_cm}cm — no YOLO track covering")
+
             top = threats[0] if threats else None
 
             # ---- VOICE ANNOUNCEMENT LOGIC ----
@@ -1593,6 +1687,10 @@ def main():
                             last_paused_print = now
 
                     else:
+                        # Distance bucket for cooldown keys — re-announces every 30cm
+                        # closer so message stays accurate as object approaches.
+                        dbucket = int(dist_cm // 30)
+
                         # --- LAYER 1: Distance override ---
                         if very_close:
                             if user_moving and not approaching:
@@ -1603,7 +1701,7 @@ def main():
                                 msg = f"Stop! {obj} approaching fast, {dist_m:.1f} meters"
                             else:
                                 msg = f"{obj} right in front of you, {dist_m:.1f} meters"
-                            voice.speak_urgent(msg, key=f"{track.id}_dist_urgent")
+                            voice.speak_urgent(msg, key=f"{track.id}_dist_urgent_{dbucket}")
 
                         elif close:
                             if user_moving and not approaching:
@@ -1614,7 +1712,7 @@ def main():
                                 msg = f"Watch out, {obj} getting very close"
                             else:
                                 msg = f"{obj} nearby, {dist_m:.1f} meters"
-                            voice.speak_warning(msg, key=f"{track.id}_dist_warn")
+                            voice.speak_warning(msg, key=f"{track.id}_dist_warn_{dbucket}")
 
                         # --- LAYER 2: TTC-based ---
                         elif ttc < 2:
@@ -1626,14 +1724,14 @@ def main():
                                 msg = f"{obj} moving toward you, {dist_m:.1f} meters"
                             else:
                                 msg = f"Stop! {obj} {dist_m:.1f} meters, move away"
-                            voice.speak_urgent(msg, key=f"{track.id}_ttc_urgent")
+                            voice.speak_urgent(msg, key=f"{track.id}_ttc_urgent_{dbucket}")
 
                         elif ttc < 4:
                             if not user_moving:
                                 msg = f"{obj} approaching you, {dist_m:.1f} meters"
                             else:
                                 msg = f"Watch out, {obj} getting closer, {dist_m:.1f} meters"
-                            voice.speak_warning(msg, key=f"{track.id}_ttc_warn")
+                            voice.speak_warning(msg, key=f"{track.id}_ttc_warn_{dbucket}")
 
                         elif ttc < 8:
                             msg = f"Heads up, {obj} ahead, {dist_m:.1f} meters"
@@ -1653,11 +1751,14 @@ def main():
             if frame_count % 60 == 0:
                 active_keys = set()
                 for t in tracks:
-                    active_keys.update([
-                        f"{t.id}_dist_urgent", f"{t.id}_dist_warn",
-                        f"{t.id}_ttc_urgent", f"{t.id}_ttc_warn", f"{t.id}_ttc_aware",
-                        f"cleared_{t.id}",
-                    ])
+                    # Add all possible bucket keys for this track
+                    for b in range(11):  # 0–10 buckets covers 0–300cm
+                        active_keys.update([
+                            f"{t.id}_dist_urgent_{b}", f"{t.id}_dist_warn_{b}",
+                            f"{t.id}_ttc_urgent_{b}", f"{t.id}_ttc_warn_{b}",
+                        ])
+                    active_keys.add(f"{t.id}_ttc_aware")
+                    active_keys.add(f"cleared_{t.id}")
                 active_keys.add("path_clear")
                 voice.cleanup_old_keys(active_keys)
 
