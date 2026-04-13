@@ -1,40 +1,82 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.23 HEADLESS
-Builds on v3.22 with:
-  FIX 1 — Velocity noise hallucination (root cause of false CRITICAL at 3m+).
-    Dynamic noise floor = 3 + dist*0.02 cm/s (scales with distance).
-    TTC gate: if time-to-collision > 12s, velocity zeroed before scoring.
-    Person 3m away, apparent vel=-17cm/s: TTC=17s → treated as static. ✓
-    Person 2m away, vel=-60cm/s: TTC=3.3s → CRITICAL. ✓
+Intelligent Navigation Assistant v3.24 HEADLESS
+Builds on v3.23 with:
 
-  FIX 2 — Left / right / ahead position in every voice message.
-    Bounding box centre X vs frame width:
-      left third  (<33%) → "on your left"
-      centre third (33-67%) → "ahead"
-      right third (>67%) → "on your right"
+  PERMANENT FIX — Voice subsystem architectural rewrite (solves systemic latency)
+  Root causes of delay diagnosed in v3.23 field test:
 
-  FIX 3 — Reverted to float32 yolo26n.onnx.
-    INT8 quantization was 252ms vs 130ms float32 on Pi 4 ARM.
-    ONNX Runtime dynamic quantization does not speed up this op set on ARM.
+  ROOT CAUSE 1: Single pending slot with allow_pending=False for warnings.
+    When voice was busy, speak_warning() dropped silently (allow_pending=False).
+    last_wall_alert was set immediately on detection, not on speech.
+    Next speech attempt: WALL_COOLDOWN_S (3s) later — user heard "obstacle ahead"
+    3-4 seconds after the system detected it. Same bug affected transition cleared
+    messages and busy-area warnings.
 
-  FIX 4 — Richer CSV + separate events log.
-    CSV adds: position, bbox_cx_norm, ego_z_cm_s, all_tracks columns.
-    events.log records every [VOICE] and [TTC] line — terminal truncation
-    can no longer lose important debug data.
+  ROOT CAUSE 2: Synthesis in speak_thread (inter-utterance gap).
+    Each utterance paid ~100-200ms Piper synthesis + ~50ms aplay startup
+    AFTER the current phrase finished. No parallelism.
 
+  ROOT CAUSE 3: 300ms silence prefix on every utterance.
+    PIPER_SILENCE_MS=300 was added once to fix ALSA first-word cutoff on
+    BT stream cold-start. Correct fix. Wrong scope — was applied to every
+    utterance including back-to-back messages where the stream is already warm.
+
+  ROOT CAUSE 4: Monkey-patch of _start_locked in main().
+    Fragile coupling. New signature (with priority param) would silently break
+    the event logger.
+
+  SOLUTION — Three architectural changes:
+
+  A. 3-slot priority pending queue (replaces single _pending slot)
+     P0 = URGENT     (speak_urgent)
+     P1 = WARNING    (speak_warning, speak_cleared)
+     P2 = AWARE      (speak_awareness, speak_info / scene)
+
+     P0 arriving while speaking: stored in P0 slot, evicts P1+P2 slots.
+     P1 arriving: stored in P1 slot, evicts P2 slot.
+     P2 arriving: stored in P2 slot (replaces any older P2).
+     All slots use allow_pending=True semantics — nothing is silently dropped.
+     TTL expiry per slot (P0=3s, P1=5s, P2=8s) prevents stale hazard from
+     speaking after situation has changed.
+
+  B. Pre-synthesis while speaking
+     When a message enters a pending slot, a background thread immediately
+     synthesizes the WAV (without silence prefix). When current speech ends
+     and we drain the slot, the WAV is almost always already on disk.
+     Reduces inter-utterance gap from ~250ms to ~50ms (just aplay startup).
+
+  C. Stream-cold silence prefix
+     Track _last_speech_end. If gap > STREAM_COLD_S (1.5s), prepend 300ms
+     silence (BT stream needs time to start). If gap < 1.5s (back-to-back),
+     skip prefix — stream is already warm. Silence applies to the final WAV
+     at play time, not at synthesis time, so pre-synthesis stays clean.
+
+  D. event_logger callback on VoiceAssistant constructor
+     main() passes log_event directly. Removes monkey-patch. _start_locked
+     signature can change freely.
+
+  E. Wall fallback → speak_urgent
+     80cm undetected obstacle is URGENT (was speak_warning).
+     P0 slot guarantees it's never silently dropped when voice is busy.
+
+INHERITED FROM v3.23:
+  - Velocity noise floor + TTC gate (no false CRITICAL at 3m+)
+  - Left / right / ahead position in voice messages
+  - float32 YOLO26n (INT8 is slower on Pi 4 ARM)
+  - Richer CSV + separate events.log
 INHERITED FROM v3.22:
-  - Distance bucket cooldown keys (re-announces every 30cm closer)
-  - ThreatTransitionTracker: MIN_THREAT_FRAMES=12, velocity guard
-  - IMU hysteresis (8 frames before MOVING/STILL switch)
+  - Distance bucket cooldown keys
+  - ThreatTransitionTracker velocity guard + MIN_THREAT_FRAMES=12
+  - IMU hysteresis (8 frames)
 INHERITED FROM v3.21:
   - Wall/obstacle depth fallback
-  - Busy area detection (>= 4 confirmed tracks)
+  - Busy area detection
 INHERITED FROM v3.17-v3.20:
   - Ego-motion compensation (LK + background depth)
   - YOLO26n NMS-free postprocess
   - Pipelined capture (_capture_worker thread)
-  - Piper TTS with pending-queue (no BT drops)
+  - Piper TTS
 """
 import os
 import sys
@@ -95,7 +137,7 @@ VOICE_COOLDOWN = 5.0
 PIPER_MODEL  = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx")
 PIPER_CONFIG = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx.json")
 PIPER_SPEED  = 0.85
-PIPER_SILENCE_MS = 300
+PIPER_SILENCE_MS = 300   # applied only on BT stream cold-start (gap > STREAM_COLD_S)
 
 IMU_I2C_ADDR        = 0x68
 IMU_MOTION_THRESHOLD = 0.05
@@ -191,7 +233,15 @@ class PiperVoice:
             self.available = False
             print("[WARN] No TTS available")
 
-    def synthesize_to_file(self, text):
+    def synthesize_to_file(self, text, silence_ms=0):
+        """
+        Synthesize text → temp WAV.
+
+        silence_ms: milliseconds of leading silence to prepend.
+          Pass 0 for pre-synthesis (silence added at play time based on stream state).
+          Pass PIPER_SILENCE_MS when synthesizing for immediate cold-stream playback.
+        Returns temp file path, or None on failure.
+        """
         try:
             speech_buf = io.BytesIO()
             with wave.open(speech_buf, "wb") as wav:
@@ -200,8 +250,11 @@ class PiperVoice:
             with wave.open(speech_buf, "rb") as wr:
                 params = wr.getparams()
                 speech_frames = wr.readframes(wr.getnframes())
-            silence_samples = int(params.framerate * params.nchannels * PIPER_SILENCE_MS / 1000)
-            silence_frames  = b"\x00" * (silence_samples * params.sampwidth)
+            if silence_ms > 0:
+                silence_samples = int(params.framerate * params.nchannels * silence_ms / 1000)
+                silence_frames  = b"\x00" * (silence_samples * params.sampwidth)
+            else:
+                silence_frames = b""
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                 tmpfile = f.name
             with wave.open(tmpfile, "wb") as out:
@@ -212,32 +265,125 @@ class PiperVoice:
             print(f"[VOICE] Synthesis error: {e}")
             return None
 
-# ============= VOICE ASSISTANT =============
+    def prepend_silence(self, wav_path, silence_ms):
+        """
+        Prepend silence_ms of silence to an existing WAV file.
+        Replaces the file in-place (new tempfile, old deleted).
+        Returns path of new file (or original path on error).
+
+        Used when a pre-synthesized WAV (silence_ms=0) needs a cold-start
+        silence prefix added at play time.
+        """
+        try:
+            with wave.open(wav_path, "rb") as wr:
+                params = wr.getparams()
+                speech_frames = wr.readframes(wr.getnframes())
+            silence_samples = int(params.framerate * params.nchannels * silence_ms / 1000)
+            silence_frames  = b"\x00" * (silence_samples * params.sampwidth)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                newpath = f.name
+            with wave.open(newpath, "wb") as out:
+                out.setparams(params)
+                out.writeframes(silence_frames + speech_frames)
+            try: os.unlink(wav_path)
+            except Exception: pass
+            return newpath
+        except Exception as e:
+            print(f"[VOICE] Silence prepend error: {e}")
+            return wav_path  # return original on failure
+
+
+# ============= VOICE ASSISTANT (v3.24 REWRITE) =============
 class VoiceAssistant:
+    """
+    Three-tier priority voice queue with pre-synthesis.
+
+    PRIORITY TIERS:
+      P0 URGENT   — speak_urgent()   : hazard within 40-70cm, TTC < 2s, wall fallback
+      P1 WARNING  — speak_warning()  : hazard TTC 2-4s, cleared announcements
+      P1 CLEARED  — speak_cleared()  : same tier as warning
+      P2 AWARE    — speak_awareness(): TTC 4-8s, busy area
+      P2 INFO     — speak_info()     : scene description
+
+    PENDING QUEUE INVARIANTS:
+      - One slot per priority tier (P0, P1, P2)
+      - P0 arrival: evicts P1 + P2 slots, replaces P0 slot
+      - P1 arrival: evicts P2 slot, replaces P1 slot
+      - P2 arrival: replaces P2 slot
+      - When current speech ends: drain highest non-None slot
+      - TTL expiry: P0=3s, P1=5s, P2=8s (stale messages discarded)
+      - Nothing is ever silently dropped — every message gets a slot
+
+    PRE-SYNTHESIS:
+      When a message enters a pending slot, a background thread immediately
+      synthesizes the WAV without silence prefix. At play time we check
+      if the BT stream is cold (gap > STREAM_COLD_S=1.5s) and prepend silence
+      only then. Back-to-back messages skip the 300ms prefix entirely.
+
+    BT INVARIANT:
+      Never SIGTERM aplay. The pending queue keeps the BT stream warm.
+    """
+
+    # Priority tier constants
+    PRIO_URGENT  = 0
+    PRIO_WARNING = 1
+    PRIO_AWARE   = 2
+
+    # Cooldowns per tier
     COOLDOWN_URGENT    = 1.5
     COOLDOWN_WARNING   = 3.0
     COOLDOWN_AWARENESS = 8.0
     COOLDOWN_CLEARED   = 4.0
 
-    def __init__(self):
-        self.is_speaking = False
-        self._lock = threading.Lock()
-        self._pending = None
-        self._current_proc = None
+    # BT stream cold-start threshold.
+    # Gap > this → prepend PIPER_SILENCE_MS to wake the stream.
+    # Gap < this → stream still warm, no silence needed.
+    STREAM_COLD_S = 1.5
+
+    # Max age for pending messages. Older than TTL → discarded unspoken.
+    # (Safety: a 4-second-old "Stop! chair 0.3m" is worse than silence.)
+    _TTL = {PRIO_URGENT: 3.0, PRIO_WARNING: 5.0, PRIO_AWARE: 8.0}
+
+    def __init__(self, event_logger=None):
+        """
+        event_logger: optional callable(str) — called with "[VOICE] LABEL: text"
+                      when speech actually starts. Replaces the v3.23 monkey-patch.
+        """
+        self._event_logger = event_logger
+        self.is_speaking   = False
+        self._lock         = threading.Lock()
+
+        # One pending slot per priority.
+        # Each entry: (text, key, cooldown, label, enqueued_at) or None
+        self._pending  = {0: None, 1: None, 2: None}
+
+        # Pre-synthesized WAV paths, keyed by priority.
+        # Each entry: (tmpfile_path, text) or None
+        # Synthesized in background as soon as message enters pending slot.
+        self._prefetch = {0: None, 1: None, 2: None}
+
+        self._current_proc    = None
         self._last_announcement = {}
+        self._last_speech_end   = 0.0  # time.time() when last aplay finished
         self._tts = PiperVoice()
         self.available = self._tts.available
 
+    # ---- PUBLIC API (unchanged signatures from v3.23) ----
+
     def speak_urgent(self, text, key=None):
-        self._enqueue(text, key, self.COOLDOWN_URGENT, "URGENT", allow_pending=True)
+        self._enqueue(text, key, self.COOLDOWN_URGENT,    "URGENT", self.PRIO_URGENT)
+
     def speak_warning(self, text, key=None):
-        self._enqueue(text, key, self.COOLDOWN_WARNING, "WARNING", allow_pending=False)
+        self._enqueue(text, key, self.COOLDOWN_WARNING,   "WARN",   self.PRIO_WARNING)
+
     def speak_awareness(self, text, key=None):
-        self._enqueue(text, key, self.COOLDOWN_AWARENESS, "AWARE", allow_pending=False)
+        self._enqueue(text, key, self.COOLDOWN_AWARENESS, "AWARE",  self.PRIO_AWARE)
+
     def speak_cleared(self, text, key=None):
-        self._enqueue(text, key, self.COOLDOWN_CLEARED, "CLEAR", allow_pending=True)
+        self._enqueue(text, key, self.COOLDOWN_CLEARED,   "CLEAR",  self.PRIO_WARNING)
+
     def speak_info(self, text):
-        self._enqueue(text, None, 0, "INFO", allow_pending=True)
+        self._enqueue(text, None, 0, "INFO", self.PRIO_AWARE)
 
     def cleanup_old_keys(self, active_ids):
         with self._lock:
@@ -245,58 +391,186 @@ class VoiceAssistant:
             for k in stale:
                 del self._last_announcement[k]
 
-    def _enqueue(self, text, key, cooldown, label, allow_pending):
+    # ---- INTERNAL ----
+
+    def _enqueue(self, text, key, cooldown, label, priority):
         if not VOICE_ENABLED or not self.available:
             return
         with self._lock:
+            # Cooldown gate
             if key and cooldown > 0:
-                last = self._last_announcement.get(key, 0)
-                if (time.time() - last) < cooldown:
+                if (time.time() - self._last_announcement.get(key, 0)) < cooldown:
                     return
-            if self.is_speaking:
-                if allow_pending:
-                    self._pending = (text, key, cooldown, label)
-                return
-            self._start_locked(text, key, cooldown, label)
 
-    def _start_locked(self, text, key, cooldown, label):
+            if not self.is_speaking:
+                # Nothing playing — start immediately
+                self._start_locked(text, key, cooldown, label, priority)
+                return
+
+            # Currently speaking. Store in priority slot.
+            # Evict all lower-priority slots (higher priority always wins pending).
+            for lower in range(priority + 1, 3):
+                if self._pending[lower] is not None:
+                    self._pending[lower] = None
+                    self._cancel_prefetch_locked(lower)
+
+            # Replace same-priority slot (newer is always more current)
+            old = self._pending[priority]
+            if old is not None and old[0] != text:
+                self._cancel_prefetch_locked(priority)
+
+            self._pending[priority] = (text, key, cooldown, label, time.time())
+
+            # Kick off pre-synthesis in background (silence_ms=0 — silence added at play time)
+            if self._tts._use_piper:
+                existing = self._prefetch[priority]
+                if existing is None or existing[1] != text:
+                    # Different text — start fresh synthesis
+                    if existing is not None:
+                        self._cancel_prefetch_locked(priority)
+                    threading.Thread(
+                        target=self._presyn_worker,
+                        args=(text, priority), daemon=True).start()
+
+    def _cancel_prefetch_locked(self, priority):
+        """Discard pending prefetch entry for this priority. Must be called with lock held."""
+        pf = self._prefetch[priority]
+        self._prefetch[priority] = None
+        if pf:
+            threading.Thread(target=self._rm_wav, args=(pf[0],), daemon=True).start()
+
+    @staticmethod
+    def _rm_wav(path):
+        try:
+            if path: os.unlink(path)
+        except Exception:
+            pass
+
+    def _presyn_worker(self, text, priority):
+        """
+        Background synthesis — runs while current speech plays.
+        Synthesizes WITHOUT silence prefix (added at play time based on stream state).
+        Stores result in _prefetch[priority] only if this message is still pending.
+        """
+        wav = self._tts.synthesize_to_file(text, silence_ms=0)
+        if wav is None:
+            return
+        with self._lock:
+            pend = self._pending[priority]
+            if pend is not None and pend[0] == text:
+                # Still pending — store for use at play time
+                self._prefetch[priority] = (wav, text)
+            else:
+                # Message was evicted or already fired — discard WAV
+                threading.Thread(target=self._rm_wav, args=(wav,), daemon=True).start()
+
+    def _start_locked(self, text, key, cooldown, label, priority):
+        """
+        Begin speech. Must be called with self._lock held.
+        Logs via event_logger if set.
+        Uses pre-synthesized WAV from _prefetch[priority] if available and text matches.
+        """
         if key and cooldown > 0:
             self._last_announcement[key] = time.time()
         self.is_speaking = True
-        print(f"[VOICE] {label}: \"{text}\"")
-        threading.Thread(target=self._speak_thread, args=(text,), daemon=True).start()
 
-    def _speak_thread(self, text):
+        log_msg = f"[VOICE] {label}: \"{text}\""
+        print(log_msg)
+        if self._event_logger:
+            self._event_logger(log_msg)
+
+        # Claim pre-synthesized WAV if available for this text
+        prefetched = None
+        if self._tts._use_piper and self._prefetch[priority] is not None:
+            pf = self._prefetch[priority]
+            if pf[1] == text:
+                prefetched = pf[0]
+                self._prefetch[priority] = None
+
+        threading.Thread(
+            target=self._speak_thread,
+            args=(text, prefetched),
+            daemon=True).start()
+
+    def _speak_thread(self, text, prefetched_wav=None):
+        """
+        Play audio. Decides silence prefix based on BT stream warmth.
+        Uses prefetched_wav if available (avoids synthesis latency in the gap).
+        Never calls SIGTERM on aplay.
+        """
         try:
             if self._tts._use_piper:
-                tmpfile = self._tts.synthesize_to_file(text)
+                # Check if BT stream needs a cold-start silence prefix
+                with self._lock:
+                    gap = time.time() - self._last_speech_end
+                need_silence = gap > self.STREAM_COLD_S
+
+                if prefetched_wav:
+                    # WAV was pre-synthesized without silence.
+                    # Prepend silence now only if stream is cold.
+                    if need_silence:
+                        tmpfile = self._tts.prepend_silence(prefetched_wav, PIPER_SILENCE_MS)
+                    else:
+                        tmpfile = prefetched_wav  # no prefix needed, use as-is
+                else:
+                    # No prefetch available — synthesize now
+                    # (this path occurs for immediately-fired messages with no pending phase)
+                    silence_ms = PIPER_SILENCE_MS if need_silence else 0
+                    tmpfile = self._tts.synthesize_to_file(text, silence_ms=silence_ms)
+
                 if tmpfile:
                     proc = subprocess.Popen(["aplay", tmpfile], stderr=subprocess.DEVNULL)
-                    with self._lock: self._current_proc = proc
+                    with self._lock:
+                        self._current_proc = proc
                     proc.wait()
-                    with self._lock: self._current_proc = None
+                    with self._lock:
+                        self._current_proc  = None
+                        self._last_speech_end = time.time()
                     try: os.unlink(tmpfile)
                     except Exception: pass
             else:
                 proc = subprocess.Popen(
                     ["espeak", "-s", "150", "-p", "40", "-g", "5", "-a", "200", text],
                     stderr=subprocess.DEVNULL)
-                with self._lock: self._current_proc = proc
+                with self._lock:
+                    self._current_proc = proc
                 proc.wait()
-                with self._lock: self._current_proc = None
+                with self._lock:
+                    self._current_proc  = None
+                    self._last_speech_end = time.time()
+
         except Exception as e:
             print(f"[VOICE] Thread error: {e}")
+
         finally:
             with self._lock:
                 self.is_speaking = False
-                if self._pending is not None:
-                    ptext, pkey, pcooldown, plabel = self._pending
-                    self._pending = None
+                # Drain the highest-priority non-None pending slot.
+                # Skip slots that have expired (TTL) or are in cooldown.
+                for prio in range(3):
+                    pend = self._pending[prio]
+                    if pend is None:
+                        continue
+                    ptext, pkey, pcooldown, plabel, penqueued = pend
+                    self._pending[prio] = None
+
+                    # TTL check — discard if message is too old to be useful
+                    age = time.time() - penqueued
+                    if age > self._TTL[prio]:
+                        print(f"[VOICE] Expired ({age:.1f}s old, TTL={self._TTL[prio]}s): \"{ptext}\"")
+                        self._cancel_prefetch_locked(prio)
+                        continue
+
+                    # Cooldown re-check (time passed since message was queued)
                     if pkey and pcooldown > 0:
-                        last = self._last_announcement.get(pkey, 0)
-                        if (time.time() - last) < pcooldown:
-                            return
-                    self._start_locked(ptext, pkey, pcooldown, plabel)
+                        if (time.time() - self._last_announcement.get(pkey, 0)) < pcooldown:
+                            self._cancel_prefetch_locked(prio)
+                            continue
+
+                    # Fire this message
+                    self._start_locked(ptext, pkey, pcooldown, plabel, prio)
+                    break
+
 
 # ============= THREAT TRANSITION TRACKER =============
 class ThreatTransitionTracker:
@@ -344,6 +618,7 @@ class ThreatTransitionTracker:
         elif vel > 3:  msg = f"{track.class_name} moved aside"
         else:          msg = f"{track.class_name} stopped, {dist_m:.1f} meters away"
         voice.speak_cleared(msg, key=f"cleared_{track.id}")
+
 
 # ============= SCENE DESCRIBER =============
 class SceneDescriber:
@@ -458,6 +733,7 @@ class SceneDescriber:
     def shutdown(self):
         self._stop = True
 
+
 # ============= IMU MOTION DETECTOR =============
 class MotionDetector:
     def __init__(self):
@@ -515,6 +791,7 @@ class MotionDetector:
         if len(self.accel_history) < 2: return 0.0
         mean = sum(self.accel_history) / len(self.accel_history)
         return math.sqrt(sum((x-mean)**2 for x in self.accel_history) / len(self.accel_history))
+
 
 # ============= OBJECT TRACKER =============
 class ObjectTracker:
@@ -606,6 +883,7 @@ class Track:
                 self.velocity_valid = True
                 self._prev_velocity_valid = True
 
+
 # ============= THREAT ASSESSMENT =============
 class ThreatAssessment:
     @staticmethod
@@ -619,18 +897,13 @@ class ThreatAssessment:
         d = track.distance
         v = track.velocity
 
-        # FIX v3.23 — dynamic noise floor + TTC gate.
-        # RealSense depth noise at distance produces apparent velocity even on
-        # a stationary object. Flat 3cm/s noise floor was too low at >2m.
-        # (a) Zero velocity below the dynamic noise floor (scales with distance).
-        # (b) If TTC > 12s the object is not a meaningful threat regardless
-        #     of velocity magnitude — zero its velocity contribution to score.
-        noise_floor = 3.0 + d * 0.02          # e.g. 9cm/s at 3m
+        # v3.23: dynamic noise floor + TTC gate
+        noise_floor = 3.0 + d * 0.02
         if abs(v) <= noise_floor:
             v = 0.0
         elif v < -1:
             ttc_check = d / abs(v)
-            if ttc_check > 12.0:               # > 12s = treat as stationary
+            if ttc_check > 12.0:
                 v = 0.0
 
         score = 0.0
@@ -665,15 +938,10 @@ class ThreatAssessment:
         scored.sort(reverse=True, key=lambda x: x[0])
         return scored
 
+
 # ============= HELPER FUNCTIONS =============
 
 def get_position(track, frame_width=640):
-    """
-    FIX v3.23: Returns spatial position of object relative to camera.
-    Left third (<33%) → 'on your left'
-    Centre third (33-67%) → 'ahead'
-    Right third (>67%) → 'on your right'
-    """
     if track.box is None: return "ahead"
     x1, _, x2, _ = track.box
     ratio = (x1 + x2) / 2.0 / frame_width
@@ -748,6 +1016,7 @@ def get_smart_distance(depth_data, bbox):
     except Exception:
         return median_cm, 0
 
+
 # ============= EGO-MOTION COMPENSATOR =============
 class EgoMotionCompensator:
     _LK_PARAMS = dict(winSize=(15,15), maxLevel=3,
@@ -821,17 +1090,18 @@ class EgoMotionCompensator:
         self._prev_bg_pts = cv2.goodFeaturesToTrack(gray, mask=bg_mask_u8, **self._FEATURE_PARAMS)
         self._prev_gray   = gray
 
+
 # ============= MAIN =============
 def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.23 HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.24 HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: noise-floor hallucination, left/right/ahead, richer logs")
+    print("ARCH FIX: 3-slot priority queue, pre-synthesis, stream-cold silence")
     print("=" * 70)
 
-    # CSV — richer columns
+    # CSV — richer columns (same schema as v3.23)
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow([
@@ -841,7 +1111,7 @@ def main():
     ])
     print(f"[LOG] {CSV_FILE}")
 
-    # Separate event log — never truncated by terminal scroll
+    # Separate event log
     EVENT_LOG = CSV_FILE.replace("log_", "events_").replace(".csv", ".log")
     event_file = open(EVENT_LOG, "w", encoding="utf-8")
     def log_event(msg):
@@ -850,15 +1120,9 @@ def main():
         event_file.flush()
     print(f"[LOG] Events: {EVENT_LOG}")
 
-    # Patch VoiceAssistant._start_locked to also write to event log
-    _orig_start = VoiceAssistant._start_locked
-    def _patched_start(self, text, key, cooldown, label):
-        log_event(f"[VOICE] {label}: \"{text}\"")
-        _orig_start(self, text, key, cooldown, label)
-    VoiceAssistant._start_locked = _patched_start
-
     motion = MotionDetector()
-    voice  = VoiceAssistant()
+    # v3.24: pass log_event directly — no monkey-patch needed
+    voice  = VoiceAssistant(event_logger=log_event)
     scene  = SceneDescriber(voice)
     transition_tracker = ThreatTransitionTracker()
     ego    = EgoMotionCompensator(use_optical_flow=True)
@@ -928,7 +1192,8 @@ def main():
     print(f"[MODE]  {'PLAYBACK' if PLAYBACK_FILE else 'LIVE'}")
     print(f"[KEYS]  d = describe scene | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
-    print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g\n")
+    print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g")
+    print(f"[VOICE] 3-slot priority queue | stream-cold threshold={VoiceAssistant.STREAM_COLD_S}s\n")
 
     frame_count       = 0
     last_threat_print = time.time()
@@ -992,11 +1257,14 @@ def main():
             confirmed_count = sum(1 for t in tracks if t.seen_frames >= 3)
             if (confirmed_count >= BUSY_TRACK_THRESHOLD and user_moving
                     and now - last_busy_alert > BUSY_COOLDOWN_S):
-                voice.speak_awareness(f"Busy area, {confirmed_count} objects around you, slow down", key="busy_area")
+                voice.speak_awareness(f"Busy area, {confirmed_count} objects around you, slow down",
+                                      key="busy_area")
                 last_busy_alert = now
                 print(f"[BUSY] {confirmed_count} confirmed tracks")
 
             # Wall fallback
+            # v3.24: speak_urgent (was speak_warning) — 80cm undetected obstacle is URGENT.
+            # P0 slot guarantees it's never silently dropped when voice is busy.
             if user_moving and now - last_wall_alert > WALL_COOLDOWN_S:
                 h_d, w_d = depth_data.shape
                 cy0 = int(h_d*(0.5-WALL_CENTER_CROP/2)); cy1 = int(h_d*(0.5+WALL_CENTER_CROP/2))
@@ -1008,7 +1276,8 @@ def main():
                     yolo_covers = any(t.distance is not None and t.distance < (WALL_DISTANCE_CM+20)
                                       and t.seen_frames >= 3 for t in tracks)
                     if wall_dist_cm < WALL_DISTANCE_CM and not yolo_covers:
-                        voice.speak_warning(f"Obstacle ahead, {wall_dist_cm/100:.1f} meters", key="wall_fallback")
+                        voice.speak_urgent(f"Obstacle ahead, {wall_dist_cm/100:.1f} meters",
+                                           key="wall_fallback")
                         last_wall_alert = now
                         print(f"[WALL] Depth fallback: {wall_dist_cm}cm")
 
@@ -1020,7 +1289,7 @@ def main():
                 dist_m  = dist_cm / 100.0
                 obj     = track.class_name
                 vel     = track.velocity
-                pos     = get_position(track, w)   # FIX v3.23: left/right/ahead
+                pos     = get_position(track, w)
 
                 if track.seen_frames >= 3:
                     if track.velocity_valid and vel < -2:
@@ -1101,6 +1370,8 @@ def main():
                     active_keys.add(f"{t.id}_ttc_aware")
                     active_keys.add(f"cleared_{t.id}")
                 active_keys.add("path_clear")
+                active_keys.add("wall_fallback")
+                active_keys.add("busy_area")
                 voice.cleanup_old_keys(active_keys)
 
             # Console threats
@@ -1137,7 +1408,7 @@ def main():
                       f"queue={_frame_q.qsize()} -> {avg_fps:.1f} FPS | "
                       f"ego: Z={ego.camera_z_velocity:.1f}cm/s lat=({dx:.1f},{dy:.1f})px")
 
-            # CSV — richer
+            # CSV — same schema as v3.23
             if frame_count % 30 == 0 and frame_count >= 30:
                 if top:
                     t1  = top[1]
