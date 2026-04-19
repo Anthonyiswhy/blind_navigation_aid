@@ -20,5 +20,5 @@ jobs:
       - name: Install dependencies
         run: pip install pytest numpy
 
-      - name: Run tests
-        run: pytest tests/test_blindnav.py -v
+      - name: Run test suites
+        run: pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
