@@ -441,6 +441,18 @@ class TestVoiceKey:
         expected = f"{zone}_{family}_ttc_urg_3"
         assert key == expected, f"got {key!r}, want {expected!r}"
 
+class TestSourceStructure:
+
+    def test_single_source_definitions(self):
+        nav_path = _find_nav_script()
+        with open(nav_path, "r", encoding="utf-8", errors="replace") as f:
+            src = f.read()
+
+        import re
+        assert len(re.findall(r"^def _voice_key\(", src, flags=re.MULTILINE)) == 1
+        assert len(re.findall(r"^class PiperVoice:", src, flags=re.MULTILINE)) == 1
+
+
 
 # ============================================================
 # EgoMotionCompensator: clamping + confidence (P2 fix — non-tautological)
