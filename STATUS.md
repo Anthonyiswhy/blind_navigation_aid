@@ -1,7 +1,7 @@
 # Project Status
 
 Last updated: April 18, 2026
-Current repo target: `v3.26 HEADLESS`
+Current repo target: `v3.26b HEADLESS`
 
 ## Verified in Code and Tests
 
@@ -26,6 +26,8 @@ Current repo target: `v3.26 HEADLESS`
 ## Confirmed Design Invariants
 
 - Active `aplay` playback is never terminated.
+- Lower-priority synthesized WAVs are skipped before playback if a higher-priority
+  alert becomes pending.
 - Ghost filtering stays outside `ObjectTracker`.
 - Distance bucket cooldowns keep distance wording fresh as threats approach.
 - Ego-motion compensation is zeroed when confidence is poor because bad
@@ -66,7 +68,7 @@ Current repo target: `v3.26 HEADLESS`
 ## Pending Work
 
 - Heatsink: highest hardware priority
-- Push v3.26 to GitHub main
+- Push v3.26b to GitHub main
 - Schedule a field test with Ricardo Salazar
 - Record five bag-file regression scenarios
 - Add traffic-light color classification

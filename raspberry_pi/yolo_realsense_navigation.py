@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.26 HEADLESS
+Intelligent Navigation Assistant v3.26b HEADLESS
 Builds on v3.25 with:
 
   FIX 8 — Urgent speech can supersede lower-priority synthesis safely.
     The v3.25 queue still allowed a bad case: a P2/P1 phrase could be in the
     middle of Piper synthesis when a P0 URGENT arrived, forcing urgent to wait
     for that lower-priority phrase to finish synthesizing and start playback.
-    This version lets urgent cancel a lower-priority phrase only while that
-    phrase is still in synthesis and has not started playback yet.
-    Once audio playback has started, it is never terminated.
-    This preserves the hard rule: NEVER send SIGTERM to aplay.
+    This version drops the lower-priority WAV only if a higher-priority alert
+    becomes pending before aplay starts. Once audio playback has started, it is
+    never terminated. This preserves the hard rule: NEVER send SIGTERM to
+    aplay.
 
   FIX 9 — Partial neutral-wording fix in close-distance branches (Codex review).
     v3.25 gated "approaching" wording on ego_reliable in TTC branches but not
@@ -541,17 +541,17 @@ class PiperVoice:
             return wav_path
 
 
-# ============= VOICE ASSISTANT (v3.26) =============
+# ============= VOICE ASSISTANT (v3.26b) =============
 class VoiceAssistant:
     """
-    3-slot priority queue with pre-synthesis, safe urgent supersession (FIX 8),
-    per-alert
-    latency logging, presyn semaphore, and injectable TTS/player for testing.
+    3-slot priority queue with pre-synthesis, BT-safe skip-ahead (FIX 8),
+    per-alert latency logging, presyn semaphore, and injectable TTS/player
+    for testing.
 
-    SAFE URGENT SUPERSESSION (FIX 8):
-      When PRIO_URGENT arrives while a PRIO_WARNING or PRIO_AWARE phrase is
-      still synthesizing, the lower-priority phrase is canceled before
-      playback begins and urgent is spoken next.
+    BT-SAFE SKIP-AHEAD (FIX 8):
+      When a higher-priority alert becomes pending while a lower-priority
+      phrase is still synthesizing, the lower-priority WAV is dropped before
+      playback begins and the higher-priority phrase is drained next.
       Once playback has started, it is never interrupted.
 
     Constructor params:
@@ -586,10 +586,6 @@ class VoiceAssistant:
         self._presyn_sem = threading.Semaphore(1)
 
         self._current_proc    = None
-        self._current_prio    = 3
-        self._speech_seq      = 0
-        self._active_speech_id = None
-        self._cancel_before_play = set()
         self._last_announcement = {}
         self._last_speech_end   = 0.0
 
@@ -649,15 +645,6 @@ class VoiceAssistant:
             self._pending[priority] = (text, key, cooldown, label,
                                        enqueued_ts, event_created_ts)
 
-            # FIX 8: urgent may supersede lower-priority speech only before
-            # playback begins. Never terminate aplay once it is active.
-            if (priority == self.PRIO_URGENT
-                    and self._current_prio > self.PRIO_URGENT
-                    and self._active_speech_id is not None
-                    and self._current_proc is None):
-                self._cancel_before_play.add(self._active_speech_id)
-                print("[VOICE] Superseding lower-priority synthesis for URGENT")
-
             # Start presyn if semaphore free
             if self._tts._use_piper:
                 existing = self._prefetch[priority]
@@ -703,11 +690,7 @@ class VoiceAssistant:
         """Start speech. Must hold self._lock."""
         if key and cooldown > 0:
             self._last_announcement[key] = time.time()
-        self._speech_seq += 1
-        speech_id = self._speech_seq
         self.is_speaking   = True
-        self._current_prio = priority
-        self._active_speech_id = speech_id
 
         log_msg = f"[VOICE] {label}: \"{text}\""
         print(log_msg)
@@ -724,16 +707,16 @@ class VoiceAssistant:
 
         threading.Thread(
             target=self._speak_thread,
-            args=(text, prefetched, label, event_created_ts, enqueued_ts, speech_id),
+            args=(text, prefetched, label, priority, event_created_ts, enqueued_ts),
             daemon=True).start()
 
     def _speak_thread(self, text, prefetched_wav=None, label="",
-                      event_created_ts=None, enqueued_ts=None, speech_id=None):
+                      priority=None, event_created_ts=None, enqueued_ts=None):
         """Play audio. Logs per-alert latency timestamps."""
         tts_start_ts  = None
         play_start_ts = None
         play_end_ts   = None
-        canceled_before_play = False
+        skipped_before_play = False
         try:
             if self._tts._use_piper:
                 with self._lock:
@@ -761,10 +744,12 @@ class VoiceAssistant:
 
                 if tmpfile:
                     with self._lock:
-                        if speech_id in self._cancel_before_play:
-                            self._cancel_before_play.remove(speech_id)
-                            canceled_before_play = True
-                    if canceled_before_play:
+                        if priority is not None and priority > self.PRIO_URGENT:
+                            skipped_before_play = any(
+                                self._pending[higher] is not None
+                                for higher in range(priority)
+                            )
+                    if skipped_before_play:
                         try: os.unlink(tmpfile)
                         except Exception: pass
                     else:
@@ -816,16 +801,14 @@ class VoiceAssistant:
                     f" play_end={((play_end_ts    or t0) - t0):.3f}s"
                 )
                 self._event_logger(lat_line)
-            if canceled_before_play:
-                msg = f"[VOICE] Superseded before playback: \"{text}\""
+            if skipped_before_play:
+                msg = f"[VOICE] Skipped before playback due to higher-priority pending: \"{text}\""
                 print(msg)
                 if self._event_logger:
                     self._event_logger(msg)
 
             with self._lock:
                 self.is_speaking   = False
-                self._current_prio = 3
-                self._active_speech_id = None
                 # Drain highest-priority non-None pending slot
                 for prio in range(3):
                     pend = self._pending[prio]
@@ -1416,9 +1399,9 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.26 HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.26b HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: safe urgent supersession, neutral wording, latency, zone keys")
+    print("FIXES: BT-safe skip-ahead, neutral wording, latency, zone keys")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")

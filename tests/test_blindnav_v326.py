@@ -1,5 +1,5 @@
 """
-test_blindnav_v326.py - Hardware-free test suite for v3.26
+test_blindnav_v326.py - Hardware-free test suite for v3.26b
 
 Addresses all Codex review findings:
   [P1] Loader path: resolves to raspberry_pi/yolo_realsense_navigation.py
@@ -11,8 +11,9 @@ Addresses all Codex review findings:
        arrays instead of reimplementing the clamp/confidence logic.
   [P3] Integration routing test: drives _select_voice_message() - the extracted
        pure function from main() - proving the real decision path.
-  New: TestUrgentSupersession - verifies urgent can supersede lower-priority
-       synthesis before playback without ever terminating the active player.
+  New: TestSkipAhead - verifies lower-priority audio is dropped before
+       playback when a higher-priority alert becomes pending, without any
+       terminate path on the player.
 
 Run: pytest tests/test_blindnav_v326.py -v
      (from repo root - path resolver uses that as the anchor)
@@ -170,20 +171,14 @@ def _make_wav(silence_ms=0):
 
 
 class FakeProc:
-    """Mimics subprocess.Popen with controllable duration and terminatable."""
+    """Mimics subprocess.Popen with controllable duration."""
     def __init__(self, duration=0.05):
-        self._done      = threading.Event()
-        self._terminated = False
+        self._done = threading.Event()
         self._timer = threading.Timer(duration, self._done.set)
         self._timer.start()
 
     def wait(self):
         self._done.wait()
-
-    def terminate(self):
-        self._terminated = True
-        self._timer.cancel()
-        self._done.set()
 
 
 def fast_player(play_duration=0.05):
@@ -649,15 +644,15 @@ class TestVoicePriorityQueue:
 
 
 # ============================================================
-# Urgent supersession (FIX 8 - safe, no player termination)
+# Skip-ahead before playback (FIX 8 - no player termination)
 # ============================================================
 
-class TestUrgentSupersession:
+class TestSkipAhead:
 
-    def test_p0_supersedes_p2_during_synthesis(self):
+    def test_p0_skips_p2_during_synthesis(self):
         """
         P2 is still synthesizing and has not started playback.
-        P0 should cancel it before playback and become the only played proc.
+        P0 should skip it before playback and become the only played proc.
         """
         va, tts, player = build_voice(synth_delay=0.30, play_duration=0.05)
         va.speak_awareness("long awareness message")
@@ -665,19 +660,31 @@ class TestUrgentSupersession:
 
         with va._lock:
             assert va.is_speaking
-            assert va._current_prio == va.PRIO_AWARE
             assert va._current_proc is None
 
         va.speak_urgent("urgent!")
         assert wait_for_idle(va, timeout=3.0)
 
         assert len(player.procs) == 1, "Only urgent should reach playback"
-        assert not any(p._terminated for p in player.procs)
 
-    def test_p0_waits_for_active_playback_without_termination(self):
+    def test_p1_skips_p2_during_synthesis(self):
+        """A pending warning should also skip awareness before playback."""
+        va, tts, player = build_voice(synth_delay=0.30, play_duration=0.05)
+        va.speak_awareness("long awareness message")
+        time.sleep(0.05)
+
+        with va._lock:
+            assert va.is_speaking
+            assert va._current_proc is None
+
+        va.speak_warning("warning!")
+        assert wait_for_idle(va, timeout=3.0)
+        assert len(player.procs) == 1, "Only warning should reach playback"
+
+    def test_p0_waits_for_active_playback_without_interruption(self):
         """
         Once playback has started, urgent must wait in pending.
-        The active proc is never terminated.
+        Skip-ahead only applies before playback starts.
         """
         va, tts, player = build_voice(synth_delay=0.01, play_duration=0.40)
         va.speak_awareness("awareness")
@@ -691,28 +698,24 @@ class TestUrgentSupersession:
         time.sleep(0.05)
 
         assert len(player.procs) == 1
-        assert not player.procs[0]._terminated
         assert wait_for_idle(va, timeout=2.0)
         assert len(player.procs) == 2
-        assert not any(p._terminated for p in player.procs)
 
-    def test_p0_does_not_supersede_current_p0(self):
-        """An urgent already in synthesis should not be canceled by another urgent."""
+    def test_p0_does_not_skip_current_p0(self):
+        """An urgent already in synthesis should not be skipped by another urgent."""
         va, tts, player = build_voice(synth_delay=0.25, play_duration=0.05)
         va.speak_urgent("first urgent")
         time.sleep(0.05)
 
         with va._lock:
             assert va.is_speaking
-            assert va._current_prio == va.PRIO_URGENT
             assert va._current_proc is None
 
         va.speak_urgent("second urgent")
         assert wait_for_idle(va, timeout=3.0)
         assert len(player.procs) == 2
-        assert not any(p._terminated for p in player.procs)
 
-    def test_superseded_phrase_is_logged(self):
+    def test_skipped_phrase_is_logged(self):
         events = []
         va = MOD.VoiceAssistant(
             event_logger=events.append,
@@ -723,7 +726,20 @@ class TestUrgentSupersession:
         time.sleep(0.05)
         va.speak_urgent("urgent")
         assert wait_for_idle(va, timeout=3.0)
-        assert any("Superseded before playback" in msg for msg in events)
+        assert any("Skipped before playback due to higher-priority pending" in msg
+                   for msg in events)
+
+    def test_no_terminate_attribute_needed(self):
+        """
+        FakeProc intentionally has no terminate(). If production tries to call
+        it anywhere, this path fails.
+        """
+        va, tts, player = build_voice(synth_delay=0.30, play_duration=0.05)
+        va.speak_awareness("awareness")
+        time.sleep(0.05)
+        va.speak_urgent("urgent")
+        assert wait_for_idle(va, timeout=3.0)
+        assert len(player.procs) == 1
 
 
 # ============================================================

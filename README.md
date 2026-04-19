@@ -5,7 +5,7 @@ RealSense D435. The system detects obstacles, estimates threat from distance
 and time-to-collision, and speaks warnings through Bluetooth headphones using
 Piper neural TTS.
 
-Current production version: `v3.26 HEADLESS`
+Current production version: `v3.26b HEADLESS`
 
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
@@ -32,13 +32,14 @@ Current production version: `v3.26 HEADLESS`
   retrigger the same warning.
 - Added per-alert latency logging.
 
-### v3.26
+### v3.26b
 
 - Extracted `_select_voice_message()` so alert wording is unit-testable.
 - Fixed neutral wording leakage in close-distance branches when ego-motion is
   unreliable.
 - Added safe urgent supersession: an urgent alert can cancel a lower-priority
   phrase only while that phrase is still synthesizing.
+- Replaced terminate-style preemption with BT-safe skip-ahead before playback.
 - Preserved the hard rule that active `aplay` playback is never terminated.
 
 ## Hard Rules
@@ -101,7 +102,7 @@ Current collected totals:
 ## Current Priorities
 
 - Add a heatsink before field sessions.
-- Push the v3.26 repo state and field-test it with Ricardo Salazar.
+- Push the v3.26b repo state and field-test it with Ricardo Salazar.
 - Record bag-file scenarios for regression playback.
 - Add traffic-light color classification after the base obstacle system is
   stable.
