@@ -1,133 +1,115 @@
-# BlindNav — Intelligent Navigation Assistant for Blind Users
+# BlindNav
 
-A wearable real-time navigation assistant that runs on a Raspberry Pi 4 and uses a depth camera to detect obstacles, estimate how fast they are approaching, and speak audio warnings to the user.
+Wearable navigation assistant for blind users built for Raspberry Pi 4 + Intel
+RealSense D435. The system detects obstacles, estimates threat from distance
+and time-to-collision, and speaks warnings through Bluetooth headphones using
+Piper neural TTS.
 
-> **Current version:** v3.20 | **Primary tester:** Ricardo Salazar
+Current production version: `v3.26 HEADLESS`
 
----
+- Production script: `raspberry_pi/yolo_realsense_navigation.py`
+- Foundational regression suite: `tests/test_blindnav.py`
+- Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
+- Verified locally on April 18, 2026: `150 passed`
 
 ## What It Does
 
-The system continuously scans the environment with an Intel RealSense D435 depth camera, detects objects using YOLO, and announces warnings through Bluetooth headphones. It is designed to be worn on the chest.
+- Runs YOLO26n ONNX inference on Pi 4 CPU.
+- Samples depth per tracked object using adaptive stride + clustering.
+- Compensates apparent approach speed using background-depth ego-motion.
+- Suppresses static-object chatter when the user is standing still.
+- Speaks left/right/ahead warnings with distance-aware cooldown buckets.
+- Logs per-alert latency timestamps to `events.log`.
+- Provides on-demand scene description with the `d` key.
 
-**Example outputs:**
-- *"Person ahead, 1.2 meters, approaching fast"*
-- *"Chair on your left, 80 centimeters"*
-- *"Path clear"*
+## Recent Changes
 
-Warnings are prioritized into three tiers based on distance and approach speed:
-- **URGENT** — object under 40cm or closing in under 2 seconds
-- **WARNING** — object under 70cm or closing in under 5 seconds  
-- **AWARENESS** — object nearby but not an immediate threat
+### v3.25
 
----
+- Reduced ONNX Runtime to 3 threads so Piper synthesis gets CPU time.
+- Added ego-Z clamp and confidence gating to block impossible velocity spikes.
+- Switched to zone-based voice cooldown keys so tracker ID churn does not
+  retrigger the same warning.
+- Added per-alert latency logging.
 
-## Hardware
+### v3.26
 
-| Component | Purpose |
-|-----------|---------|
-| Raspberry Pi 4B (4GB) | Main compute |
-| Intel RealSense D435 | RGB-D depth camera |
-| ICM-20948 IMU | Detects whether user is walking or stationary |
-| Piper TTS + Bluetooth headphones | Audio output |
-| Chest harness mount | Wearable form factor |
-| USB-C battery bank (10,000mAh) | ~4–6 hours runtime |
+- Extracted `_select_voice_message()` so alert wording is unit-testable.
+- Fixed neutral wording leakage in close-distance branches when ego-motion is
+  unreliable.
+- Added safe urgent supersession: an urgent alert can cancel a lower-priority
+  phrase only while that phrase is still synthesizing.
+- Preserved the hard rule that active `aplay` playback is never terminated.
 
-> The ESP32, LiDAR, and ToF sensors in the original repo are no longer part of this system. The project pivoted to a RealSense depth camera approach in early 2026.
+## Hard Rules
 
----
+- Never send SIGTERM to `aplay`.
+- Never use `numpy` 2.0+; pin `numpy==1.26.4`.
+- Never use `cv2.imshow` on the Pi; use the Flask MJPEG stream for display work.
+- Never put the ghost filter inside `ObjectTracker`.
+- Never announce a threat as cleared while its compensated velocity is still
+  negative enough to indicate approach.
 
-## How It Works
+## Repository Layout
 
-![BlindNav pipeline](docs/pipeline.svg)
-
-**Key design decisions:**
-- **No NMS post-processing** — YOLO26n uses a one-to-one head that outputs pre-filtered detections, removing an entire processing stage
-- **Pipelined capture** — frame capture and YOLO inference run in parallel threads, improving throughput ~30%
-- **Ego-motion compensation** — Lucas-Kanade optical flow on background pixels estimates camera movement and subtracts it from object velocity, preventing false alarms when the user walks forward
-- **IMU gate** — stationary users don't get warned about static objects; only moving/approaching objects trigger alerts
-
----
-
-## Repository Structure
-
-```
+```text
 blind_navigation_aid/
-├── raspberry_pi/
-│   └── yolo_realsense_navigation.py   # Main script (v3.20)
-├── tests/
-│   └── test_blindnav.py               # Unit tests (37 tests, no hardware needed)
-├── esp32/                             # Legacy ESP32 code (not used in current system)
-├── stl/                               # 3D models for mount
-├── media/                             # Photos and demo videos
-├── SETUP.md                           # Installation and hardware wiring guide
-├── STATUS.md                          # What works, what's untested, what's missing
-└── README.md
+|-- AGENTS.md
+|-- README.md
+|-- SETUP.md
+|-- STATUS.md
+|-- raspberry_pi/
+|   `-- yolo_realsense_navigation.py
+|-- tests/
+|   |-- test_blindnav.py
+|   `-- test_blindnav_v326.py
+`-- .github/workflows/tests.yml
 ```
-
----
 
 ## Quick Start
 
-See [SETUP.md](SETUP.md) for full installation instructions.
-
 ```bash
-# Activate environment and run
 source ~/blindnav-venv/bin/activate
+export ANTHROPIC_API_KEY="sk-..."
 python3 raspberry_pi/yolo_realsense_navigation.py
 ```
 
-Press `d` during runtime to trigger a scene description (Claude Vision).  
-Press `Ctrl+C` to quit.
+Press `d` for a scene description. Use `Ctrl+C` to exit.
 
----
+## Tests
 
-## Running Tests
-
-No camera or model file needed:
+All tests run without camera hardware, a RealSense device, Piper, or an IMU.
+Hardware modules are stubbed at import time.
 
 ```bash
-pip install pytest
-pytest tests/test_blindnav.py -v
+pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 ```
 
----
+Current collected totals:
 
-## Performance (Raspberry Pi 4, headless)
+- `tests/test_blindnav.py`: 37 tests
+- `tests/test_blindnav_v326.py`: 113 tests
+- Combined: 150 tests
 
-| Metric | Value |
-|--------|-------|
-| FPS (YOLO11n) | 12–14 |
-| FPS (YOLO26n, projected) | 18–20 |
-| YOLO inference time | ~40ms (YOLO26n) |
-| Detection resolution | 640×480 → 224×224 |
-| ONNX threads | 4 |
+## Performance Notes
 
----
+- Expected field FPS: roughly 8-14 depending on thermals.
+- YOLO export must produce output shape `(1, 300, 6)`.
+- ONNX Runtime stays on float32. INT8 was slower on Pi 4 ARM in project tests.
+- Thermal throttling is still the main real-world performance limiter.
 
-## Configuration
+## Current Priorities
 
-Key settings at the top of `yolo_realsense_navigation.py`:
+- Add a heatsink before field sessions.
+- Push the v3.26 repo state and field-test it with Ricardo Salazar.
+- Record bag-file scenarios for regression playback.
+- Add traffic-light color classification after the base obstacle system is
+  stable.
 
-```python
-CONF_THRESH       = 0.38   # Detection confidence threshold
-DETECTION_INTERVAL = 2     # Run YOLO every N frames
-RECORD_TO_FILE    = ""     # Set to a .bag path to record a session
-PLAYBACK_FILE     = ""     # Set to a .bag path to replay a recording
-```
+## Design Notes
 
----
-
-## Version History
-
-| Version | Key Change |
-|---------|-----------|
-| v3.7 | Performance baseline — 4-thread ONNX, pre-allocated buffers, 13 FPS |
-| v3.12 | Three-tier alert system (URGENT/WARNING/AWARENESS) + ghost filter |
-| v3.14 | Two-layer distance/TTC threat system |
-| v3.15 | IMU integration (ICM-20948) + Piper neural TTS |
-| v3.16 | Pending-voice queue, ThreatTransitionTracker, adaptive depth stride |
-| v3.17 | Ego-motion compensation (Lucas-Kanade + background depth) |
-| v3.18 | Bag file recording and playback |
-| v3.19 | YOLO26n, pipelined capture, bounding-box EMA smoothing |
-| v3.20 | Removed legacy NMS fallback, datetime fix, unit tests added |
+- Urgent audio is optimized for freshness, but active playback is not forcibly
+  interrupted because Bluetooth stream renegotiation is worse than waiting for a
+  short phrase to finish.
+- Queueing, cooldown, latency, wording, and ego-motion regressions are all
+  testable without hardware and are now covered in the advanced suite.

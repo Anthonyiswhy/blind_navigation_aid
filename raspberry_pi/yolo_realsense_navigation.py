@@ -1,70 +1,313 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.25 HEADLESS
-Builds on v3.24 with:
+Intelligent Navigation Assistant v3.26 HEADLESS
+Builds on v3.25 with:
 
-  FIX 1 — Synthesis blocks audio (root cause of 2-3s first-fire latency).
-    YOLO was holding 4 threads, leaving nothing for Piper when it tried to
-    synthesize concurrently. Changed to 3 YOLO threads + SEQUENTIAL mode.
-    Result: Piper gets guaranteed CPU time → synthesis stays ~150ms not 2-3s.
+  FIX 8 — Urgent speech can supersede lower-priority synthesis safely.
+    The v3.25 queue still allowed a bad case: a P2/P1 phrase could be in the
+    middle of Piper synthesis when a P0 URGENT arrived, forcing urgent to wait
+    for that lower-priority phrase to finish synthesizing and start playback.
+    This version lets urgent cancel a lower-priority phrase only while that
+    phrase is still in synthesis and has not started playback yet.
+    Once audio playback has started, it is never terminated.
+    This preserves the hard rule: NEVER send SIGTERM to aplay.
 
-  FIX 2 — Ego-Z outliers corrupt velocity → wrong "approaching" / missed alerts.
-    Raw bg-depth delta can spike to ±300–400 cm/s from a single bad frame
-    (e.g. depth dropout, IR saturation). These poison compensated_v:
-      raw_v = -90 cm/s, camera_z = -388 cm/s → compensated = +298 → "moving away"
-      → score *= 0.2 → SAFE → no alert fired.
-    Fix: hard-clamp raw_z_vel to ±160 cm/s (fast jogging) before it enters the
-    rolling history. Then gate ego_confident on rolling-window std < 40 cm/s.
-    When ego not confident → camera_z_velocity = 0 (no compensation) + neutral
-    wording ("object ahead at X m" instead of "approaching you").
+  FIX 9 — Partial neutral-wording fix in close-distance branches (Codex review).
+    v3.25 gated "approaching" wording on ego_reliable in TTC branches but not
+    in the very_close (<40cm) and close (<70cm) distance-override branches.
+    Those branches use the `approaching` flag which derives from raw uncorrected
+    velocity when ego is unreliable — wrong-perspective wording could still leak.
+    Fix: gate `approaching` wording on `ego_reliable` in all three distance
+    branches. When ego is unreliable -> neutral "{obj} {pos}, {dist}m" always.
 
-  FIX 3 — Track-ID churn burns cooldowns and causes alert storms.
-    Same physical person detected as #196 → #199 → #201 → #204 → each new ID
-    resets the cooldown key → URGENT re-fires every 1.5s for same object.
-    Zone-based keys instead: _voice_key(zone, class_family, tier, dist_bucket)
-    Survives complete ID replacement. Two adjacent people in same zone share a
-    cooldown (acceptable — user only needs one alert per zone per period).
-
-  FIX 4 — Presyn semaphore prevents CPU thrash on rapid track churn.
-    v3.24 could spawn dozens of concurrent Piper synthesis threads (one per
-    slot eviction). Each one eats a full core until completion.
-    Fix: Semaphore(1) → only one presyn thread runs at a time. Others bail
-    immediately if semaphore is taken.
-
-  FIX 5 — Shorter alert phrases reduce per-utterance latency.
-    "Stop! person on your left approaching fast, 4.4 meters" ≈ 3.2s spoken.
-    During those 3.2s the situation has changed. Trimmed to ≤12 words max.
-
-  FIX 6 — Per-alert latency timestamps in events.log.
-    Each spoken alert now logs: event_created, enqueued, tts_start, play_start,
-    play_end. Parseable with grep [LATENCY]. Enables p95 latency measurement
-    without hardware changes.
-
-  FIX 7 — BT cold-start silence reduced 300ms → 150ms.
-    Modern A2DP codec negotiation on AirPods/most BT headphones restores in
-    <100ms. 300ms was conservative; 150ms still safe but saves 150ms per phrase.
-
+INHERITED FROM v3.25:
+  - YOLO 3 threads + SEQUENTIAL (Piper gets 1 core)
+  - Ego-Z clamped to +/-160cm/s + confidence gating
+  - Zone-based cooldown keys (survives track-ID churn)
+  - Presyn semaphore (≤1 concurrent synthesis thread)
+  - Per-alert latency timestamps in events.log
+  - BT cold-start silence 150ms (was 300ms)
 INHERITED FROM v3.24:
   - 3-slot priority queue, pre-synthesis, stream-cold silence
-  - event_logger callback (no monkey-patch)
 INHERITED FROM v3.23:
-  - Velocity noise floor (3 + dist*0.02 cm/s) + TTC gate (>12s → static)
-  - Left / right / ahead position in voice messages
-  - float32 YOLO26n (INT8 is slower on Pi 4 ARM)
-  - Richer CSV + separate events.log
+  - Velocity noise floor + TTC gate (>12s -> static)
+  - Left/right/ahead position, richer CSV, events.log
 INHERITED FROM v3.22:
-  - Distance bucket cooldown keys
-  - ThreatTransitionTracker velocity guard + MIN_THREAT_FRAMES=12
+  - Distance bucket cooldown keys, ThreatTransitionTracker velocity guard
   - IMU hysteresis (8 frames)
 INHERITED FROM v3.21:
-  - Wall/obstacle depth fallback
-  - Busy area detection
+  - Wall/obstacle depth fallback, busy area detection
 INHERITED FROM v3.17–v3.20:
   - Ego-motion compensation (LK + background depth)
-  - YOLO26n NMS-free postprocess
-  - Pipelined capture (_capture_worker thread)
-  - Piper TTS
+  - YOLO26n NMS-free postprocess, pipelined capture, Piper TTS
 """
+import os
+import sys
+import io
+import time
+import csv
+import wave
+import threading
+import math
+import subprocess
+import tempfile
+import base64
+from datetime import datetime, timezone
+
+import queue
+import numpy as np
+import cv2
+import pyrealsense2 as rs
+import onnxruntime as ort
+
+# ============= CONFIGURATION =============
+MODEL_PATH = os.path.expanduser("~/yolo_models/yolo26n.onnx")
+IMG_SIZE = 224
+DETECTION_INTERVAL = 2
+CONF_THRESH = 0.38
+
+CRITICAL_DISTANCE = 50
+WARNING_DISTANCE = 150
+SAFE_DISTANCE = 300
+
+MAX_HUMAN_VELOCITY = 800
+MAX_OBJECT_VELOCITY = 2000
+
+MAX_DISTANCE_JUMP = 150
+TRACK_IOU_THRESH = 0.30
+DEPTH_CENTER_CROP_RATIO = 0.6
+DEPTH_STRIDE = 2
+MAX_DEPTH_SAMPLE_PIXELS = 4000
+
+IGNORED_CLASSES = {
+    "kite", "airplane", "boat", "train", "surfboard", "skis",
+    "snowboard", "frisbee", "sports ball", "baseball bat",
+    "baseball glove", "skateboard", "bird",
+}
+
+VOICE_ENABLED = True
+
+WALL_DISTANCE_CM  = 80
+WALL_CENTER_CROP  = 0.30
+WALL_MIN_VALID_PX = 200
+WALL_COOLDOWN_S   = 3.0
+
+BUSY_TRACK_THRESHOLD = 4
+BUSY_COOLDOWN_S      = 10.0
+
+VOICE_COOLDOWN = 5.0
+
+PIPER_MODEL  = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx")
+PIPER_CONFIG = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx.json")
+PIPER_SPEED  = 0.85
+PIPER_SILENCE_MS = 150
+
+IMU_I2C_ADDR        = 0x68
+IMU_MOTION_THRESHOLD = 0.05
+IMU_WINDOW_SIZE     = 20
+IMU_READ_INTERVAL   = 0.05
+IMU_HYSTERESIS_FRAMES = 8
+
+SCENE_MODEL       = "claude-haiku-4-5-20251001"
+SCENE_MAX_TOKENS  = 150
+SCENE_JPEG_QUALITY = 60
+SCENE_COOLDOWN    = 8.0
+SCENE_MAX_OBJECTS = 5
+
+SNAPSHOT_FOLDER = os.path.expanduser("~/blindnav_snapshots")
+os.makedirs(SNAPSHOT_FOLDER, exist_ok=True)
+
+RECORD_TO_FILE = ""
+PLAYBACK_FILE  = ""
+PLAYBACK_REPEAT = True
+
+BAG_FOLDER = os.path.expanduser("~/bags")
+CSV_FOLDER = os.path.expanduser("~/blindnav_logs")
+os.makedirs(BAG_FOLDER, exist_ok=True)
+os.makedirs(CSV_FOLDER, exist_ok=True)
+CSV_FILE = os.path.join(CSV_FOLDER, datetime.now(timezone.utc).strftime("log_%Y%m%d_%H%M%S.csv"))
+
+# ============= YOLO CLASS NAMES =============
+CLASS_NAMES = [
+    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
+    "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
+    "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack",
+    "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball",
+    "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket",
+    "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
+    "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
+    "couch", "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote",
+    "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
+    "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
+]
+
+OBJECT_THREAT_WEIGHTS = {
+    "person": 1.5, "bicycle": 2.0, "car": 3.0, "motorcycle": 2.5,
+    "truck": 3.5, "bus": 3.5, "train": 4.0, "dog": 1.3,
+    "horse": 2.0, "bear": 4.0, "skateboard": 1.5,
+    "chair": 0.8, "bench": 0.9, "potted plant": 0.7,
+    "bottle": 0.3, "cup": 0.3, "couch": 0.6, "bed": 0.5,
+    "dining table": 0.7,
+}
+
+# ============= ZONE-BASED VOICE KEY =============
+_FURNITURE_CLASSES   = {"chair","couch","bed","bench","dining table","potted plant"}
+_ELECTRONICS_CLASSES = {"tv","laptop","keyboard","mouse","remote","cell phone",
+                        "microwave","oven","toaster"}
+_VEHICLE_CLASSES     = {"car","truck","bus","motorcycle","bicycle"}
+
+def _voice_key(pos: str, class_name: str, tier: str, dbucket: int = 0) -> str:
+    if class_name in _FURNITURE_CLASSES:    family = "furniture"
+    elif class_name in _ELECTRONICS_CLASSES: family = "electronics"
+    elif class_name in _VEHICLE_CLASSES:    family = "vehicle"
+    elif class_name == "person":            family = "person"
+    else:                                   family = "object"
+    zone = "left" if "left" in pos else "right" if "right" in pos else "center"
+    return f"{zone}_{family}_{tier}_{dbucket}"
+
+
+def _select_voice_message(obj, pos, dist_m, dist_cm, vel,
+                          user_moving, ego_reliable,
+                          approaching, very_close, close, fast_approach, ttc):
+    """
+    Pure function: given threat state -> return (tier, message) or (None, None).
+
+    tier: 'urgent' | 'warning' | 'awareness' | None
+    Extracted from main() so it can be unit-tested without hardware.
+
+    ego_reliable gates ALL directional ("approaching", "closer") wording.
+    When unreliable -> neutral "{obj} {pos}, {dist}m" at appropriate tier.
+    """
+    if very_close:
+        # FIX 9: gate approaching wording on ego_reliable
+        if approaching and ego_reliable and not user_moving:
+            msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
+        elif approaching and ego_reliable and user_moving:
+            msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
+        else:
+            msg = f"{obj} {pos}, {dist_m:.1f} meters"
+        return "urgent", msg
+
+    if close:
+        # FIX 9: gate approaching wording on ego_reliable
+        if approaching and ego_reliable and user_moving:
+            msg = f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
+        elif approaching and ego_reliable and not user_moving:
+            msg = f"{obj} {pos} closer, {dist_m:.1f} meters"
+        else:
+            msg = f"{obj} {pos}, {dist_m:.1f} meters"
+        return "warning", msg
+
+    if ttc < 2:
+        if ego_reliable and fast_approach:
+            msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
+        elif ego_reliable and approaching:
+            msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
+        else:
+            msg = f"{obj} {pos}, {dist_m:.1f} meters"
+        return "urgent", msg
+
+    if ttc < 4:
+        msg = (f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
+               if ego_reliable else f"{obj} {pos}, {dist_m:.1f} meters")
+        return "warning", msg
+
+    if ttc < 8:
+        return "awareness", f"Heads up, {obj} {pos}, {dist_m:.1f} meters"
+
+    return None, None
+
+
+# ============= PIPER VOICE =============
+class PiperVoice:
+    def __init__(self):
+        self.available = False
+        self._voice = None
+        self._syn_config = None
+        self._sample_rate = 22050
+        self._n_channels = 1
+        self._sampwidth = 2
+        self._use_piper = False
+        try:
+            from piper.voice import PiperVoice as _PiperVoice
+            from piper.config import SynthesisConfig
+            if not os.path.exists(PIPER_MODEL):
+                self._init_espeak(); return
+            self._voice = _PiperVoice.load(PIPER_MODEL, config_path=PIPER_CONFIG)
+            self._syn_config = SynthesisConfig(length_scale=PIPER_SPEED)
+            print("[VOICE] Warming up Piper TTS...")
+            buf = io.BytesIO()
+            with wave.open(buf, "wb") as wav:
+                self._voice.synthesize_wav("ready", wav, syn_config=self._syn_config)
+            buf.seek(0)
+            with wave.open(buf, "rb") as wr:
+                self._sample_rate = wr.getframerate()
+                self._n_channels  = wr.getnchannels()
+                self._sampwidth   = wr.getsampwidth()
+            self.available = True
+            self._use_piper = True
+            print(f"[OK] Piper TTS ready ({self._sample_rate}Hz, speed={PIPER_SPEED})")
+        except ImportError:
+            print("[VOICE] piper-tts not installed — falling back to espeak")
+            self._init_espeak()
+        except Exception as e:
+            print(f"[VOICE] Piper init failed: {e} — falling back to espeak")
+            self._init_espeak()
+
+    def _init_espeak(self):
+        self._use_piper = False
+        try:
+            result = subprocess.run(["espeak", "--version"], capture_output=True, timeout=2, check=False)
+            self.available = result.returncode == 0
+            if self.available: print("[OK] Voice fallback: espeak")
+        except Exception:
+            self.available = False
+            print("[WARN] No TTS available")
+
+    def synthesize_to_file(self, text, silence_ms=0):
+        try:
+            speech_buf = io.BytesIO()
+            with wave.open(speech_buf, "wb") as wav:
+                self._voice.synthesize_wav(text, wav, syn_config=self._syn_config)
+            speech_buf.seek(0)
+            with wave.open(speech_buf, "rb") as wr:
+                params = wr.getparams()
+                speech_frames = wr.readframes(wr.getnframes())
+            if silence_ms > 0:
+                silence_samples = int(params.framerate * params.nchannels * silence_ms / 1000)
+                silence_frames  = b"\x00" * (silence_samples * params.sampwidth)
+            else:
+                silence_frames = b""
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                tmpfile = f.name
+            with wave.open(tmpfile, "wb") as out:
+                out.setparams(params)
+                out.writeframes(silence_frames + speech_frames)
+            return tmpfile
+        except Exception as e:
+            print(f"[VOICE] Synthesis error: {e}")
+            return None
+
+    def prepend_silence(self, wav_path, silence_ms):
+        try:
+            with wave.open(wav_path, "rb") as wr:
+                params = wr.getparams()
+                speech_frames = wr.readframes(wr.getnframes())
+            silence_samples = int(params.framerate * params.nchannels * silence_ms / 1000)
+            silence_frames  = b"\x00" * (silence_samples * params.sampwidth)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                newpath = f.name
+            with wave.open(newpath, "wb") as out:
+                out.setparams(params)
+                out.writeframes(silence_frames + speech_frames)
+            try: os.unlink(wav_path)
+            except Exception: pass
+            return newpath
+        except Exception as e:
+            print(f"[VOICE] Silence prepend error: {e}")
+            return wav_path
+
+
 import os
 import sys
 import io
@@ -298,19 +541,24 @@ class PiperVoice:
             return wav_path
 
 
-# ============= VOICE ASSISTANT (v3.25) =============
+# ============= VOICE ASSISTANT (v3.26) =============
 class VoiceAssistant:
     """
-    3-slot priority queue with pre-synthesis, per-alert latency logging,
-    presyn semaphore (FIX 4), and injectable TTS/player for testing.
+    3-slot priority queue with pre-synthesis, safe urgent supersession (FIX 8),
+    per-alert
+    latency logging, presyn semaphore, and injectable TTS/player for testing.
+
+    SAFE URGENT SUPERSESSION (FIX 8):
+      When PRIO_URGENT arrives while a PRIO_WARNING or PRIO_AWARE phrase is
+      still synthesizing, the lower-priority phrase is canceled before
+      playback begins and urgent is spoken next.
+      Once playback has started, it is never interrupted.
 
     Constructor params:
-      event_logger:   callable(str) → written to events.log for each spoken alert
-                      and each [LATENCY] line.
-      _tts_override:  inject a fake TTS object for unit tests (default: PiperVoice())
-      _player_fn:     inject a fake player for unit tests.
-                      Signature: (wav_path: str) -> object with .wait() method
-                      Default: subprocess.Popen(["aplay", wav_path])
+      event_logger:  callable(str) for events.log
+      _tts_override: inject fake TTS for unit tests
+      _player_fn:    inject fake player for unit tests
+                     Signature: (wav_path) -> object with .wait()
     """
 
     PRIO_URGENT  = 0
@@ -322,26 +570,26 @@ class VoiceAssistant:
     COOLDOWN_AWARENESS = 8.0
     COOLDOWN_CLEARED   = 4.0
 
-    STREAM_COLD_S = 1.5
+    STREAM_COLD_S    = 1.5
 
     _TTL = {0: 3.0, 1: 5.0, 2: 8.0}
 
     def __init__(self, event_logger=None, _tts_override=None, _player_fn=None):
         self._event_logger = event_logger
-        self._player_fn    = _player_fn   # None → use aplay
+        self._player_fn    = _player_fn
         self.is_speaking   = False
         self._lock         = threading.Lock()
 
-        # Pending slots: one per priority
-        # Entry: (text, key, cooldown, label, enqueued_at, event_created_ts) or None
         self._pending  = {0: None, 1: None, 2: None}
-        # Pre-synthesized WAV paths: (path, text) or None
         self._prefetch = {0: None, 1: None, 2: None}
 
-        # FIX 4: one presyn thread at a time — prevents CPU thrash on track churn
         self._presyn_sem = threading.Semaphore(1)
 
         self._current_proc    = None
+        self._current_prio    = 3
+        self._speech_seq      = 0
+        self._active_speech_id = None
+        self._cancel_before_play = set()
         self._last_announcement = {}
         self._last_speech_end   = 0.0
 
@@ -401,7 +649,16 @@ class VoiceAssistant:
             self._pending[priority] = (text, key, cooldown, label,
                                        enqueued_ts, event_created_ts)
 
-            # FIX 4: only start presyn if semaphore is free (non-blocking)
+            # FIX 8: urgent may supersede lower-priority speech only before
+            # playback begins. Never terminate aplay once it is active.
+            if (priority == self.PRIO_URGENT
+                    and self._current_prio > self.PRIO_URGENT
+                    and self._active_speech_id is not None
+                    and self._current_proc is None):
+                self._cancel_before_play.add(self._active_speech_id)
+                print("[VOICE] Superseding lower-priority synthesis for URGENT")
+
+            # Start presyn if semaphore free
             if self._tts._use_piper:
                 existing = self._prefetch[priority]
                 if existing is None or existing[1] != text:
@@ -446,7 +703,11 @@ class VoiceAssistant:
         """Start speech. Must hold self._lock."""
         if key and cooldown > 0:
             self._last_announcement[key] = time.time()
-        self.is_speaking = True
+        self._speech_seq += 1
+        speech_id = self._speech_seq
+        self.is_speaking   = True
+        self._current_prio = priority
+        self._active_speech_id = speech_id
 
         log_msg = f"[VOICE] {label}: \"{text}\""
         print(log_msg)
@@ -463,15 +724,16 @@ class VoiceAssistant:
 
         threading.Thread(
             target=self._speak_thread,
-            args=(text, prefetched, label, event_created_ts, enqueued_ts),
+            args=(text, prefetched, label, event_created_ts, enqueued_ts, speech_id),
             daemon=True).start()
 
     def _speak_thread(self, text, prefetched_wav=None, label="",
-                      event_created_ts=None, enqueued_ts=None):
+                      event_created_ts=None, enqueued_ts=None, speech_id=None):
         """Play audio. Logs per-alert latency timestamps."""
         tts_start_ts  = None
         play_start_ts = None
         play_end_ts   = None
+        canceled_before_play = False
         try:
             if self._tts._use_piper:
                 with self._lock:
@@ -498,21 +760,29 @@ class VoiceAssistant:
                         self._presyn_sem.release()
 
                 if tmpfile:
-                    play_start_ts = time.time()
-                    if self._player_fn is not None:
-                        proc = self._player_fn(tmpfile)
+                    with self._lock:
+                        if speech_id in self._cancel_before_play:
+                            self._cancel_before_play.remove(speech_id)
+                            canceled_before_play = True
+                    if canceled_before_play:
+                        try: os.unlink(tmpfile)
+                        except Exception: pass
                     else:
-                        proc = subprocess.Popen(["aplay", tmpfile],
-                                                stderr=subprocess.DEVNULL)
-                    with self._lock:
-                        self._current_proc = proc
-                    proc.wait()
-                    play_end_ts = time.time()
-                    with self._lock:
-                        self._current_proc    = None
-                        self._last_speech_end = play_end_ts
-                    try: os.unlink(tmpfile)
-                    except Exception: pass
+                        play_start_ts = time.time()
+                        if self._player_fn is not None:
+                            proc = self._player_fn(tmpfile)
+                        else:
+                            proc = subprocess.Popen(["aplay", tmpfile],
+                                                    stderr=subprocess.DEVNULL)
+                        with self._lock:
+                            self._current_proc = proc
+                        proc.wait()
+                        play_end_ts = time.time()
+                        with self._lock:
+                            self._current_proc    = None
+                            self._last_speech_end = play_end_ts
+                        try: os.unlink(tmpfile)
+                        except Exception: pass
             else:
                 tts_start_ts  = time.time()
                 play_start_ts = time.time()
@@ -546,9 +816,16 @@ class VoiceAssistant:
                     f" play_end={((play_end_ts    or t0) - t0):.3f}s"
                 )
                 self._event_logger(lat_line)
+            if canceled_before_play:
+                msg = f"[VOICE] Superseded before playback: \"{text}\""
+                print(msg)
+                if self._event_logger:
+                    self._event_logger(msg)
 
             with self._lock:
-                self.is_speaking = False
+                self.is_speaking   = False
+                self._current_prio = 3
+                self._active_speech_id = None
                 # Drain highest-priority non-None pending slot
                 for prio in range(3):
                     pend = self._pending[prio]
@@ -1034,7 +1311,7 @@ class EgoMotionCompensator:
     """
     FIX 2: Clamped ego-Z + confidence gating.
 
-    Raw background-depth delta can spike to ±300–400 cm/s from a single
+    Raw background-depth delta can spike to +/-300–400 cm/s from a single
     bad frame (IR saturation, depth dropout, abrupt pan). Before v3.25 these
     values went directly into the rolling history and produced absurd smoothed
     estimates that corrupted every track velocity that frame.
@@ -1042,7 +1319,7 @@ class EgoMotionCompensator:
     Changes:
       _MAX_Z_CM_S = 160.0 cm/s (fast jogging) — hard ceiling on raw estimate
       ego_confident: True only when rolling-window std < 40 cm/s
-      camera_z_velocity → 0 when not confident (no compensation worse than
+      camera_z_velocity -> 0 when not confident (no compensation worse than
       wrong compensation)
     """
     _LK_PARAMS = dict(winSize=(15,15), maxLevel=3,
@@ -1139,9 +1416,9 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.25 HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.26 HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: synthesis latency, ego-Z outliers, zone keys, presyn sem")
+    print("FIXES: safe urgent supersession, neutral wording, latency, zone keys")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")
@@ -1236,7 +1513,7 @@ def main():
     print(f"[KEYS]  d = describe scene | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
     print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g")
-    print(f"[VOICE] 3-slot priority queue | YOLO=3 threads | silence={PIPER_SILENCE_MS}ms\n")
+    print(f"[VOICE] 3-slot priority queue | no aplay SIGTERM | silence={PIPER_SILENCE_MS}ms\n")
 
     frame_count       = 0
     last_threat_print = time.time()
@@ -1354,49 +1631,22 @@ def main():
                             last_paused_print = now
                     else:
                         dbucket = int(dist_cm // 30)
+                        tier, msg = _select_voice_message(
+                            obj, pos, dist_m, dist_cm, vel,
+                            user_moving, ego_reliable,
+                            approaching, very_close, close, fast_approach, ttc)
 
-                        # FIX 5: shorter phrases, FIX 2: neutral wording when ego uncertain
-                        if very_close:
-                            if approaching and not user_moving:
-                                msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
-                            elif approaching and user_moving:
-                                msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
-                            else:
-                                msg = f"{obj} {pos}, {dist_m:.1f} meters"
+                        if tier == "urgent":
                             voice.speak_urgent(
-                                msg, key=_voice_key(pos, obj, "dist_urg", dbucket))
-
-                        elif close:
-                            if approaching and user_moving:
-                                msg = f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
-                            elif approaching and not user_moving:
-                                msg = f"{obj} {pos} closer, {dist_m:.1f} meters"
-                            else:
-                                msg = f"{obj} {pos}, {dist_m:.1f} meters"
+                                msg, key=_voice_key(pos, obj,
+                                    "dist_urg" if (very_close or close) else "ttc_urg",
+                                    dbucket))
+                        elif tier == "warning":
                             voice.speak_warning(
-                                msg, key=_voice_key(pos, obj, "dist_wrn", dbucket))
-
-                        elif ttc < 2:
-                            if ego_reliable and fast_approach:
-                                msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
-                            elif ego_reliable and approaching:
-                                msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
-                            else:
-                                # FIX 2: ego not confident → neutral, no directional claim
-                                msg = f"{obj} {pos}, {dist_m:.1f} meters"
-                            voice.speak_urgent(
-                                msg, key=_voice_key(pos, obj, "ttc_urg", dbucket))
-
-                        elif ttc < 4:
-                            if ego_reliable:
-                                msg = f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
-                            else:
-                                msg = f"{obj} {pos}, {dist_m:.1f} meters"
-                            voice.speak_warning(
-                                msg, key=_voice_key(pos, obj, "ttc_wrn", dbucket))
-
-                        elif ttc < 8:
-                            msg = f"Heads up, {obj} {pos}, {dist_m:.1f} meters"
+                                msg, key=_voice_key(pos, obj,
+                                    "dist_wrn" if close else "ttc_wrn",
+                                    dbucket))
+                        elif tier == "awareness":
                             voice.speak_awareness(
                                 msg, key=_voice_key(pos, obj, "aware", 0))
 
