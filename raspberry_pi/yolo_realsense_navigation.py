@@ -107,6 +107,8 @@ IMU_MOTION_THRESHOLD = 0.05
 IMU_WINDOW_SIZE     = 20
 IMU_READ_INTERVAL   = 0.05
 IMU_HYSTERESIS_FRAMES = 8
+IMU_MAX_IO_ERRORS   = 3
+IMU_REINIT_BACKOFF_S = 1.0
 
 SCENE_MODEL       = "claude-haiku-4-5-20251001"
 SCENE_MAX_TOKENS  = 150
@@ -777,15 +779,12 @@ class SceneDescriber:
 # ============= IMU MOTION DETECTOR =============
 class MotionDetector:
     def __init__(self):
-        try:
-            from icm20948 import ICM20948
-            self.imu = ICM20948(i2c_addr=IMU_I2C_ADDR)
-            self.available = True
-            print(f"[OK] IMU initialized (ICM-20948 at 0x{IMU_I2C_ADDR:02x})")
-        except Exception as e:
-            print(f"[WARN] IMU unavailable: {e}")
-            self.available = False
-            self.imu = None
+        self.imu = None
+        self.available = False
+        self._io_error_count = 0
+        self._last_reinit_attempt = 0.0
+        self._imu_factory = None
+        self._init_imu(initial=True)
         self.accel_history = []
         self.last_read_time = 0
         self._last_moving_state = True
@@ -793,17 +792,62 @@ class MotionDetector:
         self._candidate_state = True
         self._candidate_count = 0
 
+    def _init_imu(self, initial=False):
+        try:
+            from icm20948 import ICM20948
+            self._imu_factory = ICM20948
+            self.imu = self._imu_factory(i2c_addr=IMU_I2C_ADDR)
+            self.available = True
+            self._io_error_count = 0
+            if initial:
+                print(f"[OK] IMU initialized (ICM-20948 at 0x{IMU_I2C_ADDR:02x})")
+            else:
+                print("[OK] IMU reinitialized after I/O error")
+            return True
+        except Exception as e:
+            if initial:
+                print(f"[WARN] IMU unavailable at startup: {e}. Running without IMU.")
+            else:
+                print(f"[WARN] IMU reinit failed: {e}. Retrying in background.")
+            self.available = False
+            self.imu = None
+            return False
+
+    def _set_imu_offline(self, reason):
+        if self.available or self.imu is not None:
+            print(f"[WARN] IMU offline: {reason}. Will retry initialization.")
+        self.available = False
+        self.imu = None
+
+    def _maybe_reinit(self, now):
+        if now - self._last_reinit_attempt < IMU_REINIT_BACKOFF_S:
+            return
+        self._last_reinit_attempt = now
+        self._init_imu(initial=False)
+
     def update(self):
-        if not self.available: return
         now = time.time()
+        if not self.available:
+            self._maybe_reinit(now)
+            return
         if now - self.last_read_time < IMU_READ_INTERVAL: return
         self.last_read_time = now
         try:
             ax, ay, az, _, _, _ = self.imu.read_accelerometer_gyro_data()
+            self._io_error_count = 0
             self.accel_history.append(math.sqrt(ax**2 + ay**2 + az**2))
             if len(self.accel_history) > IMU_WINDOW_SIZE:
                 self.accel_history.pop(0)
-        except Exception: pass
+        except OSError as e:
+            self._io_error_count += 1
+            if getattr(e, "errno", None) == 5 and self._io_error_count >= IMU_MAX_IO_ERRORS:
+                self._set_imu_offline(f"I2C read failed with errno 5 ({e})")
+                self._maybe_reinit(now)
+        except Exception:
+            self._io_error_count += 1
+            if self._io_error_count >= IMU_MAX_IO_ERRORS:
+                self._set_imu_offline("repeated IMU read errors")
+                self._maybe_reinit(now)
 
     def is_moving(self):
         if not self.available or len(self.accel_history) < 10:

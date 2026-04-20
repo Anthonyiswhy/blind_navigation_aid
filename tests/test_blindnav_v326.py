@@ -1068,3 +1068,39 @@ class TestGetPosition:
     ])
     def test_position_zones(self, cx, expected):
         assert MOD.get_position(self._t(cx), 640) == expected
+
+
+class TestMotionDetectorIMUFallback:
+    def test_reinitializes_after_repeated_errno5(self, monkeypatch):
+        class FailingIMU:
+            def read_accelerometer_gyro_data(self):
+                raise OSError(5, "Input/output error")
+
+        class WorkingIMU:
+            def read_accelerometer_gyro_data(self):
+                return (0.0, 0.0, 1.0, 0.0, 0.0, 0.0)
+
+        class Factory:
+            def __init__(self):
+                self.calls = 0
+
+            def __call__(self, i2c_addr=None):
+                self.calls += 1
+                return FailingIMU() if self.calls == 1 else WorkingIMU()
+
+        factory = Factory()
+        fake_icm = _make_stub("icm20948", ICM20948=factory)
+        monkeypatch.setitem(sys.modules, "icm20948", fake_icm)
+
+        motion = MOD.MotionDetector()
+        assert motion.available is True
+
+        motion.last_read_time = -1e9
+        for _ in range(MOD.IMU_MAX_IO_ERRORS):
+            motion.update()
+            motion.last_read_time = -1e9
+
+        assert factory.calls >= 2
+        assert motion.available is True
+        assert motion.imu is not None
+        assert motion._io_error_count == 0
