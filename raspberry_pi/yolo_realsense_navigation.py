@@ -101,6 +101,11 @@ PIPER_MODEL  = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx")
 PIPER_CONFIG = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx.json")
 PIPER_SPEED  = 0.85
 PIPER_SILENCE_MS = 150
+ALERT_TTS_MODE = os.environ.get("BLINDNAV_ALERT_TTS", "espeak").strip().lower()
+FAST_ALERT_SILENCE_MS = 220
+ESPEAK_ALERT_SPEED = 175
+ESPEAK_ALERT_GAP = 8
+ESPEAK_ALERT_AMPLITUDE = 180
 
 IMU_I2C_ADDR        = 0x68
 IMU_MOTION_THRESHOLD = 0.05
@@ -228,6 +233,7 @@ class PiperVoice:
         self._n_channels = 1
         self._sampwidth = 2
         self._use_piper = False
+        self._espeak_cmd = self._detect_espeak()
         try:
             from piper.voice import PiperVoice as _PiperVoice
             from piper.config import SynthesisConfig
@@ -256,13 +262,23 @@ class PiperVoice:
 
     def _init_espeak(self):
         self._use_piper = False
-        try:
-            result = subprocess.run(["espeak", "--version"], capture_output=True, timeout=2, check=False)
-            self.available = result.returncode == 0
-            if self.available: print("[OK] Voice fallback: espeak")
-        except Exception:
-            self.available = False
+        self.available = self._espeak_cmd is not None
+        if self.available:
+            print(f"[OK] Voice fallback: {self._espeak_cmd}")
+        else:
             print("[WARN] No TTS available")
+
+    @staticmethod
+    def _detect_espeak():
+        for cmd in ("espeak-ng", "espeak"):
+            try:
+                result = subprocess.run([cmd, "--version"], capture_output=True,
+                                        timeout=2, check=False)
+                if result.returncode == 0:
+                    return cmd
+            except Exception:
+                pass
+        return None
 
     def synthesize_to_file(self, text, silence_ms=0):
         try:
@@ -306,6 +322,38 @@ class PiperVoice:
         except Exception as e:
             print(f"[VOICE] Silence prepend error: {e}")
             return wav_path
+
+    def synthesize_alert_to_file(self, text, silence_ms=0):
+        if self._espeak_cmd is None:
+            return self.synthesize_to_file(text, silence_ms=silence_ms)
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                tmpfile = f.name
+            result = subprocess.run(
+                [
+                    self._espeak_cmd,
+                    "-s", str(ESPEAK_ALERT_SPEED),
+                    "-p", "40",
+                    "-g", str(ESPEAK_ALERT_GAP),
+                    "-a", str(ESPEAK_ALERT_AMPLITUDE),
+                    "-w", tmpfile,
+                    text,
+                ],
+                capture_output=True,
+                timeout=5,
+                check=False,
+            )
+            if result.returncode != 0:
+                try:
+                    os.unlink(tmpfile)
+                except Exception:
+                    pass
+                return self.synthesize_to_file(text, silence_ms=silence_ms)
+            if silence_ms > 0:
+                return self.prepend_silence(tmpfile, silence_ms)
+            return tmpfile
+        except Exception:
+            return self.synthesize_to_file(text, silence_ms=silence_ms)
 
 
 
@@ -360,6 +408,10 @@ class VoiceAssistant:
 
         self._tts = _tts_override if _tts_override is not None else PiperVoice()
         self.available = self._tts.available
+        self._prefer_fast_alert_tts = (
+            ALERT_TTS_MODE == "espeak"
+            and hasattr(self._tts, "synthesize_alert_to_file")
+        )
 
     # ---- PUBLIC API ----
 
@@ -415,7 +467,7 @@ class VoiceAssistant:
                                        enqueued_ts, event_created_ts)
 
             # Start presyn if semaphore free
-            if self._tts._use_piper:
+            if self._tts._use_piper and not self._prefer_fast_alert_tts:
                 existing = self._prefetch[priority]
                 if existing is None or existing[1] != text:
                     if existing is not None:
@@ -468,7 +520,9 @@ class VoiceAssistant:
 
         # Claim pre-synthesized WAV if text matches
         prefetched = None
-        if self._tts._use_piper and self._prefetch[priority] is not None:
+        if (self._tts._use_piper
+                and not self._prefer_fast_alert_tts
+                and self._prefetch[priority] is not None):
             pf = self._prefetch[priority]
             if pf[1] == text:
                 prefetched = pf[0]
@@ -500,16 +554,20 @@ class VoiceAssistant:
                     else:
                         tmpfile = prefetched_wav
                 else:
-                    # FIX: use semaphore for direct synthesis too — prevents
-                    # speak_thread and a stale presyn_worker from both calling
-                    # synthesize_to_file at the same time (blocking acquire is
-                    # fine here since _speak_thread runs on its own daemon thread)
-                    self._presyn_sem.acquire()
-                    try:
-                        silence_ms = PIPER_SILENCE_MS if need_silence else 0
-                        tmpfile = self._tts.synthesize_to_file(text, silence_ms=silence_ms)
-                    finally:
-                        self._presyn_sem.release()
+                    silence_ms = ((FAST_ALERT_SILENCE_MS if self._prefer_fast_alert_tts
+                                   else PIPER_SILENCE_MS) if need_silence else 0)
+                    if self._prefer_fast_alert_tts:
+                        tmpfile = self._tts.synthesize_alert_to_file(text, silence_ms=silence_ms)
+                    else:
+                        # FIX: use semaphore for direct synthesis too — prevents
+                        # speak_thread and a stale presyn_worker from both calling
+                        # synthesize_to_file at the same time (blocking acquire is
+                        # fine here since _speak_thread runs on its own daemon thread)
+                        self._presyn_sem.acquire()
+                        try:
+                            tmpfile = self._tts.synthesize_to_file(text, silence_ms=silence_ms)
+                        finally:
+                            self._presyn_sem.release()
 
                 if tmpfile:
                     with self._lock:
@@ -928,15 +986,12 @@ class Track:
 # ============= THREAT ASSESSMENT =============
 class ThreatAssessment:
     @staticmethod
-    def calculate_threat_score(track):
+    def calculate_threat_score(track, user_moving=False, ego_reliable=True):
         if track.distance is None: return 0.0
-        if not track.velocity_valid:
-            if track.distance < CRITICAL_DISTANCE: return 50.0
-            if track.distance < WARNING_DISTANCE:  return 20.0
-            return 0.0
+        velocity_reliable = track.velocity_valid and (ego_reliable or not user_moving)
 
         d = track.distance
-        v = track.velocity
+        v = track.velocity if velocity_reliable else 0.0
 
         # v3.23: dynamic noise floor + TTC gate
         noise_floor = 3.0 + d * 0.02
@@ -974,8 +1029,10 @@ class ThreatAssessment:
         return "SAFE"
 
     @staticmethod
-    def prioritize_threats(tracks):
-        scored = [(ThreatAssessment.calculate_threat_score(t), t) for t in tracks]
+    def prioritize_threats(tracks, user_moving=False, ego_reliable=True):
+        scored = [(ThreatAssessment.calculate_threat_score(
+                    t, user_moving=user_moving, ego_reliable=ego_reliable), t)
+                  for t in tracks]
         scored.sort(reverse=True, key=lambda x: x[0])
         return scored
 
@@ -1265,7 +1322,7 @@ def main():
     print(f"[KEYS]  d = describe scene | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
     print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g")
-    print(f"[VOICE] 3-slot priority queue | no aplay SIGTERM | silence={PIPER_SILENCE_MS}ms\n")
+    print(f"[VOICE] 3-slot priority queue | no aplay SIGTERM | alert_tts={ALERT_TTS_MODE} | silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE == 'espeak' else PIPER_SILENCE_MS}ms\n")
 
     frame_count       = 0
     last_threat_print = time.time()
@@ -1325,7 +1382,8 @@ def main():
                       else "[IMU] Stationary — static objects suppressed")
 
             scene.capture_and_describe(color_image, tracks)
-            threats = ThreatAssessment.prioritize_threats(tracks)
+            threats = ThreatAssessment.prioritize_threats(
+                tracks, user_moving=user_moving, ego_reliable=ego_reliable)
             transition_tracker.update(threats, voice)
 
             # Busy area
@@ -1367,7 +1425,8 @@ def main():
                 pos     = get_position(track, w)
 
                 if track.seen_frames >= 3:
-                    if track.velocity_valid and vel < -2:
+                    ttc_allowed = track.velocity_valid and vel < -2 and (ego_reliable or not user_moving)
+                    if ttc_allowed:
                         ttc = dist_cm / abs(vel)
                     else:
                         ttc = 999.0
@@ -1402,7 +1461,7 @@ def main():
                             voice.speak_awareness(
                                 msg, key=_voice_key(pos, obj, "aware", 0))
 
-                    if ttc < 100:
+                    if ttc_allowed and ttc < 100:
                         tier = ("URGENT" if ttc<2 else "WARN" if ttc<4
                                 else "AWARE" if ttc<8 else "NONE")
                         line = (f"[TTC]  {obj}#{track.id}(f{track.seen_frames}) {pos}: "
