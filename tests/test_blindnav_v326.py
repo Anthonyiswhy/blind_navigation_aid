@@ -158,6 +158,19 @@ class FakeTTS:
         return _make_wav(silence_ms)
 
 
+class FakeFastAlertTTS(FakeTTS):
+    def __init__(self, synth_delay=0.02):
+        super().__init__(synth_delay=synth_delay)
+        self.alert_synthesized = []
+
+    def synthesize_alert_to_file(self, text, silence_ms=0):
+        start = time.time()
+        time.sleep(self.synth_delay)
+        end = time.time()
+        self.alert_synthesized.append((text, start, end, silence_ms))
+        return _make_wav(silence_ms)
+
+
 def _make_wav(silence_ms=0):
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
         path = f.name
@@ -383,6 +396,24 @@ class TestThreatScoringTruthTable:
         assert (MOD.ThreatAssessment.calculate_threat_score(t_car) >
                 MOD.ThreatAssessment.calculate_threat_score(t_bottle))
 
+    def test_far_velocity_suppressed_when_user_moving_and_ego_bad(self):
+        track = self._make_track(722, -103.6, "person", 0.5)
+        score = MOD.ThreatAssessment.calculate_threat_score(
+            track, user_moving=True, ego_reliable=False)
+        level = MOD.ThreatAssessment.get_threat_level(score)
+        assert level == "SAFE", (
+            f"bad ego should suppress far false CRITICALs, got {score:.1f}/{level}"
+        )
+
+    def test_close_distance_stays_critical_when_user_moving_and_ego_bad(self):
+        track = self._make_track(27, -29.1, "person", 0.5)
+        score = MOD.ThreatAssessment.calculate_threat_score(
+            track, user_moving=True, ego_reliable=False)
+        level = MOD.ThreatAssessment.get_threat_level(score)
+        assert level == "CRITICAL", (
+            f"close obstacle must stay CRITICAL with bad ego, got {score:.1f}/{level}"
+        )
+
 
 # ============================================================
 # TRUTH TABLE: _voice_key zone mapping
@@ -451,6 +482,35 @@ class TestSourceStructure:
         import re
         assert len(re.findall(r"^def _voice_key\(", src, flags=re.MULTILINE)) == 1
         assert len(re.findall(r"^class PiperVoice:", src, flags=re.MULTILINE)) == 1
+
+
+class TestFastAlertTTS:
+
+    def test_urgent_prefers_fast_alert_synth(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "espeak"):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_urgent("person ahead, 0.3 meters")
+        assert wait_for_idle(va, timeout=2.0)
+        assert len(fake_tts.alert_synthesized) == 1
+        assert len(fake_tts.synthesized) == 0
+
+    def test_fast_alert_path_uses_longer_cold_start_silence(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "espeak"):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        with va._lock:
+            va._last_speech_end = time.time() - 2.0
+        va.speak_warning("keyboard ahead, 0.5 meters")
+        assert wait_for_idle(va, timeout=2.0)
+        assert fake_tts.alert_synthesized, "expected fast alert synthesis to run"
+        assert fake_tts.alert_synthesized[0][3] == MOD.FAST_ALERT_SILENCE_MS
 
 
 
