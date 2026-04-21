@@ -1,7 +1,20 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.26b HEADLESS
-Builds on v3.25 with:
+Intelligent Navigation Assistant v3.27 HEADLESS
+Builds on v3.26b with:
+
+  FIX 10 - Fast alert TTS plus safer bad-ego wording for urgent warnings.
+    Urgent alerts can use the faster alert voice path, while close-range
+    wording falls back to neutral phrasing when ego motion is unreliable.
+
+  FIX 11 - Shared filtered motion across scoring, TTC, logs, and CSV.
+    Large depth jumps now require confirmation, small far-range drift is
+    zeroed before it becomes fake approach velocity, and left/right/ahead uses
+    wide-angle-aware hysteresis instead of a naive thirds split.
+
+  FIX 12 - Shutdown is cleaner.
+    Voice shutdown blocks new enqueues, clears pending speech safely, and the
+    capture thread is joined during cleanup to avoid the post-exit abort path.
 
   FIX 8 — Urgent speech can supersede lower-priority synthesis safely.
     The v3.25 queue still allowed a bad case: a P2/P1 phrase could be in the
@@ -366,7 +379,7 @@ class PiperVoice:
 
 
 
-# ============= VOICE ASSISTANT (v3.26b) =============
+# ============= VOICE ASSISTANT (v3.27) =============
 class VoiceAssistant:
     """
     3-slot priority queue with pre-synthesis, BT-safe skip-ahead (FIX 8),
@@ -1425,9 +1438,9 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.26b HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.27 HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: BT-safe skip-ahead, neutral wording, latency, zone keys")
+    print("FIXES: fast alert TTS, ego guard, filtered motion, wide-angle zones, clean shutdown")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")

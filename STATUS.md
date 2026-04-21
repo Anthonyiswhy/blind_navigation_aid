@@ -1,7 +1,7 @@
 # Project Status
 
-Last updated: April 18, 2026
-Current repo target: `v3.26b HEADLESS`
+Last updated: April 20, 2026
+Current repo target: `v3.27 HEADLESS`
 
 ## Verified in Code and Tests
 
@@ -12,6 +12,9 @@ Current repo target: `v3.26b HEADLESS`
   - zone-based cooldown keys
   - per-alert latency timestamps
   - safe urgent supersession before playback
+- Motion filtering now suppresses large one-frame depth jumps and small
+  far-range drift before threat scoring/logging.
+- Position labeling now uses wide-angle-aware angle mapping with hysteresis.
 - Ego-motion compensation includes:
   - background-depth velocity estimation
   - hard clamp at `+/-160 cm/s`
@@ -21,7 +24,7 @@ Current repo target: `v3.26b HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `150 passed`
+  - combined result: `163 passed`
 
 ## Confirmed Design Invariants
 
@@ -68,7 +71,7 @@ Current repo target: `v3.26b HEADLESS`
 ## Pending Work
 
 - Heatsink: highest hardware priority
-- Push v3.26b to GitHub main
+- Review and merge v3.27 to GitHub main
 - Schedule a field test with Ricardo Salazar
 - Record five bag-file regression scenarios
 - Add traffic-light color classification

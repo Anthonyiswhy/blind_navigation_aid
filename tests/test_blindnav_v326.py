@@ -1,5 +1,5 @@
 """
-test_blindnav_v326.py - Hardware-free test suite for v3.26b
+test_blindnav_v326.py - Advanced hardware-free regression suite for BlindNav
 
 Addresses all Codex review findings:
   [P1] Loader path: resolves to raspberry_pi/yolo_realsense_navigation.py
