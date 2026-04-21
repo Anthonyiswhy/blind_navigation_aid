@@ -539,6 +539,33 @@ class TestSourceStructure:
 
 class TestFastAlertTTS:
 
+    def test_alert_mode_defaults_to_piper(self):
+        assert MOD.ALERT_TTS_MODE == "piper"
+
+    def test_warning_prefers_piper_alert_synth_when_enabled(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "piper"):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_warning("Watch out, person ahead, 1.2 meters")
+        assert wait_for_idle(va, timeout=2.0)
+        assert len(fake_tts.alert_synthesized) == 1
+        assert len(fake_tts.synthesized) == 0
+
+    def test_awareness_stays_on_regular_piper_path(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "piper"):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_awareness("Heads up, person ahead, 2.4 meters")
+        assert wait_for_idle(va, timeout=2.0)
+        assert len(fake_tts.alert_synthesized) == 0
+        assert len(fake_tts.synthesized) == 1
+
     def test_urgent_prefers_fast_alert_synth(self):
         fake_tts = FakeFastAlertTTS(synth_delay=0.01)
         with patch.object(MOD, "ALERT_TTS_MODE", "espeak"):
@@ -564,6 +591,67 @@ class TestFastAlertTTS:
         assert wait_for_idle(va, timeout=2.0)
         assert fake_tts.alert_synthesized, "expected fast alert synthesis to run"
         assert fake_tts.alert_synthesized[0][3] == MOD.FAST_ALERT_SILENCE_MS
+
+
+class TestPiperAlertCache:
+    def test_cached_alert_clip_reuses_existing_phrase(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._use_piper = True
+        piper._voice_label = "en_US-amy-medium"
+        piper._alert_cache_dir = tempfile.mkdtemp(prefix="blindnav_alert_cache_test_")
+
+        synth_calls = []
+        first = None
+        second = None
+
+        def fake_synthesize(text, silence_ms=0):
+            synth_calls.append((text, silence_ms))
+            return _make_wav(silence_ms)
+
+        piper.synthesize_to_file = fake_synthesize
+        piper.prepend_silence = MOD.PiperVoice.prepend_silence.__get__(piper, MOD.PiperVoice)
+
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "piper"):
+                first = MOD.PiperVoice.synthesize_alert_to_file(
+                    piper, "Stop! person ahead, 1.2 meters", silence_ms=0)
+                second = MOD.PiperVoice.synthesize_alert_to_file(
+                    piper, "Stop! person ahead, 1.2 meters", silence_ms=0)
+            assert len(synth_calls) == 1
+            assert os.path.exists(first)
+            assert os.path.exists(second)
+        finally:
+            for path in (first, second):
+                try:
+                    if path:
+                        os.unlink(path)
+                except Exception:
+                    pass
+            for wav_name in os.listdir(piper._alert_cache_dir):
+                try:
+                    os.unlink(os.path.join(piper._alert_cache_dir, wav_name))
+                except Exception:
+                    pass
+            try:
+                os.rmdir(piper._alert_cache_dir)
+            except Exception:
+                pass
+
+    def test_prime_alert_cache_builds_common_phrase_set(self):
+        piper = object.__new__(MOD.PiperVoice)
+        seen = []
+
+        def fake_materialize(text):
+            seen.append(text)
+            return _make_wav(0)
+
+        piper._materialize_cached_alert = fake_materialize
+        count = MOD.PiperVoice._prime_alert_cache(piper)
+
+        assert count == 28
+        assert "Stop! person ahead, 1.2 meters" in seen
+        assert "Watch out, person on your left, 2.4 meters" in seen
+        assert "Obstacle, 0.6 meters" in seen
 
 
 

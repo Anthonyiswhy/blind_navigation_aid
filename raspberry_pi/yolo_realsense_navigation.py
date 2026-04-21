@@ -3,9 +3,10 @@
 Intelligent Navigation Assistant v3.27 HEADLESS
 Builds on v3.26b with:
 
-  FIX 10 - Fast alert TTS plus safer bad-ego wording for urgent warnings.
-    Urgent alerts can use the faster alert voice path, while close-range
-    wording falls back to neutral phrasing when ego motion is unreliable.
+  FIX 10 - Piper alerts by default, with cached urgent/warning clips.
+    Amy-medium remains the default Piper voice, urgent/warning phrases use
+    Piper instead of espeak, and common short safety phrases are prewarmed into
+    a local clip cache to cut alert latency without giving up voice quality.
 
   FIX 11 - Shared filtered motion across scoring, TTC, logs, and CSV.
     Large depth jumps now require confirmation, small far-range drift is
@@ -62,6 +63,8 @@ import csv
 import wave
 import threading
 import math
+import hashlib
+import shutil
 import subprocess
 import tempfile
 import base64
@@ -110,11 +113,32 @@ BUSY_COOLDOWN_S      = 10.0
 
 VOICE_COOLDOWN = 5.0
 
-PIPER_MODEL  = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx")
-PIPER_CONFIG = os.path.expanduser("~/piper_voices/en_US-amy-medium.onnx.json")
+PIPER_VOICE_NAME = os.environ.get("BLINDNAV_PIPER_VOICE", "amy-medium").strip() or "amy-medium"
+PIPER_VOICE_DIR = os.path.expanduser(
+    os.environ.get("BLINDNAV_PIPER_DIR", "~/piper_voices")
+)
+PIPER_MODEL  = os.path.expanduser(
+    os.environ.get(
+        "BLINDNAV_PIPER_MODEL",
+        os.path.join(PIPER_VOICE_DIR, f"en_US-{PIPER_VOICE_NAME}.onnx"),
+    )
+)
+PIPER_CONFIG = os.path.expanduser(
+    os.environ.get("BLINDNAV_PIPER_CONFIG", PIPER_MODEL + ".json")
+)
 PIPER_SPEED  = 0.85
 PIPER_SILENCE_MS = 150
-ALERT_TTS_MODE = os.environ.get("BLINDNAV_ALERT_TTS", "espeak").strip().lower()
+ALERT_TTS_MODE = os.environ.get("BLINDNAV_ALERT_TTS", "piper").strip().lower()
+if ALERT_TTS_MODE not in {"piper", "espeak"}:
+    ALERT_TTS_MODE = "piper"
+ALERT_CACHE_DIR = os.path.expanduser(
+    os.environ.get("BLINDNAV_ALERT_CACHE_DIR",
+                   os.path.join(tempfile.gettempdir(), "blindnav_alert_cache"))
+)
+ALERT_CACHE_PREWARM = os.environ.get(
+    "BLINDNAV_ALERT_CACHE_PREWARM", "1"
+).strip().lower() not in {"0", "false", "no"}
+ALERT_CACHE_COMMON_DISTANCES_M = (0.6, 1.2, 1.8, 2.4)
 FAST_ALERT_SILENCE_MS = 220
 ESPEAK_ALERT_SPEED = 175
 ESPEAK_ALERT_GAP = 8
@@ -255,6 +279,9 @@ class PiperVoice:
         self._sampwidth = 2
         self._use_piper = False
         self._espeak_cmd = self._detect_espeak()
+        self._voice_label = os.path.splitext(os.path.basename(PIPER_MODEL))[0]
+        self._alert_cache_dir = ALERT_CACHE_DIR
+        self._alert_cache_enabled = False
         try:
             from piper.voice import PiperVoice as _PiperVoice
             from piper.config import SynthesisConfig
@@ -273,7 +300,16 @@ class PiperVoice:
                 self._sampwidth   = wr.getsampwidth()
             self.available = True
             self._use_piper = True
-            print(f"[OK] Piper TTS ready ({self._sample_rate}Hz, speed={PIPER_SPEED})")
+            self._alert_cache_enabled = ALERT_TTS_MODE == "piper"
+            if self._alert_cache_enabled:
+                os.makedirs(self._alert_cache_dir, exist_ok=True)
+                if ALERT_CACHE_PREWARM:
+                    phrases = self._prime_alert_cache()
+                    print(f"[VOICE] Piper alert cache primed ({phrases} clips)")
+            print(
+                f"[OK] Piper TTS ready ({self._sample_rate}Hz, "
+                f"voice={self._voice_label}, speed={PIPER_SPEED})"
+            )
         except ImportError:
             print("[VOICE] piper-tts not installed — falling back to espeak")
             self._init_espeak()
@@ -300,6 +336,49 @@ class PiperVoice:
             except Exception:
                 pass
         return None
+
+    def _alert_cache_key(self, text):
+        digest = hashlib.sha1(
+            f"{self._voice_label}|{PIPER_SPEED}|{text}".encode("utf-8")
+        ).hexdigest()
+        return os.path.join(self._alert_cache_dir, f"{digest}.wav")
+
+    def _copy_to_temp(self, wav_path):
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            tmpfile = f.name
+        shutil.copyfile(wav_path, tmpfile)
+        return tmpfile
+
+    def _materialize_cached_alert(self, text):
+        cache_path = self._alert_cache_key(text)
+        if os.path.exists(cache_path):
+            return self._copy_to_temp(cache_path)
+
+        tmpfile = self.synthesize_to_file(text, silence_ms=0)
+        if tmpfile is None:
+            return None
+        try:
+            if not os.path.exists(cache_path):
+                shutil.copyfile(tmpfile, cache_path)
+        except Exception:
+            pass
+        return tmpfile
+
+    def _prime_alert_cache(self):
+        phrases = []
+        for dist_m in ALERT_CACHE_COMMON_DISTANCES_M:
+            phrases.append(f"Obstacle, {dist_m:.1f} meters")
+            for pos in ("ahead", "on your left", "on your right"):
+                phrases.append(f"Stop! person {pos}, {dist_m:.1f} meters")
+                phrases.append(f"Watch out, person {pos}, {dist_m:.1f} meters")
+        for phrase in phrases:
+            tmpfile = self._materialize_cached_alert(phrase)
+            if tmpfile:
+                try:
+                    os.unlink(tmpfile)
+                except Exception:
+                    pass
+        return len(phrases)
 
     def synthesize_to_file(self, text, silence_ms=0):
         try:
@@ -345,6 +424,14 @@ class PiperVoice:
             return wav_path
 
     def synthesize_alert_to_file(self, text, silence_ms=0):
+        if self._use_piper and ALERT_TTS_MODE == "piper":
+            tmpfile = self._materialize_cached_alert(text)
+            if tmpfile is None:
+                return None
+            if silence_ms > 0:
+                return self.prepend_silence(tmpfile, silence_ms)
+            return tmpfile
+
         if self._espeak_cmd is None:
             return self.synthesize_to_file(text, silence_ms=silence_ms)
         try:
@@ -431,10 +518,22 @@ class VoiceAssistant:
 
         self._tts = _tts_override if _tts_override is not None else PiperVoice()
         self.available = self._tts.available
-        self._prefer_fast_alert_tts = (
-            ALERT_TTS_MODE == "espeak"
-            and hasattr(self._tts, "synthesize_alert_to_file")
+        self._alert_tts_mode = ALERT_TTS_MODE
+        self._alert_synth_available = hasattr(self._tts, "synthesize_alert_to_file")
+
+    def _use_alert_synth(self, priority):
+        return (
+            priority is not None
+            and priority <= self.PRIO_WARNING
+            and self._alert_synth_available
         )
+
+    def _alert_silence_ms(self, need_silence):
+        if not need_silence:
+            return 0
+        if self._alert_tts_mode == "espeak":
+            return FAST_ALERT_SILENCE_MS
+        return PIPER_SILENCE_MS
 
     # ---- PUBLIC API ----
 
@@ -492,7 +591,7 @@ class VoiceAssistant:
                                        enqueued_ts, event_created_ts)
 
             # Start presyn if semaphore free
-            if self._tts._use_piper and not self._prefer_fast_alert_tts:
+            if self._tts._use_piper and not self._use_alert_synth(priority):
                 existing = self._prefetch[priority]
                 if existing is None or existing[1] != text:
                     if existing is not None:
@@ -546,7 +645,7 @@ class VoiceAssistant:
         # Claim pre-synthesized WAV if text matches
         prefetched = None
         if (self._tts._use_piper
-                and not self._prefer_fast_alert_tts
+                and not self._use_alert_synth(priority)
                 and self._prefetch[priority] is not None):
             pf = self._prefetch[priority]
             if pf[1] == text:
@@ -580,6 +679,7 @@ class VoiceAssistant:
                 with self._lock:
                     gap = time.time() - self._last_speech_end
                 need_silence = gap > self.STREAM_COLD_S
+                use_alert_synth = self._use_alert_synth(priority)
 
                 tts_start_ts = time.time()
 
@@ -589,9 +689,10 @@ class VoiceAssistant:
                     else:
                         tmpfile = prefetched_wav
                 else:
-                    silence_ms = ((FAST_ALERT_SILENCE_MS if self._prefer_fast_alert_tts
-                                   else PIPER_SILENCE_MS) if need_silence else 0)
-                    if self._prefer_fast_alert_tts:
+                    silence_ms = self._alert_silence_ms(need_silence) if use_alert_synth else (
+                        PIPER_SILENCE_MS if need_silence else 0
+                    )
+                    if use_alert_synth:
                         tmpfile = self._tts.synthesize_alert_to_file(text, silence_ms=silence_ms)
                     else:
                         # FIX: use semaphore for direct synthesis too — prevents
@@ -1440,7 +1541,7 @@ def main():
     print("=" * 70)
     print("INTELLIGENT NAVIGATION ASSISTANT v3.27 HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: fast alert TTS, ego guard, filtered motion, wide-angle zones, clean shutdown")
+    print("FIXES: piper alerts, cached clips, ego guard, filtered motion, wide-angle zones, clean shutdown")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")
@@ -1536,7 +1637,13 @@ def main():
     print(f"[KEYS]  d = describe scene | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
     print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g")
-    print(f"[VOICE] 3-slot priority queue | no aplay SIGTERM | alert_tts={ALERT_TTS_MODE} | silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE == 'espeak' else PIPER_SILENCE_MS}ms\n")
+    print(
+        f"[VOICE] 3-slot priority queue | no aplay SIGTERM | "
+        f"voice={os.path.splitext(os.path.basename(PIPER_MODEL))[0]} | "
+        f"alert_tts={ALERT_TTS_MODE} | "
+        f"cache={'on' if ALERT_TTS_MODE == 'piper' else 'off'} | "
+        f"silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE == 'espeak' else PIPER_SILENCE_MS}ms\n"
+    )
 
     frame_count       = 0
     last_threat_print = time.time()

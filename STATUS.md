@@ -12,6 +12,8 @@ Current repo target: `v3.27 HEADLESS`
   - zone-based cooldown keys
   - per-alert latency timestamps
   - safe urgent supersession before playback
+  - Piper as the default urgent/warning alert voice
+  - prewarmed cached alert clips for common short safety phrases
 - Motion filtering now suppresses large one-frame depth jumps and small
   far-range drift before threat scoring/logging.
 - Position labeling now uses wide-angle-aware angle mapping with hysteresis.
@@ -24,7 +26,7 @@ Current repo target: `v3.27 HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `163 passed`
+  - combined result: `168 passed`
 
 ## Confirmed Design Invariants
 
