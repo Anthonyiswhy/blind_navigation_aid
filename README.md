@@ -5,12 +5,12 @@ RealSense D435. The system detects obstacles, estimates threat from distance
 and time-to-collision, and speaks warnings through Bluetooth headphones using
 Piper neural TTS.
 
-Current production version: `v3.27 HEADLESS`
+Current production version: `v3.28 HEADLESS`
 
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
 - Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
-- Verified locally on April 20, 2026: `168 passed`
+- Verified locally on April 21, 2026: `172 passed`
 
 ## What It Does
 
@@ -23,6 +23,20 @@ Current production version: `v3.27 HEADLESS`
 - Provides on-demand scene description with the `d` key.
 
 ## Recent Changes
+
+### v3.28
+
+- Bucketed spoken distances to the same 30 cm voice buckets already used by
+  cooldown keys so repeat warnings reuse the same Piper phrases instead of
+  synthesizing slightly different decimals.
+- Added richer voice diagnostics to `events.log`, including queue wait, synth
+  time, launch wait, cache hit vs miss, and synthesis mode.
+- Promoted nearby side-pass people on the left/right while the user is moving,
+  so a person walking by no longer depends entirely on radial TTC.
+- Clamped bad-ego TTC usage to close range when the user is still, blocking
+  far nonsense alerts such as `person ahead, 6.4 meters`.
+- Switched non-person urgent/warning phrasing to cached `obstacle` wording so
+  close-object warnings stay fast even when the classifier label changes.
 
 ### v3.27
 
@@ -120,7 +134,7 @@ Current collected totals:
 ## Current Priorities
 
 - Add a heatsink before field sessions.
-- Review and merge the v3.27 repo state, then field-test it with Ricardo Salazar.
+- Review and merge the v3.28 repo state, then field-test it with Ricardo Salazar.
 - Record bag-file scenarios for regression playback.
 - Add traffic-light color classification after the base obstacle system is
   stable.

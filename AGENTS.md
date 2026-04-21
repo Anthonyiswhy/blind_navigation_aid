@@ -5,9 +5,9 @@ Wearable AI navigation assistant for blind users. Raspberry Pi 4 + Intel RealSen
 camera on a chest harness. Detects obstacles, scores threats, speaks warnings through Bluetooth
 headphones using Piper neural TTS. On-demand scene description via Codex Vision API.
 
-**Current production version:** v3.26 HEADLESS
+**Current production version:** v3.28 HEADLESS
 **Production file:** `raspberry_pi/yolo_realsense_navigation.py`
-**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (150 collected tests, no hardware required)
+**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (172 collected tests, no hardware required)
 
 ---
 
@@ -184,10 +184,10 @@ When incrementing to vX.XX, update ALL of these:
 
 ---
 
-## Pending Work (as of v3.23)
+## Pending Work (as of v3.28)
 
 - [ ] **Heatsink** — #1 hardware priority. Pi throttles to 6–8 FPS above ~65°C.
-- [ ] Merge/push v3.26 to GitHub main
+- [ ] Merge/push v3.28 to GitHub main
 - [ ] Field test with Ricardo Salazar (blind user, primary tester) — not yet scheduled
 - [ ] Record bag file scenarios for regression testing (5 scenarios: person approach, chair, close-range, white wall, person turning away)
 - [ ] Traffic light detection — crop YOLO's `traffic light` box, classify red/green pixels
