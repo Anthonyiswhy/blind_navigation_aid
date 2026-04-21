@@ -416,6 +416,59 @@ class TestThreatScoringTruthTable:
 
 
 # ============================================================
+# Track filtering + shared motion evaluation
+# ============================================================
+
+class TestTrackFiltering:
+    def _make_track(self):
+        det = {
+            "class_name": "person",
+            "class_id": 0,
+            "box": [200, 80, 260, 300],
+            "score": 0.9,
+        }
+        return MOD.Track(0, det, 0.0)
+
+    def test_large_distance_jump_requires_confirmation(self):
+        track = self._make_track()
+        track.update_distance(244, 0.0)
+        track.update_distance(243, 0.2)
+        track.update_distance(242, 0.4)
+        assert track.distance == 242
+
+        track.update_distance(24, 0.6)
+        assert track.distance == 242
+        assert not track.velocity_valid
+
+        track.update_distance(26, 0.8)
+        assert track.distance == 26
+        assert track.distance_history == [(0.8, 26)]
+
+    def test_far_small_motion_is_zeroed_before_alerting(self):
+        track = self._make_track()
+        track.update_distance(300, 0.0)
+        track.update_distance(297, 0.2)
+        track.update_distance(294, 0.4)
+
+        assert track.velocity_valid
+        assert track.velocity == 0.0
+
+    def test_shared_motion_eval_suppresses_far_noise(self):
+        class FakeTrack:
+            distance = 295
+            velocity = -5.0
+            velocity_valid = True
+            class_name = "person"
+            score = 0.9
+
+        motion = MOD.evaluate_track_motion(
+            FakeTrack(), user_moving=False, ego_reliable=True)
+        assert motion["effective_velocity"] == 0.0
+        assert motion["ttc"] == 999.0
+        assert not motion["ttc_allowed"]
+
+
+# ============================================================
 # TRUTH TABLE: _voice_key zone mapping
 # ============================================================
 
@@ -847,6 +900,27 @@ class TestVoiceTTL:
 
 
 # ============================================================
+# VoiceAssistant shutdown
+# ============================================================
+
+class TestVoiceShutdown:
+    def test_shutdown_clears_pending_and_blocks_new_enqueues(self):
+        va, tts, player = build_voice(synth_delay=0.30, play_duration=0.05)
+        va.speak_awareness("current speech")
+        time.sleep(0.05)
+        va.speak_warning("pending speech")
+
+        va.shutdown(timeout=1.0)
+        spoken = [s[0] for s in tts.synthesized]
+        assert "pending speech" not in spoken
+
+        va.speak_urgent("after shutdown")
+        time.sleep(0.05)
+        spoken = [s[0] for s in tts.synthesized]
+        assert "after shutdown" not in spoken
+
+
+# ============================================================
 # Presyn Semaphore
 # ============================================================
 
@@ -1116,6 +1190,14 @@ class TestGetPosition:
             box = [cx-20, 100, cx+20, 300]
         return T()
 
+    def _tracked(self, cx, seen_frames=5):
+        class T:
+            pass
+        t = T()
+        t.box = [cx-20, 100, cx+20, 300]
+        t.seen_frames = seen_frames
+        return t
+
     @pytest.mark.parametrize("cx,expected", [
         (50,  "on your left"),
         (200, "on your left"),
@@ -1128,6 +1210,14 @@ class TestGetPosition:
     ])
     def test_position_zones(self, cx, expected):
         assert MOD.get_position(self._t(cx), 640) == expected
+
+    def test_track_hysteresis_holds_side_label_near_boundary(self):
+        track = self._tracked(440)
+        assert MOD.get_position(track, 640) == "on your right"
+
+        track.box = [400-20, 100, 400+20, 300]
+        assert MOD.get_position(track, 640) == "on your right"
+        assert MOD.get_position(track, 640) == "ahead"
 
 
 class TestMotionDetectorIMUFallback:
