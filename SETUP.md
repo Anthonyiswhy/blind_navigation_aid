@@ -79,6 +79,13 @@ expects:
 - `~/piper_voices/en_US-amy-medium.onnx`
 - `~/piper_voices/en_US-amy-medium.onnx.json`
 
+Optional voice overrides:
+
+- `BLINDNAV_PIPER_VOICE=lessac-medium` to test `en_US-lessac-medium` from the
+  same voice directory layout
+- `BLINDNAV_PIPER_MODEL=/full/path/to/model.onnx`
+- `BLINDNAV_PIPER_CONFIG=/full/path/to/model.onnx.json`
+
 ## IMU Wiring
 
 | IMU Pin | Pi Pin |
@@ -115,7 +122,7 @@ These tests require no hardware:
 pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 ```
 
-Expected current result: `150 passed`
+Expected current result: `168 passed`
 
 ## Health Checks Before Field Use
 

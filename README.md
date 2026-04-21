@@ -5,12 +5,12 @@ RealSense D435. The system detects obstacles, estimates threat from distance
 and time-to-collision, and speaks warnings through Bluetooth headphones using
 Piper neural TTS.
 
-Current production version: `v3.26b HEADLESS`
+Current production version: `v3.27 HEADLESS`
 
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
 - Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
-- Verified locally on April 18, 2026: `150 passed`
+- Verified locally on April 20, 2026: `168 passed`
 
 ## What It Does
 
@@ -23,6 +23,24 @@ Current production version: `v3.26b HEADLESS`
 - Provides on-demand scene description with the `d` key.
 
 ## Recent Changes
+
+### v3.27
+
+- Switched urgent/warning alerts to Piper by default while keeping `espeak`
+  available as an override through `BLINDNAV_ALERT_TTS=espeak`.
+- Added a prewarmed Piper alert-clip cache for common short safety phrases so
+  urgent/warning speech stays natural without paying full synthesis cost every
+  time.
+- Kept `en_US-amy-medium` as the default Piper voice and added env-based voice
+  overrides so `lessac-medium` can be tested without editing the script.
+- Added large-jump confirmation and far-noise suppression so static people at
+  roughly 2-3m do not accumulate fake approach velocity.
+- Replaced the thirds-based left/right/ahead split with wide-angle-aware angle
+  mapping plus per-track hysteresis.
+- Unified filtered motion across threat scoring, TTC logging, console output,
+  and CSV logging.
+- Hardened shutdown so the voice queue drains cleanly and the capture thread is
+  joined before process exit.
 
 ### v3.25
 
@@ -89,8 +107,8 @@ pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 Current collected totals:
 
 - `tests/test_blindnav.py`: 37 tests
-- `tests/test_blindnav_v326.py`: 113 tests
-- Combined: 150 tests
+- `tests/test_blindnav_v326.py`: 131 tests
+- Combined: 168 tests
 
 ## Performance Notes
 
@@ -102,7 +120,7 @@ Current collected totals:
 ## Current Priorities
 
 - Add a heatsink before field sessions.
-- Push the v3.26b repo state and field-test it with Ricardo Salazar.
+- Review and merge the v3.27 repo state, then field-test it with Ricardo Salazar.
 - Record bag-file scenarios for regression playback.
 - Add traffic-light color classification after the base obstacle system is
   stable.
