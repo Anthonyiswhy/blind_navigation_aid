@@ -107,6 +107,12 @@ ESPEAK_ALERT_SPEED = 175
 ESPEAK_ALERT_GAP = 8
 ESPEAK_ALERT_AMPLITUDE = 180
 
+POSITION_CAMERA_HFOV_DEG = 69.0
+POSITION_SIDE_ENTER_DEG  = 13.1
+POSITION_SIDE_EXIT_DEG   = 10.0
+POSITION_SWITCH_FRAMES   = 2
+POSITION_FORCE_SWITCH_DEG = 18.0
+
 IMU_I2C_ADDR        = 0x68
 IMU_MOTION_THRESHOLD = 0.05
 IMU_WINDOW_SIZE     = 20
@@ -407,6 +413,8 @@ class VoiceAssistant:
         self._current_proc    = None
         self._last_announcement = {}
         self._last_speech_end   = 0.0
+        self._workers          = set()
+        self._shutting_down    = False
 
         self._tts = _tts_override if _tts_override is not None else PiperVoice()
         self.available = self._tts.available
@@ -445,6 +453,8 @@ class VoiceAssistant:
             return
         event_created_ts = time.time()
         with self._lock:
+            if self._shutting_down:
+                return
             if key and cooldown > 0:
                 if (event_created_ts - self._last_announcement.get(key, 0)) < cooldown:
                     return
@@ -530,10 +540,20 @@ class VoiceAssistant:
                 prefetched = pf[0]
                 self._prefetch[priority] = None
 
-        threading.Thread(
-            target=self._speak_thread,
+        worker = threading.Thread(
+            target=self._speak_worker,
             args=(text, prefetched, label, priority, event_created_ts, enqueued_ts),
-            daemon=True).start()
+            daemon=True)
+        self._workers.add(worker)
+        worker.start()
+
+    def _speak_worker(self, *args):
+        worker = threading.current_thread()
+        try:
+            self._speak_thread(*args)
+        finally:
+            with self._lock:
+                self._workers.discard(worker)
 
     def _speak_thread(self, text, prefetched_wav=None, label="",
                       priority=None, event_created_ts=None, enqueued_ts=None):
@@ -638,6 +658,8 @@ class VoiceAssistant:
 
             with self._lock:
                 self.is_speaking   = False
+                if self._shutting_down:
+                    return
                 # Drain highest-priority non-None pending slot
                 for prio in range(3):
                     pend = self._pending[prio]
@@ -663,6 +685,24 @@ class VoiceAssistant:
                     self._start_locked(ptext, pkey, pcooldown, plabel, prio,
                                        pev_created, penqueued)
                     break
+
+    def shutdown(self, timeout=6.0):
+        with self._lock:
+            self._shutting_down = True
+            self._pending = {0: None, 1: None, 2: None}
+            for prio in range(3):
+                self._cancel_prefetch_locked(prio)
+            workers = [
+                worker for worker in self._workers
+                if worker is not threading.current_thread()
+            ]
+
+        deadline = time.time() + max(0.0, timeout)
+        for worker in workers:
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                break
+            worker.join(timeout=remaining)
 
 
 # ============= THREAT TRANSITION TRACKER =============
@@ -818,12 +858,9 @@ class SceneDescriber:
     def _build_depth_context(self, tracks_snapshot, frame_width):
         valid = sorted([t for t in tracks_snapshot if t["distance"] is not None],
                        key=lambda t: t["distance"])[:SCENE_MAX_OBJECTS]
-        third = frame_width / 3.0
         parts = []
         for t in valid:
-            x1, _, x2, _ = t["box"]
-            cx = (x1+x2)/2.0
-            pos = "left" if cx < third else "right" if cx > 2*third else "ahead"
+            pos = get_position(type("SceneTrack", (), {"box": t["box"]})(), frame_width)
             v = t["velocity"]
             motion = ("approaching fast" if v<-15 else "approaching" if v<-5
                       else "moving away fast" if v>15 else "moving away" if v>5 else "stationary")
@@ -988,6 +1025,8 @@ class Track:
         self.num_clusters   = 0
         self._prev_velocity_valid = True
         self.seen_frames = 1
+        self._pending_distance = None
+        self._pending_distance_count = 0
 
     def update(self, detection, timestamp):
         alpha = 0.6 if self.seen_frames > 1 else 1.0
@@ -1001,19 +1040,41 @@ class Track:
         if new_distance is None: return
         if self.distance is not None:
             if abs(new_distance - self.distance) > MAX_DISTANCE_JUMP:
+                if (self._pending_distance is not None
+                        and abs(new_distance - self._pending_distance) <= 40):
+                    self._pending_distance_count += 1
+                else:
+                    self._pending_distance = new_distance
+                    self._pending_distance_count = 1
                 self.velocity_valid = False
                 self.velocity = 0.0
-                self.distance = new_distance
-                self.distance_history = [(timestamp, new_distance)]
+                if self._pending_distance_count >= 2:
+                    self.distance = new_distance
+                    self.distance_history = [(timestamp, new_distance)]
+                    self._pending_distance = None
+                    self._pending_distance_count = 0
+                    self._prev_velocity_valid = False
                 return
+        self._pending_distance = None
+        self._pending_distance_count = 0
         self.distance = new_distance
         self.distance_history.append((timestamp, new_distance))
         self.distance_history = self.distance_history[-5:]
         if len(self.distance_history) >= 3:
-            old_time, old_dist = self.distance_history[0]
-            dt = timestamp - old_time
+            times = np.array([t for t, _ in self.distance_history], dtype=np.float64)
+            dists = np.array([d for _, d in self.distance_history], dtype=np.float64)
+            dt = times[-1] - times[0]
             if dt > 0.15:
-                raw_v = (new_distance - old_dist) / dt
+                delta_dist = float(dists[-1] - dists[0])
+                min_motion_delta = max(8.0, max(dists[0], dists[-1]) * 0.03)
+                if abs(delta_dist) < min_motion_delta:
+                    raw_v = 0.0
+                else:
+                    centered_t = times - times.mean()
+                    centered_d = dists - dists.mean()
+                    denom = float(np.dot(centered_t, centered_t))
+                    raw_v = (delta_dist / dt if denom <= 1e-6
+                             else float(np.dot(centered_t, centered_d) / denom))
                 max_v = MAX_HUMAN_VELOCITY if self.class_name == "person" else MAX_OBJECT_VELOCITY
                 if abs(raw_v) > max_v:
                     self.velocity_valid = False; self.velocity = 0.0
@@ -1032,19 +1093,10 @@ class ThreatAssessment:
     @staticmethod
     def calculate_threat_score(track, user_moving=False, ego_reliable=True):
         if track.distance is None: return 0.0
-        velocity_reliable = track.velocity_valid and (ego_reliable or not user_moving)
-
         d = track.distance
-        v = track.velocity if velocity_reliable else 0.0
-
-        # v3.23: dynamic noise floor + TTC gate
-        noise_floor = 3.0 + d * 0.02
-        if abs(v) <= noise_floor:
-            v = 0.0
-        elif v < -1:
-            ttc_check = d / abs(v)
-            if ttc_check > 12.0:
-                v = 0.0
+        motion = evaluate_track_motion(track, user_moving=user_moving,
+                                       ego_reliable=ego_reliable)
+        v = motion["effective_velocity"]
 
         score = 0.0
         if d < CRITICAL_DISTANCE:
@@ -1085,11 +1137,115 @@ class ThreatAssessment:
 
 def get_position(track, frame_width=640):
     if track.box is None: return "ahead"
-    x1, _, x2, _ = track.box
-    ratio = (x1 + x2) / 2.0 / frame_width
-    if ratio < 0.33:   return "on your left"
-    elif ratio > 0.67: return "on your right"
+    angle_deg = _position_angle_deg(track.box, frame_width)
+    prev_zone = getattr(track, "_position_zone", None)
+    zone = _classify_position_zone(angle_deg, prev_zone)
+
+    if not hasattr(track, "seen_frames"):
+        return _position_label(zone)
+
+    if prev_zone is None or track.seen_frames <= 2:
+        current_zone = zone
+        pending_zone = zone
+        pending_frames = 0
+    else:
+        current_zone = prev_zone
+        pending_zone = getattr(track, "_position_pending_zone", current_zone)
+        pending_frames = getattr(track, "_position_pending_frames", 0)
+        if zone == current_zone:
+            pending_zone = zone
+            pending_frames = 0
+        else:
+            if zone == pending_zone:
+                pending_frames += 1
+            else:
+                pending_zone = zone
+                pending_frames = 1
+            if (pending_frames >= POSITION_SWITCH_FRAMES
+                    or abs(angle_deg) >= POSITION_FORCE_SWITCH_DEG):
+                current_zone = zone
+                pending_zone = zone
+                pending_frames = 0
+
+    track._position_zone = current_zone
+    track._position_pending_zone = pending_zone
+    track._position_pending_frames = pending_frames
+    track._position_angle_deg = angle_deg
+    return _position_label(current_zone)
+
+
+def _position_angle_deg(box, frame_width):
+    if box is None or frame_width <= 1:
+        return 0.0
+    x1, _, x2, _ = box
+    cx = (x1 + x2) / 2.0
+    norm = ((2.0 * cx) / frame_width) - 1.0
+    norm = max(-1.0, min(1.0, norm))
+    half_fov_rad = math.radians(POSITION_CAMERA_HFOV_DEG / 2.0)
+    return math.degrees(math.atan(norm * math.tan(half_fov_rad)))
+
+
+def _classify_position_zone(angle_deg, prev_zone=None):
+    if prev_zone == "left" and angle_deg <= -POSITION_SIDE_EXIT_DEG:
+        return "left"
+    if prev_zone == "right" and angle_deg >= POSITION_SIDE_EXIT_DEG:
+        return "right"
+    if angle_deg < -POSITION_SIDE_ENTER_DEG:
+        return "left"
+    if angle_deg > POSITION_SIDE_ENTER_DEG:
+        return "right"
+    return "center"
+
+
+def _position_label(zone):
+    if zone == "left":
+        return "on your left"
+    if zone == "right":
+        return "on your right"
     return "ahead"
+
+
+def evaluate_track_motion(track, user_moving=False, ego_reliable=True):
+    raw_velocity = track.velocity if getattr(track, "velocity_valid", False) else 0.0
+    if track.distance is None:
+        return {
+            "raw_velocity": raw_velocity,
+            "effective_velocity": 0.0,
+            "velocity_reliable": False,
+            "noise_floor": 0.0,
+            "ttc": 999.0,
+            "ttc_allowed": False,
+            "approaching": False,
+            "fast_approach": False,
+        }
+
+    velocity_reliable = track.velocity_valid and (ego_reliable or not user_moving)
+    effective_velocity = raw_velocity if velocity_reliable else 0.0
+    noise_floor = 3.0 + track.distance * 0.02
+    ttc = 999.0
+
+    if abs(effective_velocity) <= noise_floor:
+        effective_velocity = 0.0
+    elif effective_velocity < -1.0:
+        ttc = track.distance / abs(effective_velocity)
+        if ttc > 12.0:
+            effective_velocity = 0.0
+            ttc = 999.0
+
+    ttc_allowed = effective_velocity < -2.0 and ttc < 100.0
+    if not ttc_allowed:
+        ttc = 999.0
+
+    return {
+        "raw_velocity": raw_velocity,
+        "effective_velocity": effective_velocity,
+        "velocity_reliable": velocity_reliable,
+        "noise_floor": noise_floor,
+        "ttc": ttc,
+        "ttc_allowed": ttc_allowed,
+        "approaching": ttc_allowed,
+        "fast_approach": effective_velocity < -50.0,
+    }
 
 
 def letterbox_resize(img, target_size, buf=None):
@@ -1359,7 +1515,8 @@ def main():
             except Exception as exc:
                 if not _cap_stop.is_set(): print(f"[CAPTURE] {exc}")
 
-    threading.Thread(target=_capture_worker, daemon=True, name="capture").start()
+    capture_thread = threading.Thread(target=_capture_worker, daemon=True, name="capture")
+    capture_thread.start()
     print("[INFO] Capture pipeline started (async align)")
     print("\n[READY] Navigation active")
     print(f"[MODE]  {'PLAYBACK' if PLAYBACK_FILE else 'LIVE'}")
@@ -1465,20 +1622,18 @@ def main():
                 dist_cm = track.distance if track.distance else 999
                 dist_m  = dist_cm / 100.0
                 obj     = track.class_name
-                vel     = track.velocity
                 pos     = get_position(track, w)
+                motion_eval = evaluate_track_motion(
+                    track, user_moving=user_moving, ego_reliable=ego_reliable)
+                vel     = motion_eval["effective_velocity"]
 
                 if track.seen_frames >= 3:
-                    ttc_allowed = track.velocity_valid and vel < -2 and (ego_reliable or not user_moving)
-                    if ttc_allowed:
-                        ttc = dist_cm / abs(vel)
-                    else:
-                        ttc = 999.0
-
-                    approaching   = ttc < 100
+                    ttc_allowed = motion_eval["ttc_allowed"]
+                    ttc = motion_eval["ttc"]
+                    approaching   = motion_eval["approaching"]
                     very_close    = dist_cm < 40
                     close         = dist_cm < 70
-                    fast_approach = vel < -50 if track.velocity_valid else False
+                    fast_approach = motion_eval["fast_approach"]
 
                     if not user_moving and not very_close and not close and not approaching:
                         if now - last_paused_print > 3.0:
@@ -1542,14 +1697,17 @@ def main():
                       f"({ego.camera_z_velocity:.0f}cm/s)")
                 for s, t in threats[:3]:
                     lv = ThreatAssessment.get_threat_level(s)
+                    motion_eval = evaluate_track_motion(
+                        t, user_moving=user_moving, ego_reliable=ego_reliable)
+                    display_v = motion_eval["effective_velocity"]
                     vs = ("INVALID!" if not t.velocity_valid else
-                          "<<FAST" if t.velocity<-50 else "<-APP" if t.velocity<-5 else
-                          "FAST>>" if t.velocity>50 else "AWAY->" if t.velocity>5 else "STATIC")
+                          "<<FAST" if display_v<-50 else "<-APP" if display_v<-5 else
+                          "FAST>>" if display_v>50 else "AWAY->" if display_v>5 else "STATIC")
                     cc = f", C={t.num_clusters}" if t.num_clusters>1 else ""
                     p  = get_position(t, w)
                     print(f"  [{lv}] {t.class_name}#{t.id} {p}: "
                           f"{t.distance if t.distance else '???'}cm "
-                          f"{vs} {abs(t.velocity):.1f}cm/s (score:{s:.1f}){cc}")
+                          f"{vs} {abs(display_v):.1f}cm/s (score:{s:.1f}){cc}")
                 last_threat_print = now
 
             # FPS
@@ -1576,6 +1734,8 @@ def main():
             if frame_count % 30 == 0 and frame_count >= 30:
                 if top:
                     t1 = top[1]
+                    top_motion = evaluate_track_motion(
+                        t1, user_moving=user_moving, ego_reliable=ego_reliable)
                     pos_csv = get_position(t1, w)
                     x1c, _, x2c, _ = t1.box if t1.box else (0,0,0,0)
                     cx_norm = round((x1c+x2c)/(2.0*w), 3) if t1.box else -1
@@ -1590,7 +1750,7 @@ def main():
                     top[1].class_name if top else "",
                     f"{top[0]:.1f}" if top else "0",
                     top[1].distance if (top and top[1].distance) else -1,
-                    f"{top[1].velocity:.1f}" if top else "0",
+                    f"{top_motion['effective_velocity']:.1f}" if top else "0",
                     top[1].velocity_valid if top else True,
                     ThreatAssessment.get_threat_level(top[0]) if top else "NONE",
                     top[1].num_clusters if top else 0,
@@ -1609,7 +1769,12 @@ def main():
         print("\n[CLEANUP] Shutting down...")
         _cap_stop.set()
         scene.shutdown()
-        pipeline.stop()
+        try:
+            pipeline.stop()
+        except Exception as exc:
+            print(f"[CLEANUP] pipeline.stop(): {exc}")
+        capture_thread.join(timeout=2.0)
+        voice.shutdown(timeout=6.0)
         csv_file.close()
         event_file.close()
         print(f"[LOG] Saved: {CSV_FILE}")
