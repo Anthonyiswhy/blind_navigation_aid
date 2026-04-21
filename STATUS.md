@@ -21,6 +21,8 @@ Current repo target: `v3.28 HEADLESS`
 - Motion filtering now suppresses large one-frame depth jumps and small
   far-range drift before threat scoring/logging.
 - Position labeling now uses wide-angle-aware angle mapping with hysteresis.
+- Repeated same-frame `get_position()` reads now return a cached label instead
+  of advancing hysteresis multiple times inside one video frame.
 - Ego-motion compensation includes:
   - background-depth velocity estimation
   - hard clamp at `+/-160 cm/s`
@@ -30,7 +32,7 @@ Current repo target: `v3.28 HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `172 passed`
+  - combined result: `174 passed`
 
 ## Confirmed Design Invariants
 

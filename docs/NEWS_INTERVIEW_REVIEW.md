@@ -62,7 +62,7 @@ brief, and usable while walking.
   - ego-motion compensation
   - left/right/ahead voice guidance
   - on-demand AI scene description
-  - a 172-test hardware-free regression suite
+  - a 174-test hardware-free regression suite
 
 ## Current Hardware Stack
 
@@ -128,7 +128,7 @@ becomes distracting. If it talks too little, it misses something important.
 
 - Current version: `v3.28 HEADLESS`
 - Main production script: `raspberry_pi/yolo_realsense_navigation.py`
-- Current hardware-free validation: `172 passed`
+- Current hardware-free validation: `174 passed`
 - Camera: Intel RealSense D435
 - Compute: Raspberry Pi 4
 

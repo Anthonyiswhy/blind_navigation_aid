@@ -4,7 +4,7 @@ Current production version: `v3.28 HEADLESS`
 
 Status:
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
-- Hardware-free validation: `172 passed`
+- Hardware-free validation: `174 passed`
 - Verified on: April 21, 2026
 
 Version history:

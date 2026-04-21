@@ -262,7 +262,7 @@ def _spoken_distance_m(dist_cm):
 
 
 def _spoken_object_name(obj, tier):
-    if obj == "person" or tier == "awareness":
+    if obj == "person":
         return obj
     return "obstacle"
 
@@ -382,7 +382,7 @@ def _select_voice_decision(obj, pos, dist_cm, vel,
     }
 
 
-def _select_voice_message(obj, pos, dist_m, dist_cm, vel,
+def _select_voice_message(obj, pos, dist_cm, vel,
                           user_moving, ego_reliable,
                           approaching, very_close, close, fast_approach, ttc):
     """
@@ -494,8 +494,15 @@ class PiperVoice:
     def _copy_to_temp(self, wav_path):
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             tmpfile = f.name
-        shutil.copyfile(wav_path, tmpfile)
-        return tmpfile
+        try:
+            shutil.copyfile(wav_path, tmpfile)
+            return tmpfile
+        except Exception:
+            try:
+                os.unlink(tmpfile)
+            except Exception:
+                pass
+            raise
 
     def _materialize_cached_alert(self, text):
         cache_path = self._alert_cache_key(text)
@@ -590,7 +597,7 @@ class PiperVoice:
             return wav_path
 
     def synthesize_alert_to_file(self, text, silence_ms=0):
-        if self._use_piper and ALERT_TTS_MODE == "piper":
+        if self._use_piper and getattr(self, "_alert_cache_enabled", False):
             tmpfile = self._materialize_cached_alert(text)
             if tmpfile is None:
                 return None
@@ -1408,13 +1415,14 @@ class Track:
 # ============= THREAT ASSESSMENT =============
 class ThreatAssessment:
     @staticmethod
-    def calculate_threat_score(track, user_moving=False, ego_reliable=True):
+    def calculate_threat_score(track, user_moving=False, ego_reliable=True,
+                               frame_width=640, frame_tag=None):
         if track.distance is None: return 0.0
         d = track.distance
         motion = evaluate_track_motion(track, user_moving=user_moving,
                                        ego_reliable=ego_reliable)
         v = motion["effective_velocity"]
-        pos = get_position(track)
+        pos = get_position(track, frame_width=frame_width, frame_tag=frame_tag)
 
         score = 0.0
         if d < CRITICAL_DISTANCE:
@@ -1449,9 +1457,11 @@ class ThreatAssessment:
         return "SAFE"
 
     @staticmethod
-    def prioritize_threats(tracks, user_moving=False, ego_reliable=True):
+    def prioritize_threats(tracks, user_moving=False, ego_reliable=True,
+                           frame_width=640, frame_tag=None):
         scored = [(ThreatAssessment.calculate_threat_score(
-                    t, user_moving=user_moving, ego_reliable=ego_reliable), t)
+                    t, user_moving=user_moving, ego_reliable=ego_reliable,
+                    frame_width=frame_width, frame_tag=frame_tag), t)
                   for t in tracks]
         scored.sort(reverse=True, key=lambda x: x[0])
         return scored
@@ -1459,14 +1469,25 @@ class ThreatAssessment:
 
 # ============= HELPER FUNCTIONS =============
 
-def get_position(track, frame_width=640):
+def get_position(track, frame_width=640, frame_tag=None):
     if getattr(track, "box", None) is None: return "ahead"
+    if frame_tag is not None:
+        cached_tag = getattr(track, "_position_frame_tag", None)
+        cached_width = getattr(track, "_position_frame_width", None)
+        cached_label = getattr(track, "_position_cached_label", None)
+        if cached_tag == frame_tag and cached_width == frame_width and cached_label:
+            return cached_label
     angle_deg = _position_angle_deg(track.box, frame_width)
     prev_zone = getattr(track, "_position_zone", None)
     zone = _classify_position_zone(angle_deg, prev_zone)
 
     if not hasattr(track, "seen_frames"):
-        return _position_label(zone)
+        label = _position_label(zone)
+        if frame_tag is not None:
+            track._position_frame_tag = frame_tag
+            track._position_frame_width = frame_width
+            track._position_cached_label = label
+        return label
 
     if prev_zone is None or track.seen_frames <= 2:
         current_zone = zone
@@ -1495,7 +1516,12 @@ def get_position(track, frame_width=640):
     track._position_pending_zone = pending_zone
     track._position_pending_frames = pending_frames
     track._position_angle_deg = angle_deg
-    return _position_label(current_zone)
+    label = _position_label(current_zone)
+    if frame_tag is not None:
+        track._position_frame_tag = frame_tag
+        track._position_frame_width = frame_width
+        track._position_cached_label = label
+    return label
 
 
 def _position_angle_deg(box, frame_width):
@@ -1938,7 +1964,8 @@ def main():
 
             scene.capture_and_describe(color_image, tracks)
             threats = ThreatAssessment.prioritize_threats(
-                tracks, user_moving=user_moving, ego_reliable=ego_reliable)
+                tracks, user_moving=user_moving, ego_reliable=ego_reliable,
+                frame_width=w, frame_tag=frame_count)
             transition_tracker.update(threats, voice)
 
             # Busy area
@@ -1976,7 +2003,7 @@ def main():
                 dist_cm = track.distance if track.distance else 999
                 dist_m  = dist_cm / 100.0
                 obj     = track.class_name
-                pos     = get_position(track, w)
+                pos     = get_position(track, w, frame_tag=frame_count)
                 motion_eval = evaluate_track_motion(
                     track, user_moving=user_moving, ego_reliable=ego_reliable)
                 vel     = motion_eval["effective_velocity"]
@@ -2050,7 +2077,7 @@ def main():
             if frame_count % 60 == 0:
                 active_keys = set()
                 for t in tracks:
-                    p = get_position(t, w)
+                    p = get_position(t, w, frame_tag=frame_count)
                     o = t.class_name
                     for b in range(11):
                         active_keys.update([
@@ -2080,7 +2107,7 @@ def main():
                           "<<FAST" if display_v<-50 else "<-APP" if display_v<-5 else
                           "FAST>>" if display_v>50 else "AWAY->" if display_v>5 else "STATIC")
                     cc = f", C={t.num_clusters}" if t.num_clusters>1 else ""
-                    p  = get_position(t, w)
+                    p  = get_position(t, w, frame_tag=frame_count)
                     print(f"  [{lv}] {t.class_name}#{t.id} {p}: "
                           f"{t.distance if t.distance else '???'}cm "
                           f"{vs} {abs(display_v):.1f}cm/s (score:{s:.1f}){cc}")
@@ -2112,13 +2139,13 @@ def main():
                     t1 = top[1]
                     top_motion = evaluate_track_motion(
                         t1, user_moving=user_moving, ego_reliable=ego_reliable)
-                    pos_csv = get_position(t1, w)
+                    pos_csv = get_position(t1, w, frame_tag=frame_count)
                     x1c, _, x2c, _ = t1.box if t1.box else (0,0,0,0)
                     cx_norm = round((x1c+x2c)/(2.0*w), 3) if t1.box else -1
                 else:
                     pos_csv = ""; cx_norm = -1
                 all_tracks_str = "|".join(
-                    f"{t.class_name}:{t.distance}cm:{get_position(t,w)}"
+                    f"{t.class_name}:{t.distance}cm:{get_position(t, w, frame_tag=frame_count)}"
                     for t in tracks if t.distance is not None and t.seen_frames >= 3
                 ) or ""
                 csv_writer.writerow([
