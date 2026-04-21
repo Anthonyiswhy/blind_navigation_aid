@@ -122,7 +122,7 @@ These tests require no hardware:
 pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 ```
 
-Expected current result: `172 passed`
+Expected current result: `174 passed`
 
 ## Health Checks Before Field Use
 

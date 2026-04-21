@@ -20,6 +20,7 @@ Run: pytest tests/test_blindnav_v326.py -v
 """
 import sys
 import os
+import shutil
 import time
 import wave
 import tempfile
@@ -244,9 +245,8 @@ class TestSelectVoiceMessage:
         very_close    = dist_cm < 40
         close         = dist_cm < 70
         fast_approach = vel < -50
-        dist_m = dist_cm / 100.0
         return MOD._select_voice_message(
-            obj, pos, dist_m, dist_cm, vel,
+            obj, pos, dist_cm, vel,
             user_moving, ego_reliable,
             approaching, very_close, close, fast_approach, ttc)
 
@@ -623,6 +623,7 @@ class TestPiperAlertCache:
     def test_cached_alert_clip_reuses_existing_phrase(self):
         piper = object.__new__(MOD.PiperVoice)
         piper._use_piper = True
+        piper._alert_cache_enabled = True
         piper._voice_label = "en_US-amy-medium"
         piper._alert_cache_dir = tempfile.mkdtemp(prefix="blindnav_alert_cache_test_")
 
@@ -662,6 +663,25 @@ class TestPiperAlertCache:
                 os.rmdir(piper._alert_cache_dir)
             except Exception:
                 pass
+
+    def test_copy_to_temp_cleans_up_on_copy_failure(self, monkeypatch):
+        piper = object.__new__(MOD.PiperVoice)
+        created = []
+        real_named_temp = tempfile.NamedTemporaryFile
+
+        def tracking_named_temp(*args, **kwargs):
+            tmp = real_named_temp(*args, **kwargs)
+            created.append(tmp.name)
+            return tmp
+
+        monkeypatch.setattr(tempfile, "NamedTemporaryFile", tracking_named_temp)
+        monkeypatch.setattr(shutil, "copyfile", lambda src, dst: (_ for _ in ()).throw(IOError("boom")))
+
+        with pytest.raises(IOError):
+            MOD.PiperVoice._copy_to_temp(piper, "missing.wav")
+
+        assert created
+        assert not os.path.exists(created[0])
 
     def test_prime_alert_cache_builds_common_phrase_set(self):
         piper = object.__new__(MOD.PiperVoice)
@@ -1334,6 +1354,15 @@ class TestGetPosition:
         track.box = [400-20, 100, 400+20, 300]
         assert MOD.get_position(track, 640) == "on your right"
         assert MOD.get_position(track, 640) == "ahead"
+
+    def test_same_frame_repeated_position_reads_do_not_consume_hysteresis(self):
+        track = self._tracked(440)
+        assert MOD.get_position(track, 640, frame_tag=1) == "on your right"
+
+        track.box = [400-20, 100, 400+20, 300]
+        assert MOD.get_position(track, 640, frame_tag=2) == "on your right"
+        assert MOD.get_position(track, 640, frame_tag=2) == "on your right"
+        assert MOD.get_position(track, 640, frame_tag=3) == "ahead"
 
 
 class TestMotionDetectorIMUFallback:

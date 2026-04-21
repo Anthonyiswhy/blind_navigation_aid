@@ -7,7 +7,7 @@ headphones using Piper neural TTS. On-demand scene description via Codex Vision 
 
 **Current production version:** v3.28 HEADLESS
 **Production file:** `raspberry_pi/yolo_realsense_navigation.py`
-**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (172 collected tests, no hardware required)
+**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (174 collected tests, no hardware required)
 
 ---
 

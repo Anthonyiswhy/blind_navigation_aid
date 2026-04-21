@@ -10,7 +10,7 @@ Current production version: `v3.28 HEADLESS`
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
 - Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
-- Verified locally on April 21, 2026: `172 passed`
+- Verified locally on April 21, 2026: `174 passed`
 
 ## What It Does
 
@@ -31,6 +31,8 @@ Current production version: `v3.28 HEADLESS`
   synthesizing slightly different decimals.
 - Added richer voice diagnostics to `events.log`, including queue wait, synth
   time, launch wait, cache hit vs miss, and synthesis mode.
+- Made left/right/ahead hysteresis frame-stable so repeated same-frame position
+  reads no longer consume the switch threshold early.
 - Promoted nearby side-pass people on the left/right while the user is moving,
   so a person walking by no longer depends entirely on radial TTC.
 - Clamped bad-ego TTC usage to close range when the user is still, blocking
