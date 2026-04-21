@@ -1,7 +1,25 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.27 HEADLESS
-Builds on v3.26b with:
+Intelligent Navigation Assistant v3.28 HEADLESS
+Builds on v3.27 with:
+
+  FIX 13 - Bucketed speech, broader cache reuse, and clearer voice diagnostics.
+    Spoken distances now snap to stable 30cm voice buckets so the same warning
+    phrases repeat instead of synthesizing slightly different decimals. Voice
+    latency logs now separate queue wait, synth time, launch delay, cache hit
+    vs miss, and whether the phrase came from prefetched Piper, cached Piper,
+    or live synthesis.
+
+  FIX 14 - Side-pass people are promoted before they are right on top of you.
+    A person moving past on your left/right can have weak radial TTC even when
+    they are a real navigation hazard. This version boosts nearby side-person
+    scoring while the user is moving and adds a dedicated side-pass awareness/
+    warning rule so those passes are spoken earlier.
+
+  FIX 15 - Bad ego state no longer drives far or medium-range TTC chatter.
+    When ego-motion confidence is bad, motion-derived TTC is now trusted only at
+    close range while the user is still. This blocks nonsense alerts like
+    "person ahead, 6.4 meters" while preserving close distance overrides.
 
   FIX 10 - Piper alerts by default, with cached urgent/warning clips.
     Amy-medium remains the default Piper voice, urgent/warning phrases use
@@ -138,11 +156,23 @@ ALERT_CACHE_DIR = os.path.expanduser(
 ALERT_CACHE_PREWARM = os.environ.get(
     "BLINDNAV_ALERT_CACHE_PREWARM", "1"
 ).strip().lower() not in {"0", "false", "no"}
-ALERT_CACHE_COMMON_DISTANCES_M = (0.6, 1.2, 1.8, 2.4)
+ALERT_DISTANCE_BUCKET_CM = 30
+ALERT_SPOKEN_OFFSET_CM = 20
+ALERT_CACHE_MAX_BUCKET = 5
+ALERT_CACHE_POSITIONS = ("ahead", "on your left", "on your right")
+ALERT_CACHE_COMMON_DISTANCES_M = tuple(
+    ((bucket * ALERT_DISTANCE_BUCKET_CM) + ALERT_SPOKEN_OFFSET_CM) / 100.0
+    for bucket in range(ALERT_CACHE_MAX_BUCKET + 1)
+)
 FAST_ALERT_SILENCE_MS = 220
 ESPEAK_ALERT_SPEED = 175
 ESPEAK_ALERT_GAP = 8
 ESPEAK_ALERT_AMPLITUDE = 180
+
+SIDE_PASS_PERSON_AWARE_CM = 150
+SIDE_PASS_PERSON_WARN_CM = 110
+BAD_EGO_TTC_MAX_DISTANCE_CM = 120
+VOICE_POLICY_LOG_COOLDOWN_S = 2.0
 
 POSITION_CAMERA_HFOV_DEG = 69.0
 POSITION_SIDE_ENTER_DEG  = 13.1
@@ -216,6 +246,142 @@ def _voice_key(pos: str, class_name: str, tier: str, dbucket: int = 0) -> str:
     return f"{zone}_{family}_{tier}_{dbucket}"
 
 
+def _distance_bucket(dist_cm):
+    if dist_cm is None or dist_cm < 0:
+        return 0
+    return max(0, int(dist_cm // ALERT_DISTANCE_BUCKET_CM))
+
+
+def _bucket_distance_cm(dbucket):
+    bucket = max(0, int(dbucket))
+    return bucket * ALERT_DISTANCE_BUCKET_CM + ALERT_SPOKEN_OFFSET_CM
+
+
+def _spoken_distance_m(dist_cm):
+    return _bucket_distance_cm(_distance_bucket(dist_cm)) / 100.0
+
+
+def _spoken_object_name(obj, tier):
+    if obj == "person" or tier == "awareness":
+        return obj
+    return "obstacle"
+
+
+def _select_voice_decision(obj, pos, dist_cm, vel,
+                           user_moving, ego_reliable,
+                           approaching, very_close, close, fast_approach, ttc):
+    spoken_dist_m = _spoken_distance_m(dist_cm)
+    side_pass_person = (
+        obj == "person"
+        and pos != "ahead"
+        and user_moving
+        and dist_cm <= SIDE_PASS_PERSON_AWARE_CM
+    )
+
+    if very_close:
+        spoken_obj = _spoken_object_name(obj, "urgent")
+        if spoken_obj == "person" and approaching and ego_reliable and not user_moving:
+            msg = f"{spoken_obj} {pos} approaching, {spoken_dist_m:.1f} meters"
+            reason = "very_close_approach"
+        elif approaching and ego_reliable and user_moving:
+            msg = f"Stop! {spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "very_close_stop"
+        else:
+            msg = f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "very_close_distance"
+        return {
+            "tier": "urgent",
+            "message": msg,
+            "reason": reason,
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": spoken_obj,
+        }
+
+    if close:
+        spoken_obj = _spoken_object_name(obj, "warning")
+        if spoken_obj == "person" and approaching and ego_reliable and not user_moving:
+            msg = f"{spoken_obj} {pos} closer, {spoken_dist_m:.1f} meters"
+            reason = "close_person_closer"
+        elif approaching and ego_reliable and user_moving:
+            msg = f"Watch out, {spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "close_watch"
+        else:
+            msg = f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "close_distance"
+        return {
+            "tier": "warning",
+            "message": msg,
+            "reason": reason,
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": spoken_obj,
+        }
+
+    if side_pass_person:
+        if dist_cm <= SIDE_PASS_PERSON_WARN_CM:
+            return {
+                "tier": "warning",
+                "message": f"Watch out, person {pos}, {spoken_dist_m:.1f} meters",
+                "reason": "side_pass_warning",
+                "spoken_distance_m": spoken_dist_m,
+                "spoken_object": "person",
+            }
+        return {
+            "tier": "awareness",
+            "message": f"Heads up, person {pos}, {spoken_dist_m:.1f} meters",
+            "reason": "side_pass_awareness",
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": "person",
+        }
+
+    if ttc < 2:
+        spoken_obj = _spoken_object_name(obj, "urgent")
+        if spoken_obj == "person" and ego_reliable and fast_approach:
+            msg = f"Stop! {spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "ttc_urgent_fast"
+        elif spoken_obj == "person" and ego_reliable and approaching:
+            msg = f"{spoken_obj} {pos} approaching, {spoken_dist_m:.1f} meters"
+            reason = "ttc_urgent_approach"
+        else:
+            msg = f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+            reason = "ttc_urgent_neutral"
+        return {
+            "tier": "urgent",
+            "message": msg,
+            "reason": reason,
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": spoken_obj,
+        }
+
+    if ttc < 4:
+        spoken_obj = _spoken_object_name(obj, "warning")
+        msg = (f"Watch out, {spoken_obj} {pos}, {spoken_dist_m:.1f} meters"
+               if ego_reliable else f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters")
+        return {
+            "tier": "warning",
+            "message": msg,
+            "reason": "ttc_warning",
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": spoken_obj,
+        }
+
+    if ttc < 8:
+        return {
+            "tier": "awareness",
+            "message": f"Heads up, {obj} {pos}, {spoken_dist_m:.1f} meters",
+            "reason": "ttc_awareness",
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": obj,
+        }
+
+    return {
+        "tier": None,
+        "message": None,
+        "reason": "no_actionable_distance_or_ttc",
+        "spoken_distance_m": spoken_dist_m,
+        "spoken_object": obj,
+    }
+
+
 def _select_voice_message(obj, pos, dist_m, dist_cm, vel,
                           user_moving, ego_reliable,
                           approaching, very_close, close, fast_approach, ttc):
@@ -228,44 +394,11 @@ def _select_voice_message(obj, pos, dist_m, dist_cm, vel,
     ego_reliable gates ALL directional ("approaching", "closer") wording.
     When unreliable -> neutral "{obj} {pos}, {dist}m" at appropriate tier.
     """
-    if very_close:
-        # FIX 9: gate approaching wording on ego_reliable
-        if approaching and ego_reliable and not user_moving:
-            msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
-        elif approaching and ego_reliable and user_moving:
-            msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
-        else:
-            msg = f"{obj} {pos}, {dist_m:.1f} meters"
-        return "urgent", msg
-
-    if close:
-        # FIX 9: gate approaching wording on ego_reliable
-        if approaching and ego_reliable and user_moving:
-            msg = f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
-        elif approaching and ego_reliable and not user_moving:
-            msg = f"{obj} {pos} closer, {dist_m:.1f} meters"
-        else:
-            msg = f"{obj} {pos}, {dist_m:.1f} meters"
-        return "warning", msg
-
-    if ttc < 2:
-        if ego_reliable and fast_approach:
-            msg = f"Stop! {obj} {pos}, {dist_m:.1f} meters"
-        elif ego_reliable and approaching:
-            msg = f"{obj} {pos} approaching, {dist_m:.1f} meters"
-        else:
-            msg = f"{obj} {pos}, {dist_m:.1f} meters"
-        return "urgent", msg
-
-    if ttc < 4:
-        msg = (f"Watch out, {obj} {pos}, {dist_m:.1f} meters"
-               if ego_reliable else f"{obj} {pos}, {dist_m:.1f} meters")
-        return "warning", msg
-
-    if ttc < 8:
-        return "awareness", f"Heads up, {obj} {pos}, {dist_m:.1f} meters"
-
-    return None, None
+    decision = _select_voice_decision(
+        obj, pos, dist_cm, vel,
+        user_moving, ego_reliable,
+        approaching, very_close, close, fast_approach, ttc)
+    return decision["tier"], decision["message"]
 
 
 # ============= PIPER VOICE =============
@@ -282,6 +415,11 @@ class PiperVoice:
         self._voice_label = os.path.splitext(os.path.basename(PIPER_MODEL))[0]
         self._alert_cache_dir = ALERT_CACHE_DIR
         self._alert_cache_enabled = False
+        self._last_alert_synth_meta = {
+            "mode": "n/a",
+            "cache": "n/a",
+            "silence_ms": 0,
+        }
         try:
             from piper.voice import PiperVoice as _PiperVoice
             from piper.config import SynthesisConfig
@@ -304,8 +442,11 @@ class PiperVoice:
             if self._alert_cache_enabled:
                 os.makedirs(self._alert_cache_dir, exist_ok=True)
                 if ALERT_CACHE_PREWARM:
-                    phrases = self._prime_alert_cache()
-                    print(f"[VOICE] Piper alert cache primed ({phrases} clips)")
+                    threading.Thread(
+                        target=self._prime_alert_cache_async,
+                        daemon=True,
+                        name="piper-alert-cache",
+                    ).start()
             print(
                 f"[OK] Piper TTS ready ({self._sample_rate}Hz, "
                 f"voice={self._voice_label}, speed={PIPER_SPEED})"
@@ -343,6 +484,13 @@ class PiperVoice:
         ).hexdigest()
         return os.path.join(self._alert_cache_dir, f"{digest}.wav")
 
+    def _prime_alert_cache_async(self):
+        try:
+            phrases = self._prime_alert_cache()
+            print(f"[VOICE] Piper alert cache primed ({phrases} clips)")
+        except Exception as e:
+            print(f"[VOICE] Piper alert cache prime failed: {e}")
+
     def _copy_to_temp(self, wav_path):
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             tmpfile = f.name
@@ -352,11 +500,23 @@ class PiperVoice:
     def _materialize_cached_alert(self, text):
         cache_path = self._alert_cache_key(text)
         if os.path.exists(cache_path):
+            self._last_alert_synth_meta = {
+                "mode": "piper_alert",
+                "cache": "hit",
+                "silence_ms": 0,
+            }
             return self._copy_to_temp(cache_path)
 
+        synth_start = time.time()
         tmpfile = self.synthesize_to_file(text, silence_ms=0)
         if tmpfile is None:
             return None
+        self._last_alert_synth_meta = {
+            "mode": "piper_alert",
+            "cache": "miss",
+            "silence_ms": 0,
+            "synth_s": time.time() - synth_start,
+        }
         try:
             if not os.path.exists(cache_path):
                 shutil.copyfile(tmpfile, cache_path)
@@ -368,9 +528,15 @@ class PiperVoice:
         phrases = []
         for dist_m in ALERT_CACHE_COMMON_DISTANCES_M:
             phrases.append(f"Obstacle, {dist_m:.1f} meters")
-            for pos in ("ahead", "on your left", "on your right"):
+            for pos in ALERT_CACHE_POSITIONS:
+                phrases.append(f"obstacle {pos}, {dist_m:.1f} meters")
+                phrases.append(f"Stop! obstacle {pos}, {dist_m:.1f} meters")
+                phrases.append(f"Watch out, obstacle {pos}, {dist_m:.1f} meters")
+                phrases.append(f"person {pos}, {dist_m:.1f} meters")
+                phrases.append(f"person {pos} approaching, {dist_m:.1f} meters")
                 phrases.append(f"Stop! person {pos}, {dist_m:.1f} meters")
                 phrases.append(f"Watch out, person {pos}, {dist_m:.1f} meters")
+                phrases.append(f"Heads up, person {pos}, {dist_m:.1f} meters")
         for phrase in phrases:
             tmpfile = self._materialize_cached_alert(phrase)
             if tmpfile:
@@ -429,7 +595,9 @@ class PiperVoice:
             if tmpfile is None:
                 return None
             if silence_ms > 0:
+                self._last_alert_synth_meta["silence_ms"] = silence_ms
                 return self.prepend_silence(tmpfile, silence_ms)
+            self._last_alert_synth_meta["silence_ms"] = 0
             return tmpfile
 
         if self._espeak_cmd is None:
@@ -466,7 +634,7 @@ class PiperVoice:
 
 
 
-# ============= VOICE ASSISTANT (v3.27) =============
+# ============= VOICE ASSISTANT (v3.28) =============
 class VoiceAssistant:
     """
     3-slot priority queue with pre-synthesis, BT-safe skip-ahead (FIX 8),
@@ -670,10 +838,15 @@ class VoiceAssistant:
     def _speak_thread(self, text, prefetched_wav=None, label="",
                       priority=None, event_created_ts=None, enqueued_ts=None):
         """Play audio. Logs per-alert latency timestamps."""
-        tts_start_ts  = None
+        tts_start_ts = None
+        synth_done_ts = None
         play_start_ts = None
-        play_end_ts   = None
+        play_end_ts = None
         skipped_before_play = False
+        voice_mode = "unknown"
+        cache_state = "n/a"
+        silence_ms_used = 0
+        need_silence = False
         try:
             if self._tts._use_piper:
                 with self._lock:
@@ -684,26 +857,35 @@ class VoiceAssistant:
                 tts_start_ts = time.time()
 
                 if prefetched_wav:
+                    voice_mode = "piper_prefetch"
+                    cache_state = "prefetch"
                     if need_silence:
-                        tmpfile = self._tts.prepend_silence(prefetched_wav, PIPER_SILENCE_MS)
+                        silence_ms_used = PIPER_SILENCE_MS
+                        tmpfile = self._tts.prepend_silence(prefetched_wav, silence_ms_used)
                     else:
                         tmpfile = prefetched_wav
+                    synth_done_ts = time.time()
                 else:
-                    silence_ms = self._alert_silence_ms(need_silence) if use_alert_synth else (
+                    silence_ms_used = self._alert_silence_ms(need_silence) if use_alert_synth else (
                         PIPER_SILENCE_MS if need_silence else 0
                     )
                     if use_alert_synth:
-                        tmpfile = self._tts.synthesize_alert_to_file(text, silence_ms=silence_ms)
+                        tmpfile = self._tts.synthesize_alert_to_file(
+                            text, silence_ms=silence_ms_used
+                        )
+                        meta = getattr(self._tts, "_last_alert_synth_meta", {})
+                        voice_mode = meta.get("mode", "piper_alert")
+                        cache_state = meta.get("cache", "unknown")
                     else:
-                        # FIX: use semaphore for direct synthesis too — prevents
-                        # speak_thread and a stale presyn_worker from both calling
-                        # synthesize_to_file at the same time (blocking acquire is
-                        # fine here since _speak_thread runs on its own daemon thread)
+                        voice_mode = "piper_live"
                         self._presyn_sem.acquire()
                         try:
-                            tmpfile = self._tts.synthesize_to_file(text, silence_ms=silence_ms)
+                            tmpfile = self._tts.synthesize_to_file(
+                                text, silence_ms=silence_ms_used
+                            )
                         finally:
                             self._presyn_sem.release()
+                    synth_done_ts = time.time()
 
                 if tmpfile:
                     with self._lock:
@@ -713,8 +895,10 @@ class VoiceAssistant:
                                 for higher in range(priority)
                             )
                     if skipped_before_play:
-                        try: os.unlink(tmpfile)
-                        except Exception: pass
+                        try:
+                            os.unlink(tmpfile)
+                        except Exception:
+                            pass
                     else:
                         play_start_ts = time.time()
                         if self._player_fn is not None:
@@ -727,13 +911,17 @@ class VoiceAssistant:
                         proc.wait()
                         play_end_ts = time.time()
                         with self._lock:
-                            self._current_proc    = None
+                            self._current_proc = None
                             self._last_speech_end = play_end_ts
-                        try: os.unlink(tmpfile)
-                        except Exception: pass
+                        try:
+                            os.unlink(tmpfile)
+                        except Exception:
+                            pass
             else:
-                tts_start_ts  = time.time()
+                tts_start_ts = time.time()
+                synth_done_ts = tts_start_ts
                 play_start_ts = time.time()
+                voice_mode = "espeak_live"
                 if self._player_fn is not None:
                     proc = self._player_fn(text)
                 else:
@@ -745,23 +933,38 @@ class VoiceAssistant:
                 proc.wait()
                 play_end_ts = time.time()
                 with self._lock:
-                    self._current_proc    = None
+                    self._current_proc = None
                     self._last_speech_end = play_end_ts
 
         except Exception as e:
             print(f"[VOICE] Thread error: {e}")
 
         finally:
-            # FIX 6: Log per-alert latency timestamps to events.log
             if self._event_logger and event_created_ts is not None:
                 t0 = event_created_ts
+                queue_wait = max(0.0, (tts_start_ts or t0) - (enqueued_ts or t0))
+                synth_time = max(
+                    0.0,
+                    (synth_done_ts or tts_start_ts or t0) - (tts_start_ts or t0)
+                )
+                launch_wait = max(
+                    0.0,
+                    (play_start_ts or synth_done_ts or t0) - (synth_done_ts or tts_start_ts or t0)
+                )
                 lat_line = (
                     f"[LATENCY] label={label} text=\"{text[:40]}\""
                     f" event_created={t0:.3f}"
                     f" enqueued={enqueued_ts - t0:.3f}s"
-                    f" tts_start={((tts_start_ts  or t0) - t0):.3f}s"
+                    f" tts_start={((tts_start_ts or t0) - t0):.3f}s"
                     f" play_start={((play_start_ts or t0) - t0):.3f}s"
-                    f" play_end={((play_end_ts    or t0) - t0):.3f}s"
+                    f" play_end={((play_end_ts or t0) - t0):.3f}s"
+                    f" queue_wait={queue_wait:.3f}s"
+                    f" synth={synth_time:.3f}s"
+                    f" launch_wait={launch_wait:.3f}s"
+                    f" mode={voice_mode}"
+                    f" cache={cache_state}"
+                    f" cold_stream={'yes' if need_silence else 'no'}"
+                    f" silence_ms={silence_ms_used}"
                 )
                 self._event_logger(lat_line)
             if skipped_before_play:
@@ -1211,6 +1414,7 @@ class ThreatAssessment:
         motion = evaluate_track_motion(track, user_moving=user_moving,
                                        ego_reliable=ego_reliable)
         v = motion["effective_velocity"]
+        pos = get_position(track)
 
         score = 0.0
         if d < CRITICAL_DISTANCE:
@@ -1225,6 +1429,12 @@ class ThreatAssessment:
             if v < -50: score += min(200, abs(v) * 2)
         elif v > 5:
             score *= 0.2
+
+        if (track.class_name == "person"
+                and user_moving
+                and pos != "ahead"
+                and d <= SIDE_PASS_PERSON_AWARE_CM):
+            score += 18.0 if d <= SIDE_PASS_PERSON_WARN_CM else 8.0
 
         score *= OBJECT_THREAT_WEIGHTS.get(track.class_name, 1.0)
         if track.score > 0.7:   score *= 1.1
@@ -1250,7 +1460,7 @@ class ThreatAssessment:
 # ============= HELPER FUNCTIONS =============
 
 def get_position(track, frame_width=640):
-    if track.box is None: return "ahead"
+    if getattr(track, "box", None) is None: return "ahead"
     angle_deg = _position_angle_deg(track.box, frame_width)
     prev_zone = getattr(track, "_position_zone", None)
     zone = _classify_position_zone(angle_deg, prev_zone)
@@ -1333,7 +1543,12 @@ def evaluate_track_motion(track, user_moving=False, ego_reliable=True):
             "fast_approach": False,
         }
 
-    velocity_reliable = track.velocity_valid and (ego_reliable or not user_moving)
+    close_range_bad_ego = (
+        track.distance <= BAD_EGO_TTC_MAX_DISTANCE_CM
+        and not user_moving
+        and not ego_reliable
+    )
+    velocity_reliable = track.velocity_valid and (ego_reliable or close_range_bad_ego)
     effective_velocity = raw_velocity if velocity_reliable else 0.0
     noise_floor = 3.0 + track.distance * 0.02
     ttc = 999.0
@@ -1539,9 +1754,9 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.27 HEADLESS")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.28 HEADLESS")
     print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: piper alerts, cached clips, ego guard, filtered motion, wide-angle zones, clean shutdown")
+    print("FIXES: bucketed speech, side-pass people, bad-ego TTC clamp, richer voice logs")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")
@@ -1650,11 +1865,30 @@ def main():
     last_paused_print = time.time()
     last_wall_alert   = 0.0
     last_busy_alert   = 0.0
+    last_policy_log   = {}
     detect_ms, depth_ms = [], []
     fps_start  = time.time()
     fps_frames = 0
     avg_fps    = 0.0
     last_fps   = 0.0
+
+    def log_voice_policy(now, track, pos, score, motion_eval, reason, tier="NONE"):
+        dist_val = track.distance if track.distance is not None else -1
+        key = f"{track.id}:{reason}:{tier}:{_distance_bucket(dist_val)}"
+        if now - last_policy_log.get(key, 0.0) < VOICE_POLICY_LOG_COOLDOWN_S:
+            return
+        last_policy_log[key] = now
+        ttc = motion_eval["ttc"]
+        ttc_text = f"{ttc:.1f}s" if ttc < 999 else "n/a"
+        line = (
+            f"[VOICE_POLICY] {track.class_name}#{track.id}(f{track.seen_frames}) {pos}: "
+            f"dist={dist_val}cm raw_vel={motion_eval['raw_velocity']:.1f}cm/s "
+            f"eff_vel={motion_eval['effective_velocity']:.1f}cm/s ttc={ttc_text} "
+            f"score={score:.1f} tier={tier} reason={reason} "
+            f"user={'moving' if user_moving else 'still'} ego={'OK' if ego_reliable else 'BAD'}"
+        )
+        print(line)
+        log_event(line)
 
     try:
         while True:
@@ -1730,7 +1964,7 @@ def main():
                                       and t.seen_frames >= 3 for t in tracks)
                     if wall_dist_cm < WALL_DISTANCE_CM and not yolo_covers:
                         voice.speak_urgent(
-                            f"Obstacle, {wall_dist_cm/100:.1f} meters",
+                            f"Obstacle, {_spoken_distance_m(wall_dist_cm):.1f} meters",
                             key="wall_fallback")
                         last_wall_alert = now
                         print(f"[WALL] Depth fallback: {wall_dist_cm}cm")
@@ -1759,12 +1993,20 @@ def main():
                         if now - last_paused_print > 3.0:
                             print(f"[PAUSED] Static {obj} {dist_m:.1f}m — suppressed")
                             last_paused_print = now
+                        log_voice_policy(
+                            now, track, pos, score, motion_eval,
+                            reason="static_stationary_suppression",
+                            tier="NONE",
+                        )
                     else:
                         dbucket = int(dist_cm // 30)
-                        tier, msg = _select_voice_message(
-                            obj, pos, dist_m, dist_cm, vel,
+                        decision = _select_voice_decision(
+                            obj, pos, dist_cm, vel,
                             user_moving, ego_reliable,
                             approaching, very_close, close, fast_approach, ttc)
+                        tier = decision["tier"]
+                        msg = decision["message"]
+                        reason = decision["reason"]
 
                         if tier == "urgent":
                             voice.speak_urgent(
@@ -1779,6 +2021,20 @@ def main():
                         elif tier == "awareness":
                             voice.speak_awareness(
                                 msg, key=_voice_key(pos, obj, "aware", 0))
+                        else:
+                            if obj == "person" or score >= 10 or dist_cm <= SIDE_PASS_PERSON_AWARE_CM:
+                                log_voice_policy(
+                                    now, track, pos, score, motion_eval,
+                                    reason=reason,
+                                    tier="NONE",
+                                )
+
+                        if reason.startswith("side_pass"):
+                            log_voice_policy(
+                                now, track, pos, score, motion_eval,
+                                reason=reason,
+                                tier=(tier or "NONE").upper(),
+                            )
 
                     if ttc_allowed and ttc < 100:
                         tier = ("URGENT" if ttc<2 else "WARN" if ttc<4

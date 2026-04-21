@@ -299,6 +299,23 @@ class TestSelectVoiceMessage:
         _, msg = self._call(30, -20, user_moving=False, ego_reliable=True)
         assert "approaching" in msg, f"Expected 'approaching' in msg, got: {msg!r}"
 
+    def test_side_pass_person_gets_awareness_when_ttc_is_weak(self):
+        tier, msg = self._call(129, 0, user_moving=True, ego_reliable=False,
+                               obj="person", pos="on your right")
+        assert tier == "awareness"
+        assert "person on your right" in msg
+        assert "1.4 meters" in msg
+
+    def test_bad_ego_far_stationary_person_stays_silent(self):
+        tier, msg = self._call(639, -90, user_moving=False, ego_reliable=False,
+                               ttc=999.0, obj="person", pos="ahead")
+        assert tier is None and msg is None
+
+    def test_non_person_warning_uses_obstacle_wording(self):
+        _, msg = self._call(60, -30, user_moving=True, ego_reliable=True,
+                            obj="chair", pos="on your right")
+        assert "obstacle on your right" in msg
+
     def test_msg_is_string_when_tier_not_none(self):
         """All non-None tiers must produce a non-empty string message."""
         for dist, vel, moving, ego, exp_tier in self.ROUTING_CASES:
@@ -403,6 +420,15 @@ class TestThreatScoringTruthTable:
         level = MOD.ThreatAssessment.get_threat_level(score)
         assert level == "SAFE", (
             f"bad ego should suppress far false CRITICALs, got {score:.1f}/{level}"
+        )
+
+    def test_far_velocity_suppressed_when_user_still_and_ego_bad(self):
+        track = self._make_track(639, -89.6, "person", 0.5)
+        score = MOD.ThreatAssessment.calculate_threat_score(
+            track, user_moving=False, ego_reliable=False)
+        level = MOD.ThreatAssessment.get_threat_level(score)
+        assert level == "SAFE", (
+            f"bad ego should suppress far still-user false alerts, got {score:.1f}/{level}"
         )
 
     def test_close_distance_stays_critical_when_user_moving_and_ego_bad(self):
@@ -648,10 +674,12 @@ class TestPiperAlertCache:
         piper._materialize_cached_alert = fake_materialize
         count = MOD.PiperVoice._prime_alert_cache(piper)
 
-        assert count == 28
-        assert "Stop! person ahead, 1.2 meters" in seen
-        assert "Watch out, person on your left, 2.4 meters" in seen
-        assert "Obstacle, 0.6 meters" in seen
+        assert count == 150
+        assert "Stop! person ahead, 1.1 meters" in seen
+        assert "Watch out, person on your left, 1.7 meters" in seen
+        assert "Obstacle, 0.5 meters" in seen
+        assert "obstacle on your right, 1.7 meters" in seen
+        assert "Heads up, person on your left, 1.4 meters" in seen
 
 
 

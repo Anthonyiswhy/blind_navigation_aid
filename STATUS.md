@@ -1,7 +1,7 @@
 # Project Status
 
-Last updated: April 20, 2026
-Current repo target: `v3.27 HEADLESS`
+Last updated: April 21, 2026
+Current repo target: `v3.28 HEADLESS`
 
 ## Verified in Code and Tests
 
@@ -14,6 +14,10 @@ Current repo target: `v3.27 HEADLESS`
   - safe urgent supersession before playback
   - Piper as the default urgent/warning alert voice
   - prewarmed cached alert clips for common short safety phrases
+  - bucketed spoken distances for cache reuse
+  - explicit queue/synth/cache latency diagnostics in `events.log`
+- Side-pass people now get awareness/warning promotion while the user is moving.
+- Bad-ego TTC is now trusted only at close range while the user is still.
 - Motion filtering now suppresses large one-frame depth jumps and small
   far-range drift before threat scoring/logging.
 - Position labeling now uses wide-angle-aware angle mapping with hysteresis.
@@ -26,7 +30,7 @@ Current repo target: `v3.27 HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `168 passed`
+  - combined result: `172 passed`
 
 ## Confirmed Design Invariants
 
@@ -73,7 +77,7 @@ Current repo target: `v3.27 HEADLESS`
 ## Pending Work
 
 - Heatsink: highest hardware priority
-- Review and merge v3.27 to GitHub main
+- Review and merge v3.28 to GitHub main
 - Schedule a field test with Ricardo Salazar
 - Record five bag-file regression scenarios
 - Add traffic-light color classification
