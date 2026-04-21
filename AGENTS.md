@@ -184,7 +184,7 @@ When incrementing to vX.XX, update ALL of these:
 
 ---
 
-## Pending Work (as of v3.23)
+## Pending Work (as of v3.28)
 
 - [ ] **Heatsink** — #1 hardware priority. Pi throttles to 6–8 FPS above ~65°C.
 - [ ] Merge/push v3.28 to GitHub main
