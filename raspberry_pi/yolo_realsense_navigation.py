@@ -86,6 +86,7 @@ import shutil
 import subprocess
 import tempfile
 import base64
+import traceback
 from datetime import datetime, timezone
 
 import queue
@@ -1834,8 +1835,10 @@ def main():
         cfg.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         if RECORD_TO_FILE: cfg.enable_record_to_file(RECORD_TO_FILE)
+    pipeline_started = False
     try:
         pipeline.start(cfg)
+        pipeline_started = True
         print("[OK] RealSense started")
     except Exception as e:
         print(f"[ERROR] RealSense: {e}"); csv_file.close(); return
@@ -1868,7 +1871,13 @@ def main():
                 except queue.Full:
                     pass
             except Exception as exc:
-                if not _cap_stop.is_set(): print(f"[CAPTURE] {exc}")
+                if _cap_stop.is_set():
+                    break
+                msg = str(exc)
+                print(f"[CAPTURE] {msg}")
+                if "cannot be called before start()" in msg:
+                    _cap_stop.set()
+                    break
 
     capture_thread = threading.Thread(target=_capture_worker, daemon=True, name="capture")
     capture_thread.start()
@@ -2168,15 +2177,26 @@ def main():
 
     except KeyboardInterrupt:
         print("\n[EXIT] Ctrl+C")
+    except Exception as exc:
+        tb = traceback.format_exc()
+        print(f"\n[FATAL] {exc}")
+        print(tb, end="" if tb.endswith("\n") else "\n")
+        log_event(f"[FATAL] {exc}")
+        for line in tb.rstrip().splitlines():
+            log_event(f"[TRACE] {line}")
     finally:
         print("\n[CLEANUP] Shutting down...")
         _cap_stop.set()
         scene.shutdown()
         try:
-            pipeline.stop()
+            capture_thread.join(timeout=2.0)
         except Exception as exc:
-            print(f"[CLEANUP] pipeline.stop(): {exc}")
-        capture_thread.join(timeout=2.0)
+            print(f"[CLEANUP] capture_thread.join(): {exc}")
+        if pipeline_started:
+            try:
+                pipeline.stop()
+            except Exception as exc:
+                print(f"[CLEANUP] pipeline.stop(): {exc}")
         voice.shutdown(timeout=6.0)
         csv_file.close()
         event_file.close()
