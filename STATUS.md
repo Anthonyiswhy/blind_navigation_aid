@@ -1,7 +1,7 @@
 # Project Status
 
-Last updated: April 21, 2026
-Current repo target: `v3.28 HEADLESS`
+Last updated: April 27, 2026
+Current repo target: `v3.29 HEADLESS`
 
 ## Verified in Code and Tests
 
@@ -23,6 +23,12 @@ Current repo target: `v3.28 HEADLESS`
 - Position labeling now uses wide-angle-aware angle mapping with hysteresis.
 - Repeated same-frame `get_position()` reads now return a cached label instead
   of advancing hysteresis multiple times inside one video frame.
+- Optional push-to-talk voice input is implemented with:
+  - `arecord` command capture
+  - OpenAI speech-to-text transcription
+  - deterministic command routing for describe, nearest, people, status,
+    repeat, and cancel
+  - thread-safe navigation snapshots so STT never blocks detection
 - Ego-motion compensation includes:
   - background-depth velocity estimation
   - hard clamp at `+/-160 cm/s`
@@ -32,7 +38,7 @@ Current repo target: `v3.28 HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `174 passed`
+  - combined result: `192 passed`
 
 ## Confirmed Design Invariants
 
@@ -43,6 +49,8 @@ Current repo target: `v3.28 HEADLESS`
 - Distance bucket cooldowns keep distance wording fresh as threats approach.
 - Ego-motion compensation is zeroed when confidence is poor because bad
   compensation is worse than no compensation.
+- Voice commands use `voice.speak_info()` only; urgent/warning obstacle alerts
+  remain owned by the main detection loop.
 
 ## What Is Hardware-Validated vs Simulated
 
@@ -56,6 +64,8 @@ Current repo target: `v3.28 HEADLESS`
 - threat score truth tables
 - message wording selection
 - ego-motion clamp and confidence behavior
+- voice command parsing, routing, failure handling, and nonblocking listener
+  behavior
 
 ### Still requires on-device validation
 
@@ -64,6 +74,8 @@ Current repo target: `v3.28 HEADLESS`
 - walking sessions with harness sway
 - thermal behavior above 65 C
 - tracker stability with crowded scenes and occlusions
+- real microphone quality, OpenAI STT latency, and push-to-talk ergonomics on
+  the Pi
 
 ## Current Known Limitations
 
@@ -75,15 +87,17 @@ Current repo target: `v3.28 HEADLESS`
   ego-motion compensation temporarily.
 - The advanced test suite is strong, but field walking data is still needed for
   final tuning confidence.
+- Voice input requires `OPENAI_API_KEY`, `openai`, working `arecord`, and a
+  microphone; without those it remains disabled or fails gracefully.
 
 ## Pending Work
 
 - Heatsink: highest hardware priority
-- Review and merge v3.28 to GitHub main
+- Review and merge v3.29 to GitHub main
 - Schedule a field test with Ricardo Salazar
 - Record five bag-file regression scenarios
 - Add traffic-light color classification
-- Explore voice input via Whisper API
+- Field-test push-to-talk voice input and tune command phrasing
 
 ## CI State
 

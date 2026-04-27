@@ -5,9 +5,9 @@ Wearable AI navigation assistant for blind users. Raspberry Pi 4 + Intel RealSen
 camera on a chest harness. Detects obstacles, scores threats, speaks warnings through Bluetooth
 headphones using Piper neural TTS. On-demand scene description via Codex Vision API.
 
-**Current production version:** v3.28 HEADLESS
+**Current production version:** v3.29 HEADLESS
 **Production file:** `raspberry_pi/yolo_realsense_navigation.py`
-**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (174 collected tests, no hardware required)
+**Test files:** `tests/test_blindnav.py` + `tests/test_blindnav_v326.py` (192 collected tests, no hardware required)
 
 ---
 
@@ -17,6 +17,8 @@ headphones using Piper neural TTS. On-demand scene description via Codex Vision 
 # Run (on Pi)
 source ~/blindnav-venv/bin/activate
 export ANTHROPIC_API_KEY="sk-..."
+export OPENAI_API_KEY="sk-..."        # optional voice commands
+export BLINDNAV_VOICE_INPUT=1         # optional, press v to speak command
 python3 raspberry_pi/yolo_realsense_navigation.py
 
 # Run display version (browser stream)
@@ -102,6 +104,9 @@ Main loop (every frame)
 **Voice cooldown keys are zone-based and include distance bucket:** `_voice_key(pos, class_name, tier, int(dist_cm//30))`
 This survives tracker ID churn while still re-firing every 30cm so distance in the message stays accurate as an object approaches.
 
+**Optional voice commands are push-to-talk, not conversational safety logic.**
+Set `BLINDNAV_VOICE_INPUT=1`, press `v`, and the side-thread listener records a short WAV with `arecord`, sends it to OpenAI STT, then routes only deterministic commands: describe, nearest, people, status, repeat, cancel. Command replies use `voice.speak_info()`. Urgent/warning obstacle alerts stay in the main loop and still use the local VoiceAssistant path.
+
 ---
 
 ## YOLO26n Facts
@@ -184,14 +189,14 @@ When incrementing to vX.XX, update ALL of these:
 
 ---
 
-## Pending Work (as of v3.28)
+## Pending Work (as of v3.29)
 
 - [ ] **Heatsink** — #1 hardware priority. Pi throttles to 6–8 FPS above ~65°C.
-- [ ] Merge/push v3.28 to GitHub main
+- [ ] Merge/push v3.29 to GitHub main
 - [ ] Field test with Ricardo Salazar (blind user, primary tester) — not yet scheduled
 - [ ] Record bag file scenarios for regression testing (5 scenarios: person approach, chair, close-range, white wall, person turning away)
 - [ ] Traffic light detection — crop YOLO's `traffic light` box, classify red/green pixels
-- [ ] Voice input via Whisper API
+- [ ] Field-test push-to-talk voice input with real microphone and OpenAI STT latency logs
 
 ---
 
