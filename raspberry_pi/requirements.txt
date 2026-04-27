@@ -4,3 +4,4 @@ picamera2>=0.3.16
 onnxruntime>=1.16.0
 pyserial>=3.5
 RPi.GPIO>=0.7.1
+openai>=1.0.0

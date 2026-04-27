@@ -5,12 +5,12 @@ RealSense D435. The system detects obstacles, estimates threat from distance
 and time-to-collision, and speaks warnings through Bluetooth headphones using
 Piper neural TTS.
 
-Current production version: `v3.28 HEADLESS`
+Current production version: `v3.30 HEADLESS`
 
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
 - Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
-- Verified locally on April 21, 2026: `174 passed`
+- Verified locally on April 27, 2026: `195 passed`
 
 ## What It Does
 
@@ -21,8 +21,32 @@ Current production version: `v3.28 HEADLESS`
 - Speaks left/right/ahead warnings with distance-aware cooldown buckets.
 - Logs per-alert latency timestamps to `events.log`.
 - Provides on-demand scene description with the `d` key.
+- Provides optional push-to-talk voice commands with OpenAI speech-to-text.
+- Provides an optional OpenAI alert TTS field-test mode.
 
 ## Recent Changes
+
+### v3.30
+
+- Added `BLINDNAV_ALERT_TTS=openai` as a field-test mode for urgent, warning,
+  and cleared alert speech.
+- Keeps detection, threat scoring, voice queueing, and `aplay` playback policy
+  unchanged so the field test compares TTS output only.
+- Uses OpenAI WAV speech output with local fallback enabled by default.
+- Added `tools/run_tts_local.sh`, `tools/run_tts_openai.sh`, and
+  `tools/FIELD_TEST_TTS_COMPARE.md` for repeatable side-by-side field tests.
+
+### v3.29
+
+- Added optional push-to-talk voice command input with `BLINDNAV_VOICE_INPUT=1`.
+- Records short commands with `arecord`, transcribes through OpenAI STT, and
+  routes deterministic commands: describe, nearest, people, status, repeat, and
+  cancel.
+- Keeps safety alerts on the existing local Piper/VoiceAssistant path by
+  default; OpenAI STT is used only for command input.
+- Adds a thread-safe navigation snapshot so command responses can report the
+  nearest object, people count, and runtime status without blocking detection.
+- Adds `tools/test_transcribe.py` for command-line STT smoke testing.
 
 ### v3.28
 
@@ -106,10 +130,20 @@ blind_navigation_aid/
 ```bash
 source ~/blindnav-venv/bin/activate
 export ANTHROPIC_API_KEY="sk-..."
+export OPENAI_API_KEY="sk-..."            # optional, for voice commands
+export BLINDNAV_VOICE_INPUT=1             # optional, press v to speak command
 python3 raspberry_pi/yolo_realsense_navigation.py
 ```
 
-Press `d` for a scene description. Use `Ctrl+C` to exit.
+Press `d` for a scene description, or `v` for a voice command when enabled.
+Use `Ctrl+C` to exit.
+
+To compare alert TTS output only:
+
+```bash
+bash tools/run_tts_local.sh
+OPENAI_API_KEY="sk-..." bash tools/run_tts_openai.sh
+```
 
 ## Tests
 
@@ -123,8 +157,8 @@ pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 Current collected totals:
 
 - `tests/test_blindnav.py`: 37 tests
-- `tests/test_blindnav_v326.py`: 131 tests
-- Combined: 168 tests
+- `tests/test_blindnav_v326.py`: 158 tests
+- Combined: 195 tests
 
 ## Performance Notes
 
@@ -136,8 +170,11 @@ Current collected totals:
 ## Current Priorities
 
 - Add a heatsink before field sessions.
-- Review and merge the v3.28 repo state, then field-test it with Ricardo Salazar.
+- Review and merge the v3.30 repo state, then field-test it with Ricardo Salazar.
 - Record bag-file scenarios for regression playback.
+- Field-test push-to-talk voice input on the Pi with the real microphone.
+- Field-test local Piper alert TTS against OpenAI alert TTS using the same
+  walking route and compare `[LATENCY] play_start` in `events.log`.
 - Add traffic-light color classification after the base obstacle system is
   stable.
 
