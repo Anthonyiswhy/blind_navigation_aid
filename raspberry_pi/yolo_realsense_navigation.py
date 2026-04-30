@@ -254,6 +254,14 @@ os.makedirs(BAG_FOLDER, exist_ok=True)
 os.makedirs(CSV_FOLDER, exist_ok=True)
 CSV_FILE = os.path.join(CSV_FOLDER, datetime.now(timezone.utc).strftime("log_%Y%m%d_%H%M%S.csv"))
 
+LOG_UPLOAD_ENABLED = os.environ.get(
+    "BLINDNAV_LOG_UPLOAD", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
+LOG_UPLOAD_BRANCH = os.environ.get(
+    "BLINDNAV_LOG_UPLOAD_BRANCH", "blindnav-field-logs"
+).strip() or "blindnav-field-logs"
+LOG_UPLOAD_REMOTE = os.environ.get("BLINDNAV_LOG_UPLOAD_REMOTE", "").strip()
+
 # ============= YOLO CLASS NAMES =============
 CLASS_NAMES = [
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
@@ -446,6 +454,59 @@ def _select_voice_message(obj, pos, dist_cm, vel,
         user_moving, ego_reliable,
         approaching, very_close, close, fast_approach, ttc)
     return decision["tier"], decision["message"]
+
+
+def _repo_root():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+
+def _maybe_upload_run_logs(csv_path, event_path, event_logger=None):
+    if not LOG_UPLOAD_ENABLED:
+        return None
+
+    script_path = os.path.join(_repo_root(), "tools", "upload_run_logs_to_github.py")
+    if not os.path.exists(script_path):
+        msg = f"[LOG_UPLOAD] uploader missing: {script_path}"
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return None
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    upload_log = os.path.join(CSV_FOLDER, f"upload_{stamp}.log")
+    cmd = [
+        sys.executable,
+        script_path,
+        "--repo-root", _repo_root(),
+        "--branch", LOG_UPLOAD_BRANCH,
+        "--log", csv_path,
+        "--log", event_path,
+    ]
+    if LOG_UPLOAD_REMOTE:
+        cmd.extend(["--remote", LOG_UPLOAD_REMOTE])
+
+    try:
+        out = open(upload_log, "ab", buffering=0)
+        proc = subprocess.Popen(
+            cmd,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            close_fds=True,
+        )
+        msg = (
+            f"[LOG_UPLOAD] started pid={proc.pid} branch={LOG_UPLOAD_BRANCH} "
+            f"log={upload_log}"
+        )
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return proc
+    except Exception as exc:
+        msg = f"[LOG_UPLOAD] failed to start: {exc}"
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return None
 
 
 # ============= PIPER VOICE =============
@@ -2725,6 +2786,7 @@ def main():
         voice.shutdown(timeout=6.0)
         csv_file.close()
         event_file.close()
+        _maybe_upload_run_logs(CSV_FILE, EVENT_LOG)
         print(f"[LOG] Saved: {CSV_FILE}")
         print(f"[LOG] Events: {EVENT_LOG}")
         print("[OK] Done")

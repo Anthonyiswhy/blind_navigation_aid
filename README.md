@@ -145,6 +145,17 @@ bash tools/run_tts_local.sh
 OPENAI_API_KEY="sk-..." bash tools/run_tts_openai.sh
 ```
 
+To upload each completed run's CSV and event log to GitHub automatically:
+
+```bash
+export BLINDNAV_LOG_UPLOAD=1
+python3 raspberry_pi/yolo_realsense_navigation.py
+```
+
+Logs are pushed to the `blindnav-field-logs` branch by default. Set
+`BLINDNAV_LOG_UPLOAD_BRANCH` or `BLINDNAV_LOG_UPLOAD_REMOTE` to override that.
+The uploader writes its own `upload_*.log` file under `~/blindnav_logs`.
+
 ## Tests
 
 All tests run without camera hardware, a RealSense device, Piper, or an IMU.
