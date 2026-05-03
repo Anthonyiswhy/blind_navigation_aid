@@ -41,6 +41,30 @@ git add -A && git commit -m "vX.XX: description" && git push
 
 ---
 
+## Codex Handoff Requirement
+
+For any meaningful Codex work, create or update a Markdown handoff file under
+`docs/` before finishing. This applies to local-only changes, pushed branches,
+pull requests, field-log reviews, debugging sessions, release decisions, and
+weekly progress checks.
+
+Use `docs/CODEX_HANDOFF_TEMPLATE.md` as the starting format. A handoff note
+should include:
+
+- date, branch, commit, and PR link if one exists
+- what changed or what was diagnosed
+- why it matters for BlindNav
+- exact files touched or logs reviewed
+- commands/tests run and their results
+- known caveats, failed attempts, and next steps for the next Codex chat
+
+If the work is pushed to GitHub, include the handoff doc in the PR unless the
+user explicitly says not to. Do not paste secrets, API keys, full raw logs, or
+private personal data into docs; summarize sensitive logs and reference their
+safe location instead.
+
+---
+
 ## Hard Rules — Never Break These
 
 **NEVER send SIGTERM to aplay.**
