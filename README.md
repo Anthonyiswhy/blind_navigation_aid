@@ -155,6 +155,11 @@ python3 raspberry_pi/yolo_realsense_navigation.py
 Logs are pushed to the `blindnav-field-logs` branch by default. Set
 `BLINDNAV_LOG_UPLOAD_BRANCH` or `BLINDNAV_LOG_UPLOAD_REMOTE` to override that.
 The uploader writes its own `upload_*.log` file under `~/blindnav_logs`.
+BlindNav keeps the newest 10 navigation runs by default and prunes older
+`log_*.csv` / `events_*.log` pairs on startup and shutdown. Set
+`BLINDNAV_LOG_RETENTION_RUNS` to change that. When upload is enabled, startup
+also retries upload for the newest previous completed run so logs from a prior
+failed shutdown are not stranded locally.
 
 ## Tests
 

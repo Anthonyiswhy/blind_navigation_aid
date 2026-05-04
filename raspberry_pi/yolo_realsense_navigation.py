@@ -261,6 +261,15 @@ LOG_UPLOAD_BRANCH = os.environ.get(
     "BLINDNAV_LOG_UPLOAD_BRANCH", "blindnav-field-logs"
 ).strip() or "blindnav-field-logs"
 LOG_UPLOAD_REMOTE = os.environ.get("BLINDNAV_LOG_UPLOAD_REMOTE", "").strip()
+LOG_RETENTION_RUNS = max(
+    1, int(os.environ.get("BLINDNAV_LOG_RETENTION_RUNS", "10"))
+)
+LOG_UPLOAD_LOG_RETENTION = max(
+    1, int(os.environ.get("BLINDNAV_UPLOAD_LOG_RETENTION", "10"))
+)
+LOG_RECOVERY_UPLOAD_RUNS = max(
+    0, int(os.environ.get("BLINDNAV_LOG_RECOVERY_UPLOAD_RUNS", "1"))
+)
 
 # ============= YOLO CLASS NAMES =============
 CLASS_NAMES = [
@@ -460,7 +469,83 @@ def _repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
-def _maybe_upload_run_logs(csv_path, event_path, event_logger=None):
+def _run_id_from_log_path(path):
+    name = os.path.basename(path or "")
+    for prefix, suffix in (("log_", ".csv"), ("events_", ".log")):
+        if name.startswith(prefix) and name.endswith(suffix):
+            return name[len(prefix):-len(suffix)]
+    return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+
+def _nav_run_log_sets():
+    runs = {}
+    try:
+        names = os.listdir(CSV_FOLDER)
+    except OSError:
+        return []
+    for name in names:
+        path = os.path.join(CSV_FOLDER, name)
+        if not os.path.isfile(path):
+            continue
+        if name.startswith("log_") and name.endswith(".csv"):
+            run_id = name[4:-4]
+            runs.setdefault(run_id, {})["csv"] = path
+        elif name.startswith("events_") and name.endswith(".log"):
+            run_id = name[7:-4]
+            runs.setdefault(run_id, {})["event"] = path
+    result = []
+    for run_id, paths in runs.items():
+        existing = [p for p in (paths.get("csv"), paths.get("event")) if p]
+        if not existing:
+            continue
+        try:
+            newest_mtime = max(os.path.getmtime(p) for p in existing if os.path.exists(p))
+        except OSError:
+            newest_mtime = 0.0
+        result.append((run_id, paths, newest_mtime))
+    result.sort(key=lambda item: item[2], reverse=True)
+    return result
+
+
+def _prune_log_files(current_run_id=None):
+    runs = _nav_run_log_sets()
+    keep_run_ids = {run_id for run_id, _, _ in runs[:LOG_RETENTION_RUNS]}
+    if current_run_id:
+        keep_run_ids.add(current_run_id)
+    removed = 0
+    for run_id, paths, _ in runs:
+        if run_id in keep_run_ids:
+            continue
+        for path in (paths.get("csv"), paths.get("event")):
+            if not path:
+                continue
+            try:
+                os.unlink(path)
+                removed += 1
+            except OSError:
+                pass
+
+    try:
+        upload_logs = [
+            os.path.join(CSV_FOLDER, name)
+            for name in os.listdir(CSV_FOLDER)
+            if name.startswith("upload_") and name.endswith(".log")
+        ]
+        upload_logs.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+        for path in upload_logs[LOG_UPLOAD_LOG_RETENTION:]:
+            try:
+                os.unlink(path)
+                removed += 1
+            except OSError:
+                pass
+    except OSError:
+        pass
+    if removed:
+        print(f"[LOG] Pruned {removed} old log file(s)")
+    return removed
+
+
+def _maybe_upload_run_logs(csv_path, event_path, event_logger=None, run_id=None):
     if not LOG_UPLOAD_ENABLED:
         return None
 
@@ -472,13 +557,14 @@ def _maybe_upload_run_logs(csv_path, event_path, event_logger=None):
             event_logger(msg)
         return None
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    upload_log = os.path.join(CSV_FOLDER, f"upload_{stamp}.log")
+    run_id = run_id or _run_id_from_log_path(csv_path)
+    upload_log = os.path.join(CSV_FOLDER, f"upload_{run_id}.log")
     cmd = [
         sys.executable,
         script_path,
         "--repo-root", _repo_root(),
         "--branch", LOG_UPLOAD_BRANCH,
+        "--run-id", run_id,
         "--log", csv_path,
         "--log", event_path,
     ]
@@ -507,6 +593,27 @@ def _maybe_upload_run_logs(csv_path, event_path, event_logger=None):
         if event_logger:
             event_logger(msg)
         return None
+
+
+def _recover_previous_log_uploads(current_run_id=None):
+    if not LOG_UPLOAD_ENABLED or LOG_RECOVERY_UPLOAD_RUNS <= 0:
+        return []
+    started = []
+    for run_id, paths, _ in _nav_run_log_sets():
+        if run_id == current_run_id:
+            continue
+        csv_path = paths.get("csv")
+        event_path = paths.get("event")
+        if not csv_path or not event_path:
+            continue
+        proc = _maybe_upload_run_logs(csv_path, event_path, run_id=run_id)
+        if proc is not None:
+            started.append(proc)
+        if len(started) >= LOG_RECOVERY_UPLOAD_RUNS:
+            break
+    if started:
+        print(f"[LOG_UPLOAD] recovery started for {len(started)} previous run(s)")
+    return started
 
 
 # ============= PIPER VOICE =============
@@ -2370,12 +2477,15 @@ def main():
     print(f"[LOG] {CSV_FILE}")
 
     EVENT_LOG = CSV_FILE.replace("log_", "events_").replace(".csv", ".log")
+    current_run_id = _run_id_from_log_path(CSV_FILE)
     event_file = open(EVENT_LOG, "w", encoding="utf-8")
     def log_event(msg):
         ts = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
         event_file.write(f"[{ts}] {msg}\n")
         event_file.flush()
     print(f"[LOG] Events: {EVENT_LOG}")
+    _prune_log_files(current_run_id=current_run_id)
+    _recover_previous_log_uploads(current_run_id=current_run_id)
 
     motion = MotionDetector()
     voice  = VoiceAssistant(event_logger=log_event)
@@ -2786,7 +2896,8 @@ def main():
         voice.shutdown(timeout=6.0)
         csv_file.close()
         event_file.close()
-        _maybe_upload_run_logs(CSV_FILE, EVENT_LOG)
+        _maybe_upload_run_logs(CSV_FILE, EVENT_LOG, run_id=current_run_id)
+        _prune_log_files(current_run_id=current_run_id)
         print(f"[LOG] Saved: {CSV_FILE}")
         print(f"[LOG] Events: {EVENT_LOG}")
         print("[OK] Done")
