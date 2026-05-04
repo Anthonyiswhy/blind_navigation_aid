@@ -1,7 +1,20 @@
 #!/usr/bin/env python3
 """
-Intelligent Navigation Assistant v3.28 HEADLESS
-Builds on v3.27 with:
+Intelligent Navigation Assistant v3.30 HEADLESS
+Builds on v3.29 with:
+
+  FIX 17 - Optional OpenAI alert TTS field-test mode.
+    BLINDNAV_ALERT_TTS=openai sends urgent/warning/cleared alert speech to
+    OpenAI text-to-speech using WAV output, while preserving the existing
+    VoiceAssistant queue, no-SIGTERM aplay rule, latency logging, and local
+    Piper/espeak fallback if cloud speech fails.
+
+  FIX 16 - Push-to-talk voice command input.
+    Optional voice input records a short command with arecord, transcribes it
+    through OpenAI speech-to-text, and routes deterministic commands for
+    describe, nearest, people, status, repeat, and cancel. Command capture and
+    transcription run off the detection loop, while safety alerts stay on the
+    local Piper/VoiceAssistant path.
 
   FIX 13 - Bucketed speech, broader cache reuse, and clearer voice diagnostics.
     Spoken distances now snap to stable 30cm voice buckets so the same warning
@@ -81,6 +94,7 @@ import csv
 import wave
 import threading
 import math
+import re
 import hashlib
 import shutil
 import subprocess
@@ -148,8 +162,24 @@ PIPER_CONFIG = os.path.expanduser(
 PIPER_SPEED  = 0.85
 PIPER_SILENCE_MS = 150
 ALERT_TTS_MODE = os.environ.get("BLINDNAV_ALERT_TTS", "piper").strip().lower()
-if ALERT_TTS_MODE not in {"piper", "espeak"}:
+if ALERT_TTS_MODE not in {"piper", "espeak", "openai"}:
     ALERT_TTS_MODE = "piper"
+OPENAI_ALERT_TTS_MODEL = os.environ.get(
+    "BLINDNAV_OPENAI_TTS_MODEL", "gpt-4o-mini-tts"
+).strip() or "gpt-4o-mini-tts"
+OPENAI_ALERT_TTS_VOICE = os.environ.get(
+    "BLINDNAV_OPENAI_TTS_VOICE", "coral"
+).strip() or "coral"
+OPENAI_ALERT_TTS_TIMEOUT_S = max(
+    1.0, float(os.environ.get("BLINDNAV_OPENAI_TTS_TIMEOUT_S", "4.0"))
+)
+OPENAI_ALERT_TTS_FALLBACK = os.environ.get(
+    "BLINDNAV_OPENAI_TTS_FALLBACK", "1"
+).strip().lower() not in {"0", "false", "no"}
+OPENAI_ALERT_TTS_INSTRUCTIONS = os.environ.get(
+    "BLINDNAV_OPENAI_TTS_INSTRUCTIONS",
+    "Speak clearly, urgently when needed, and keep the phrase concise for a blind navigation safety alert.",
+).strip()
 ALERT_CACHE_DIR = os.path.expanduser(
     os.environ.get("BLINDNAV_ALERT_CACHE_DIR",
                    os.path.join(tempfile.gettempdir(), "blindnav_alert_cache"))
@@ -195,6 +225,22 @@ SCENE_JPEG_QUALITY = 60
 SCENE_COOLDOWN    = 8.0
 SCENE_MAX_OBJECTS = 5
 
+VOICE_INPUT_ENABLED = os.environ.get(
+    "BLINDNAV_VOICE_INPUT", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
+VOICE_INPUT_PTT_KEY = os.environ.get("BLINDNAV_PTT_KEY", "v").strip().lower() or "v"
+VOICE_INPUT_CAPTURE_S = max(
+    1.0, float(os.environ.get("BLINDNAV_COMMAND_CAPTURE_S", "4.0"))
+)
+VOICE_INPUT_STT_MODEL = os.environ.get(
+    "BLINDNAV_STT_MODEL", "gpt-4o-mini-transcribe"
+).strip() or "gpt-4o-mini-transcribe"
+VOICE_INPUT_STT_TIMEOUT_S = max(
+    1.0, float(os.environ.get("BLINDNAV_STT_TIMEOUT_S", "8.0"))
+)
+VOICE_INPUT_ARECORD_DEVICE = os.environ.get("BLINDNAV_ARECORD_DEVICE", "").strip()
+VOICE_INPUT_GPIO = os.environ.get("BLINDNAV_PTT_GPIO", "").strip()
+
 SNAPSHOT_FOLDER = os.path.expanduser("~/blindnav_snapshots")
 os.makedirs(SNAPSHOT_FOLDER, exist_ok=True)
 
@@ -207,6 +253,23 @@ CSV_FOLDER = os.path.expanduser("~/blindnav_logs")
 os.makedirs(BAG_FOLDER, exist_ok=True)
 os.makedirs(CSV_FOLDER, exist_ok=True)
 CSV_FILE = os.path.join(CSV_FOLDER, datetime.now(timezone.utc).strftime("log_%Y%m%d_%H%M%S.csv"))
+
+LOG_UPLOAD_ENABLED = os.environ.get(
+    "BLINDNAV_LOG_UPLOAD", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
+LOG_UPLOAD_BRANCH = os.environ.get(
+    "BLINDNAV_LOG_UPLOAD_BRANCH", "blindnav-field-logs"
+).strip() or "blindnav-field-logs"
+LOG_UPLOAD_REMOTE = os.environ.get("BLINDNAV_LOG_UPLOAD_REMOTE", "").strip()
+LOG_RETENTION_RUNS = max(
+    1, int(os.environ.get("BLINDNAV_LOG_RETENTION_RUNS", "10"))
+)
+LOG_UPLOAD_LOG_RETENTION = max(
+    1, int(os.environ.get("BLINDNAV_UPLOAD_LOG_RETENTION", "10"))
+)
+LOG_RECOVERY_UPLOAD_RUNS = max(
+    0, int(os.environ.get("BLINDNAV_LOG_RECOVERY_UPLOAD_RUNS", "1"))
+)
 
 # ============= YOLO CLASS NAMES =============
 CLASS_NAMES = [
@@ -402,6 +465,157 @@ def _select_voice_message(obj, pos, dist_cm, vel,
     return decision["tier"], decision["message"]
 
 
+def _repo_root():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+
+def _run_id_from_log_path(path):
+    name = os.path.basename(path or "")
+    for prefix, suffix in (("log_", ".csv"), ("events_", ".log")):
+        if name.startswith(prefix) and name.endswith(suffix):
+            return name[len(prefix):-len(suffix)]
+    return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+
+def _nav_run_log_sets():
+    runs = {}
+    try:
+        names = os.listdir(CSV_FOLDER)
+    except OSError:
+        return []
+    for name in names:
+        path = os.path.join(CSV_FOLDER, name)
+        if not os.path.isfile(path):
+            continue
+        if name.startswith("log_") and name.endswith(".csv"):
+            run_id = name[4:-4]
+            runs.setdefault(run_id, {})["csv"] = path
+        elif name.startswith("events_") and name.endswith(".log"):
+            run_id = name[7:-4]
+            runs.setdefault(run_id, {})["event"] = path
+    result = []
+    for run_id, paths in runs.items():
+        existing = [p for p in (paths.get("csv"), paths.get("event")) if p]
+        if not existing:
+            continue
+        try:
+            newest_mtime = max(os.path.getmtime(p) for p in existing if os.path.exists(p))
+        except OSError:
+            newest_mtime = 0.0
+        result.append((run_id, paths, newest_mtime))
+    result.sort(key=lambda item: item[2], reverse=True)
+    return result
+
+
+def _prune_log_files(current_run_id=None):
+    runs = _nav_run_log_sets()
+    keep_run_ids = {run_id for run_id, _, _ in runs[:LOG_RETENTION_RUNS]}
+    if current_run_id:
+        keep_run_ids.add(current_run_id)
+    removed = 0
+    for run_id, paths, _ in runs:
+        if run_id in keep_run_ids:
+            continue
+        for path in (paths.get("csv"), paths.get("event")):
+            if not path:
+                continue
+            try:
+                os.unlink(path)
+                removed += 1
+            except OSError:
+                pass
+
+    try:
+        upload_logs = [
+            os.path.join(CSV_FOLDER, name)
+            for name in os.listdir(CSV_FOLDER)
+            if name.startswith("upload_") and name.endswith(".log")
+        ]
+        upload_logs.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+        for path in upload_logs[LOG_UPLOAD_LOG_RETENTION:]:
+            try:
+                os.unlink(path)
+                removed += 1
+            except OSError:
+                pass
+    except OSError:
+        pass
+    if removed:
+        print(f"[LOG] Pruned {removed} old log file(s)")
+    return removed
+
+
+def _maybe_upload_run_logs(csv_path, event_path, event_logger=None, run_id=None):
+    if not LOG_UPLOAD_ENABLED:
+        return None
+
+    script_path = os.path.join(_repo_root(), "tools", "upload_run_logs_to_github.py")
+    if not os.path.exists(script_path):
+        msg = f"[LOG_UPLOAD] uploader missing: {script_path}"
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return None
+
+    run_id = run_id or _run_id_from_log_path(csv_path)
+    upload_log = os.path.join(CSV_FOLDER, f"upload_{run_id}.log")
+    cmd = [
+        sys.executable,
+        script_path,
+        "--repo-root", _repo_root(),
+        "--branch", LOG_UPLOAD_BRANCH,
+        "--run-id", run_id,
+        "--log", csv_path,
+        "--log", event_path,
+    ]
+    if LOG_UPLOAD_REMOTE:
+        cmd.extend(["--remote", LOG_UPLOAD_REMOTE])
+
+    try:
+        out = open(upload_log, "ab", buffering=0)
+        proc = subprocess.Popen(
+            cmd,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            close_fds=True,
+        )
+        msg = (
+            f"[LOG_UPLOAD] started pid={proc.pid} branch={LOG_UPLOAD_BRANCH} "
+            f"log={upload_log}"
+        )
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return proc
+    except Exception as exc:
+        msg = f"[LOG_UPLOAD] failed to start: {exc}"
+        print(msg)
+        if event_logger:
+            event_logger(msg)
+        return None
+
+
+def _recover_previous_log_uploads(current_run_id=None):
+    if not LOG_UPLOAD_ENABLED or LOG_RECOVERY_UPLOAD_RUNS <= 0:
+        return []
+    started = []
+    for run_id, paths, _ in _nav_run_log_sets():
+        if run_id == current_run_id:
+            continue
+        csv_path = paths.get("csv")
+        event_path = paths.get("event")
+        if not csv_path or not event_path:
+            continue
+        proc = _maybe_upload_run_logs(csv_path, event_path, run_id=run_id)
+        if proc is not None:
+            started.append(proc)
+        if len(started) >= LOG_RECOVERY_UPLOAD_RUNS:
+            break
+    if started:
+        print(f"[LOG_UPLOAD] recovery started for {len(started)} previous run(s)")
+    return started
+
+
 # ============= PIPER VOICE =============
 class PiperVoice:
     def __init__(self):
@@ -421,6 +635,7 @@ class PiperVoice:
             "cache": "n/a",
             "silence_ms": 0,
         }
+        self._openai_client = None
         try:
             from piper.voice import PiperVoice as _PiperVoice
             from piper.config import SynthesisConfig
@@ -439,7 +654,10 @@ class PiperVoice:
                 self._sampwidth   = wr.getsampwidth()
             self.available = True
             self._use_piper = True
-            self._alert_cache_enabled = ALERT_TTS_MODE == "piper"
+            self._alert_cache_enabled = (
+                ALERT_TTS_MODE == "piper"
+                or (ALERT_TTS_MODE == "openai" and OPENAI_ALERT_TTS_FALLBACK)
+            )
             if self._alert_cache_enabled:
                 os.makedirs(self._alert_cache_dir, exist_ok=True)
                 if ALERT_CACHE_PREWARM:
@@ -532,6 +750,68 @@ class PiperVoice:
             pass
         return tmpfile
 
+    def _get_openai_client(self):
+        if self._openai_client is not None:
+            return self._openai_client
+        api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY not set")
+        from openai import OpenAI
+        self._openai_client = OpenAI(
+            api_key=api_key,
+            timeout=OPENAI_ALERT_TTS_TIMEOUT_S,
+        )
+        return self._openai_client
+
+    def _synthesize_openai_alert_to_file(self, text, silence_ms=0):
+        tmpfile = None
+        try:
+            client = self._get_openai_client()
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                tmpfile = f.name
+
+            kwargs = {
+                "model": OPENAI_ALERT_TTS_MODEL,
+                "voice": OPENAI_ALERT_TTS_VOICE,
+                "input": text,
+                "response_format": "wav",
+            }
+            if OPENAI_ALERT_TTS_INSTRUCTIONS:
+                kwargs["instructions"] = OPENAI_ALERT_TTS_INSTRUCTIONS
+
+            speech = client.audio.speech
+            if hasattr(speech, "with_streaming_response"):
+                with speech.with_streaming_response.create(**kwargs) as response:
+                    response.stream_to_file(tmpfile)
+            else:
+                response = speech.create(**kwargs)
+                content = getattr(response, "content", None)
+                if content is None and hasattr(response, "read"):
+                    content = response.read()
+                if content is None:
+                    raise RuntimeError("OpenAI TTS response did not include audio bytes")
+                with open(tmpfile, "wb") as f:
+                    f.write(content)
+
+            self._last_alert_synth_meta = {
+                "mode": "openai_alert",
+                "cache": "n/a",
+                "silence_ms": 0,
+                "model": OPENAI_ALERT_TTS_MODEL,
+                "voice": OPENAI_ALERT_TTS_VOICE,
+            }
+            if silence_ms > 0:
+                self._last_alert_synth_meta["silence_ms"] = silence_ms
+                return self.prepend_silence(tmpfile, silence_ms)
+            return tmpfile
+        except Exception as exc:
+            if tmpfile:
+                try:
+                    os.unlink(tmpfile)
+                except Exception:
+                    pass
+            raise RuntimeError(f"OpenAI alert TTS failed: {exc}") from exc
+
     def _prime_alert_cache(self):
         phrases = []
         for dist_m in ALERT_CACHE_COMMON_DISTANCES_M:
@@ -598,6 +878,20 @@ class PiperVoice:
             return wav_path
 
     def synthesize_alert_to_file(self, text, silence_ms=0):
+        if ALERT_TTS_MODE == "openai":
+            try:
+                return self._synthesize_openai_alert_to_file(text, silence_ms=silence_ms)
+            except Exception as exc:
+                print(f"[VOICE] {exc}")
+                self._last_alert_synth_meta = {
+                    "mode": "openai_alert",
+                    "cache": "fallback",
+                    "silence_ms": silence_ms,
+                    "error": str(exc),
+                }
+                if not OPENAI_ALERT_TTS_FALLBACK:
+                    return None
+
         if self._use_piper and getattr(self, "_alert_cache_enabled", False):
             tmpfile = self._materialize_cached_alert(text)
             if tmpfile is None:
@@ -642,7 +936,7 @@ class PiperVoice:
 
 
 
-# ============= VOICE ASSISTANT (v3.28) =============
+# ============= VOICE ASSISTANT (v3.30) =============
 class VoiceAssistant:
     """
     3-slot priority queue with pre-synthesis, BT-safe skip-ahead (FIX 8),
@@ -727,6 +1021,15 @@ class VoiceAssistant:
 
     def speak_info(self, text):
         self._enqueue(text, None, 0, "INFO", self.PRIO_AWARE)
+
+    def status_summary(self):
+        with self._lock:
+            pending = sum(1 for item in self._pending.values() if item is not None)
+            if self.is_speaking:
+                return "speaking"
+            if pending:
+                return f"{pending} pending"
+            return "idle"
 
     def cleanup_old_keys(self, active_ids):
         with self._lock:
@@ -856,11 +1159,11 @@ class VoiceAssistant:
         silence_ms_used = 0
         need_silence = False
         try:
-            if self._tts._use_piper:
+            use_alert_synth = self._use_alert_synth(priority)
+            if self._tts._use_piper or use_alert_synth:
                 with self._lock:
                     gap = time.time() - self._last_speech_end
                 need_silence = gap > self.STREAM_COLD_S
-                use_alert_synth = self._use_alert_synth(priority)
 
                 tts_start_ts = time.time()
 
@@ -1093,7 +1396,7 @@ class SceneDescriber:
         "Focus only on what matters for safe navigation. Never say 'I see'. Speak directly to the user."
     )
 
-    def __init__(self, voice):
+    def __init__(self, voice, start_keyboard=True):
         self.voice = voice
         self.available = False
         self._pending = threading.Event()
@@ -1103,7 +1406,9 @@ class SceneDescriber:
         api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
         if not api_key:
             print("[SCENE] WARN: ANTHROPIC_API_KEY not set — scene description disabled")
-            self._start_keyboard_thread(); return
+            if start_keyboard:
+                self._start_keyboard_thread()
+            return
         try:
             import anthropic
             self._client = anthropic.Anthropic(api_key=api_key)
@@ -1112,7 +1417,8 @@ class SceneDescriber:
             print("[SCENE] Press 'd' anytime for scene description")
         except Exception as e:
             print(f"[SCENE] WARN: {e}")
-        self._start_keyboard_thread()
+        if start_keyboard:
+            self._start_keyboard_thread()
 
     def _start_keyboard_thread(self):
         threading.Thread(target=self._keyboard_worker, daemon=True).start()
@@ -1129,11 +1435,15 @@ class SceneDescriber:
             while not self._stop:
                 ready, _, _ = sel.select([sys.stdin], [], [], 0.1)
                 if ready and sys.stdin.read(1).lower() == "d":
-                    self._trigger()
+                    self.request_description()
         except Exception: pass
         finally:
             try: termios.tcsetattr(fd, termios.TCSADRAIN, old)
             except Exception: pass
+
+    def request_description(self):
+        self._trigger()
+        return self._pending.is_set()
 
     def _trigger(self):
         if not self.available: print("[SCENE] Not available"); return
@@ -1194,6 +1504,376 @@ class SceneDescriber:
 
     def shutdown(self):
         self._stop = True
+
+
+# ============= VOICE COMMAND INPUT =============
+class CommandIntent:
+    def __init__(self, intent, confidence, transcript, normalized, reason=""):
+        self.intent = intent
+        self.confidence = confidence
+        self.transcript = transcript
+        self.normalized = normalized
+        self.reason = reason
+
+
+def _normalize_voice_command(text):
+    text = (text or "").strip().lower()
+    text = re.sub(r"[^a-z0-9\s']", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def parse_voice_command(transcript):
+    normalized = _normalize_voice_command(transcript)
+    if not normalized:
+        return CommandIntent(None, 0.0, transcript, normalized, "empty")
+
+    def has_any(phrases):
+        return any(phrase in normalized for phrase in phrases)
+
+    if has_any(("cancel", "never mind", "nevermind", "stop listening", "stop listen")):
+        return CommandIntent("cancel", 0.95, transcript, normalized, "cancel")
+    if has_any(("repeat", "say that again", "again")):
+        return CommandIntent("repeat", 0.9, transcript, normalized, "repeat")
+    if has_any(("status", "system status", "how are you", "health", "fps", "frames per second")):
+        return CommandIntent("status", 0.9, transcript, normalized, "status")
+    if has_any(("how many people", "any people", "anyone", "people", "person nearby")):
+        return CommandIntent("people", 0.9, transcript, normalized, "people")
+    if has_any(("nearest", "closest", "near me", "nearby", "what's near", "what is near")):
+        return CommandIntent("nearest", 0.9, transcript, normalized, "nearest")
+    if has_any(("describe", "scene", "look around", "what do you see", "what's around")):
+        return CommandIntent("describe", 0.9, transcript, normalized, "describe")
+    return CommandIntent(None, 0.2, transcript, normalized, "unknown")
+
+
+def _format_track_for_speech(track):
+    dist = track.get("distance")
+    dist_text = "unknown distance" if dist is None else f"{dist / 100.0:.1f} meters"
+    return f"{track.get('class_name', 'object')} {track.get('position', 'ahead')}, {dist_text}"
+
+
+class NavigationSnapshot:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._data = {
+            "frame_count": 0,
+            "updated_at": 0.0,
+            "tracks": [],
+            "fps": 0.0,
+            "user_moving": True,
+            "ego_reliable": False,
+            "voice_status": "unknown",
+        }
+
+    def update(self, tracks, threats, fps, user_moving, ego_reliable,
+               frame_count, frame_width, voice_status="unknown"):
+        threat_scores = {getattr(t, "id", None): score for score, t in threats}
+        snap_tracks = []
+        for track in tracks:
+            dist = getattr(track, "distance", None)
+            if dist is None or getattr(track, "seen_frames", 0) < 3:
+                continue
+            snap_tracks.append({
+                "id": getattr(track, "id", None),
+                "class_name": getattr(track, "class_name", "object"),
+                "distance": dist,
+                "velocity": getattr(track, "velocity", 0.0),
+                "position": get_position(track, frame_width, frame_tag=frame_count),
+                "score": threat_scores.get(getattr(track, "id", None), 0.0),
+            })
+        snap_tracks.sort(key=lambda t: t["distance"])
+        with self._lock:
+            self._data = {
+                "frame_count": frame_count,
+                "updated_at": time.time(),
+                "tracks": snap_tracks,
+                "fps": float(fps or 0.0),
+                "user_moving": bool(user_moving),
+                "ego_reliable": bool(ego_reliable),
+                "voice_status": voice_status,
+            }
+
+    def get(self):
+        with self._lock:
+            data = dict(self._data)
+            data["tracks"] = [dict(track) for track in self._data["tracks"]]
+            return data
+
+
+class CommandRouter:
+    def __init__(self, voice, scene, snapshot, event_logger=None):
+        self.voice = voice
+        self.scene = scene
+        self.snapshot = snapshot
+        self._event_logger = event_logger
+        self._last_info_response = ""
+
+    def _log(self, msg):
+        print(msg)
+        if self._event_logger:
+            self._event_logger(msg)
+
+    def _speak_info(self, text):
+        self._last_info_response = text
+        self.voice.speak_info(text)
+
+    def request_description(self):
+        if self.scene.request_description():
+            self._log("[VOICE_CMD] describe requested")
+            return True
+        self._speak_info("Scene description unavailable")
+        return False
+
+    def handle_transcript(self, transcript):
+        parsed = parse_voice_command(transcript)
+        self._log(
+            f"[VOICE_CMD] transcript=\"{(transcript or '').strip()}\" "
+            f"intent={parsed.intent or 'unknown'} confidence={parsed.confidence:.2f}"
+        )
+        if parsed.intent == "describe":
+            self.request_description()
+        elif parsed.intent == "nearest":
+            self._handle_nearest()
+        elif parsed.intent == "people":
+            self._handle_people()
+        elif parsed.intent == "status":
+            self._handle_status()
+        elif parsed.intent == "repeat":
+            self._handle_repeat()
+        elif parsed.intent == "cancel":
+            self._speak_info("Voice command canceled")
+        else:
+            self._speak_info("Command not recognized")
+        return parsed
+
+    def _handle_nearest(self):
+        tracks = self.snapshot.get()["tracks"]
+        if not tracks:
+            self._speak_info("No confirmed objects nearby")
+            return
+        self._speak_info(f"Nearest, {_format_track_for_speech(tracks[0])}")
+
+    def _handle_people(self):
+        people = [t for t in self.snapshot.get()["tracks"] if t["class_name"] == "person"]
+        if not people:
+            self._speak_info("No confirmed people nearby")
+            return
+        closest = people[0]
+        count_text = "One person" if len(people) == 1 else f"{len(people)} people"
+        self._speak_info(f"{count_text}. Closest, {_format_track_for_speech(closest)}")
+
+    def _handle_status(self):
+        snap = self.snapshot.get()
+        motion = "moving" if snap["user_moving"] else "still"
+        ego = "OK" if snap["ego_reliable"] else "bad"
+        count = len(snap["tracks"])
+        self._speak_info(
+            f"Status, {snap['fps']:.1f} FPS, {motion}, ego {ego}, "
+            f"{count} confirmed objects, voice {snap['voice_status']}"
+        )
+
+    def _handle_repeat(self):
+        if self._last_info_response:
+            self.voice.speak_info(self._last_info_response)
+        else:
+            self.voice.speak_info("Nothing to repeat")
+
+
+class ArecordCommandRecorder:
+    def __init__(self, seconds=VOICE_INPUT_CAPTURE_S, device=VOICE_INPUT_ARECORD_DEVICE):
+        self.seconds = seconds
+        self.device = device
+
+    def record(self):
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            path = f.name
+        cmd = [
+            "arecord", "-q",
+            "-f", "S16_LE",
+            "-r", "16000",
+            "-c", "1",
+            "-d", str(int(round(self.seconds))),
+            path,
+        ]
+        if self.device:
+            cmd[1:1] = ["-D", self.device]
+        result = subprocess.run(
+            cmd, capture_output=True, timeout=self.seconds + 3, check=False
+        )
+        if result.returncode != 0:
+            try:
+                os.unlink(path)
+            except Exception:
+                pass
+            err = result.stderr.decode("utf-8", errors="ignore").strip()
+            raise RuntimeError(err or "arecord failed")
+        return path
+
+
+class OpenAICommandTranscriber:
+    def __init__(self, model=VOICE_INPUT_STT_MODEL, timeout=VOICE_INPUT_STT_TIMEOUT_S,
+                 api_key=None):
+        self.model = model
+        self.timeout = timeout
+        self.api_key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY", "").strip()
+
+    def transcribe(self, wav_path):
+        if not self.api_key:
+            raise RuntimeError("OPENAI_API_KEY not set")
+        try:
+            from openai import OpenAI
+        except ImportError as exc:
+            raise RuntimeError("openai package not installed") from exc
+        client = OpenAI(api_key=self.api_key, timeout=self.timeout)
+        with open(wav_path, "rb") as audio_file:
+            result = client.audio.transcriptions.create(
+                model=self.model,
+                file=audio_file,
+                response_format="text",
+                prompt="BlindNav voice commands: describe, nearest, people, status, repeat, cancel.",
+            )
+        if isinstance(result, str):
+            return result.strip()
+        return getattr(result, "text", str(result)).strip()
+
+
+class VoiceCommandListener:
+    def __init__(self, router, voice, event_logger=None, recorder=None,
+                 transcriber=None, enabled=VOICE_INPUT_ENABLED,
+                 ptt_key=VOICE_INPUT_PTT_KEY, gpio_pin=VOICE_INPUT_GPIO):
+        self.router = router
+        self.voice = voice
+        self._event_logger = event_logger
+        self.recorder = recorder if recorder is not None else ArecordCommandRecorder()
+        self.transcriber = transcriber if transcriber is not None else OpenAICommandTranscriber()
+        self.enabled = enabled
+        self.ptt_key = (ptt_key or "v").lower()
+        self.gpio_pin = gpio_pin
+        self._stop = threading.Event()
+        self._busy = threading.Event()
+        self._threads = []
+
+    def _log(self, msg):
+        print(msg)
+        if self._event_logger:
+            self._event_logger(msg)
+
+    def start(self):
+        if not self.enabled:
+            self._log("[VOICE_CMD] Disabled (set BLINDNAV_VOICE_INPUT=1 to enable)")
+            return
+        self._log(
+            f"[VOICE_CMD] Enabled: press '{self.ptt_key}' for voice command, "
+            "or 'd' for scene description"
+        )
+        t = threading.Thread(target=self._keyboard_worker, daemon=True, name="voice-command-keyboard")
+        t.start()
+        self._threads.append(t)
+        if self.gpio_pin:
+            gt = threading.Thread(target=self._gpio_worker, daemon=True, name="voice-command-gpio")
+            gt.start()
+            self._threads.append(gt)
+
+    def request_capture(self):
+        if self._stop.is_set():
+            return False
+        if self._busy.is_set():
+            self.voice.speak_info("Still processing voice command")
+            return False
+        self._busy.set()
+        t = threading.Thread(target=self._capture_transcribe_route, daemon=True,
+                             name="voice-command-worker")
+        t.start()
+        self._threads.append(t)
+        return True
+
+    def _keyboard_worker(self):
+        try:
+            import tty, termios, select as sel
+        except ImportError:
+            return
+        fd = sys.stdin.fileno()
+        try:
+            old = termios.tcgetattr(fd)
+        except termios.error:
+            return
+        try:
+            tty.setcbreak(fd)
+            while not self._stop.is_set():
+                ready, _, _ = sel.select([sys.stdin], [], [], 0.1)
+                if not ready:
+                    continue
+                ch = sys.stdin.read(1).lower()
+                if ch == self.ptt_key:
+                    self.request_capture()
+                elif ch == "d":
+                    self.router.request_description()
+        except Exception as exc:
+            self._log(f"[VOICE_CMD] keyboard stopped: {exc}")
+        finally:
+            try:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            except Exception:
+                pass
+
+    def _gpio_worker(self):
+        try:
+            import RPi.GPIO as GPIO
+            pin = int(self.gpio_pin)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            was_pressed = False
+            while not self._stop.is_set():
+                pressed = GPIO.input(pin) == GPIO.LOW
+                if pressed and not was_pressed:
+                    self.request_capture()
+                was_pressed = pressed
+                time.sleep(0.05)
+        except Exception as exc:
+            self._log(f"[VOICE_CMD] GPIO disabled: {exc}")
+
+    def _capture_transcribe_route(self):
+        audio_path = None
+        t0 = time.time()
+        try:
+            self._log("[VOICE_CMD] recording command")
+            audio_path = self.recorder.record()
+            capture_done = time.time()
+            transcript = self.transcriber.transcribe(audio_path)
+            transcribe_done = time.time()
+            if not transcript:
+                self.voice.speak_info("No command heard")
+                return
+            self.router.handle_transcript(transcript)
+            self._log(
+                f"[VOICE_CMD] timing capture={capture_done - t0:.2f}s "
+                f"transcribe={transcribe_done - capture_done:.2f}s "
+                f"model={getattr(self.transcriber, 'model', 'custom')}"
+            )
+        except Exception as exc:
+            self._log(f"[VOICE_CMD] Error: {exc}")
+            self.voice.speak_info("Voice command failed")
+        finally:
+            if audio_path:
+                try:
+                    os.unlink(audio_path)
+                except Exception:
+                    pass
+            self._busy.clear()
+
+    def shutdown(self, timeout=2.0):
+        self._stop.set()
+        deadline = time.time() + max(0.0, timeout)
+        for thread in list(self._threads):
+            if thread is threading.current_thread():
+                continue
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                break
+            try:
+                thread.join(timeout=remaining)
+            except RuntimeError:
+                pass
 
 
 # ============= IMU MOTION DETECTOR =============
@@ -1781,9 +2461,9 @@ def main():
     global VOICE_ENABLED
 
     print("=" * 70)
-    print("INTELLIGENT NAVIGATION ASSISTANT v3.28 HEADLESS")
-    print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision")
-    print("FIXES: bucketed speech, side-pass people, bad-ego TTC clamp, richer voice logs")
+    print("INTELLIGENT NAVIGATION ASSISTANT v3.30 HEADLESS")
+    print("RealSense D435 + YOLO26n + IMU + Piper TTS + Claude Vision + OpenAI STT")
+    print("FIXES: OpenAI alert TTS field test, push-to-talk voice commands")
     print("=" * 70)
 
     csv_file = open(CSV_FILE, "w", newline="", encoding="utf-8")
@@ -1797,16 +2477,22 @@ def main():
     print(f"[LOG] {CSV_FILE}")
 
     EVENT_LOG = CSV_FILE.replace("log_", "events_").replace(".csv", ".log")
+    current_run_id = _run_id_from_log_path(CSV_FILE)
     event_file = open(EVENT_LOG, "w", encoding="utf-8")
     def log_event(msg):
         ts = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
         event_file.write(f"[{ts}] {msg}\n")
         event_file.flush()
     print(f"[LOG] Events: {EVENT_LOG}")
+    _prune_log_files(current_run_id=current_run_id)
+    _recover_previous_log_uploads(current_run_id=current_run_id)
 
     motion = MotionDetector()
     voice  = VoiceAssistant(event_logger=log_event)
-    scene  = SceneDescriber(voice)
+    scene  = SceneDescriber(voice, start_keyboard=not VOICE_INPUT_ENABLED)
+    nav_snapshot = NavigationSnapshot()
+    command_router = CommandRouter(voice, scene, nav_snapshot, event_logger=log_event)
+    voice_listener = VoiceCommandListener(command_router, voice, event_logger=log_event)
     transition_tracker = ThreatTransitionTracker()
     ego    = EgoMotionCompensator(use_optical_flow=True)
 
@@ -1881,17 +2567,23 @@ def main():
 
     capture_thread = threading.Thread(target=_capture_worker, daemon=True, name="capture")
     capture_thread.start()
+    voice_listener.start()
     print("[INFO] Capture pipeline started (async align)")
     print("\n[READY] Navigation active")
     print(f"[MODE]  {'PLAYBACK' if PLAYBACK_FILE else 'LIVE'}")
-    print(f"[KEYS]  d = describe scene | Ctrl+C = quit")
+    print(f"[KEYS]  d = describe scene | {VOICE_INPUT_PTT_KEY} = voice command | Ctrl+C = quit")
     print(f"[SCENE] Model: {SCENE_MODEL} | Cooldown: {SCENE_COOLDOWN}s")
     print(f"[IMU]   Threshold: {IMU_MOTION_THRESHOLD}g")
+    print(
+        f"[VOICE_CMD] enabled={VOICE_INPUT_ENABLED} | "
+        f"stt={VOICE_INPUT_STT_MODEL} | capture={VOICE_INPUT_CAPTURE_S:.1f}s"
+    )
     print(
         f"[VOICE] 3-slot priority queue | no aplay SIGTERM | "
         f"voice={os.path.splitext(os.path.basename(PIPER_MODEL))[0]} | "
         f"alert_tts={ALERT_TTS_MODE} | "
-        f"cache={'on' if ALERT_TTS_MODE == 'piper' else 'off'} | "
+        f"cache={'on' if ALERT_TTS_MODE == 'piper' else 'fallback' if ALERT_TTS_MODE == 'openai' and OPENAI_ALERT_TTS_FALLBACK else 'off'} | "
+        f"openai_model={OPENAI_ALERT_TTS_MODEL if ALERT_TTS_MODE == 'openai' else 'n/a'} | "
         f"silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE == 'espeak' else PIPER_SILENCE_MS}ms\n"
     )
 
@@ -1975,6 +2667,9 @@ def main():
             threats = ThreatAssessment.prioritize_threats(
                 tracks, user_moving=user_moving, ego_reliable=ego_reliable,
                 frame_width=w, frame_tag=frame_count)
+            nav_snapshot.update(
+                tracks, threats, avg_fps, user_moving, ego_reliable,
+                frame_count, w, voice_status=voice.status_summary())
             transition_tracker.update(threats, voice)
 
             # Busy area
@@ -2187,6 +2882,7 @@ def main():
     finally:
         print("\n[CLEANUP] Shutting down...")
         _cap_stop.set()
+        voice_listener.shutdown(timeout=2.0)
         scene.shutdown()
         try:
             capture_thread.join(timeout=2.0)
@@ -2200,6 +2896,8 @@ def main():
         voice.shutdown(timeout=6.0)
         csv_file.close()
         event_file.close()
+        _maybe_upload_run_logs(CSV_FILE, EVENT_LOG, run_id=current_run_id)
+        _prune_log_files(current_run_id=current_run_id)
         print(f"[LOG] Saved: {CSV_FILE}")
         print(f"[LOG] Events: {EVENT_LOG}")
         print("[OK] Done")

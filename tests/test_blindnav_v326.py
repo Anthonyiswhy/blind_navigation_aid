@@ -604,6 +604,19 @@ class TestFastAlertTTS:
         assert len(fake_tts.alert_synthesized) == 1
         assert len(fake_tts.synthesized) == 0
 
+    def test_openai_alert_mode_uses_alert_synth_path(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "openai"):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_warning("Watch out, person ahead, 1.2 meters")
+        assert wait_for_idle(va, timeout=2.0)
+        assert va._alert_tts_mode == "openai"
+        assert len(fake_tts.alert_synthesized) == 1
+        assert len(fake_tts.synthesized) == 0
+
     def test_fast_alert_path_uses_longer_cold_start_silence(self):
         fake_tts = FakeFastAlertTTS(synth_delay=0.01)
         with patch.object(MOD, "ALERT_TTS_MODE", "espeak"):
@@ -700,6 +713,105 @@ class TestPiperAlertCache:
         assert "Obstacle, 0.5 meters" in seen
         assert "obstacle on your right, 1.7 meters" in seen
         assert "Heads up, person on your left, 1.4 meters" in seen
+
+
+class TestOpenAIAlertTTS:
+
+    class _FakeStreamingResponse:
+        def __init__(self, calls, wav_bytes):
+            self.calls = calls
+            self.wav_bytes = wav_bytes
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def stream_to_file(self, path):
+            with open(path, "wb") as f:
+                f.write(self.wav_bytes)
+
+    class _FakeSpeech:
+        def __init__(self, wav_bytes):
+            self.calls = []
+            self.wav_bytes = wav_bytes
+            self.with_streaming_response = self
+
+        def create(self, **kwargs):
+            self.calls.append(kwargs)
+            return TestOpenAIAlertTTS._FakeStreamingResponse(self.calls, self.wav_bytes)
+
+    class _FakeClient:
+        def __init__(self, wav_bytes):
+            self.audio = type("Audio", (), {})()
+            self.audio.speech = TestOpenAIAlertTTS._FakeSpeech(wav_bytes)
+
+    @staticmethod
+    def _wav_bytes():
+        wav_path = _make_wav(0)
+        try:
+            with open(wav_path, "rb") as f:
+                return f.read()
+        finally:
+            try:
+                os.unlink(wav_path)
+            except Exception:
+                pass
+
+    def test_openai_alert_tts_writes_wav_file(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._openai_client = self._FakeClient(self._wav_bytes())
+        piper._last_alert_synth_meta = {}
+        piper.prepend_silence = MOD.PiperVoice.prepend_silence.__get__(piper, MOD.PiperVoice)
+
+        out = None
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "openai"):
+                out = MOD.PiperVoice.synthesize_alert_to_file(
+                    piper, "Stop! obstacle ahead, 0.5 meters", silence_ms=0)
+            assert out and os.path.exists(out)
+            assert piper._openai_client.audio.speech.calls[0]["response_format"] == "wav"
+            assert piper._openai_client.audio.speech.calls[0]["model"] == MOD.OPENAI_ALERT_TTS_MODEL
+            assert piper._last_alert_synth_meta["mode"] == "openai_alert"
+        finally:
+            try:
+                if out:
+                    os.unlink(out)
+            except Exception:
+                pass
+
+    def test_openai_alert_tts_falls_back_to_local_synthesis(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._openai_client = object()
+        piper._use_piper = True
+        piper._alert_cache_enabled = False
+        piper._espeak_cmd = None
+        piper._last_alert_synth_meta = {}
+        fallback_calls = []
+
+        def fake_local(text, silence_ms=0):
+            fallback_calls.append((text, silence_ms))
+            return _make_wav(silence_ms)
+
+        piper._synthesize_openai_alert_to_file = lambda text, silence_ms=0: (_ for _ in ()).throw(RuntimeError("timeout"))
+        piper.synthesize_to_file = fake_local
+
+        out = None
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "openai"), \
+                 patch.object(MOD, "OPENAI_ALERT_TTS_FALLBACK", True):
+                out = MOD.PiperVoice.synthesize_alert_to_file(
+                    piper, "Watch out, obstacle ahead, 0.8 meters", silence_ms=150)
+            assert out and os.path.exists(out)
+            assert fallback_calls == [("Watch out, obstacle ahead, 0.8 meters", 150)]
+            assert piper._last_alert_synth_meta["cache"] == "fallback"
+        finally:
+            try:
+                if out:
+                    os.unlink(out)
+            except Exception:
+                pass
 
 
 
@@ -1399,3 +1511,201 @@ class TestMotionDetectorIMUFallback:
         assert motion.available is True
         assert motion.imu is not None
         assert motion._io_error_count == 0
+
+
+# ============================================================
+# Voice command input
+# ============================================================
+
+class FakeInfoVoice:
+    def __init__(self):
+        self.infos = []
+
+    def speak_info(self, text):
+        self.infos.append(text)
+
+    def status_summary(self):
+        return "idle"
+
+
+class FakeScene:
+    def __init__(self, ok=True):
+        self.ok = ok
+        self.requests = 0
+
+    def request_description(self):
+        self.requests += 1
+        return self.ok
+
+
+class TestVoiceCommandParsing:
+    @pytest.mark.parametrize("text,intent", [
+        ("what's near me", "nearest"),
+        ("describe the scene", "describe"),
+        ("how many people are there", "people"),
+        ("status", "status"),
+        ("say that again", "repeat"),
+        ("stop listening", "cancel"),
+        ("banana weather", None),
+    ])
+    def test_parse_voice_command(self, text, intent):
+        parsed = MOD.parse_voice_command(text)
+        assert parsed.intent == intent
+        assert parsed.normalized
+
+    def test_empty_transcript_is_unknown(self):
+        parsed = MOD.parse_voice_command("   ")
+        assert parsed.intent is None
+        assert parsed.reason == "empty"
+
+
+class TestCommandRouter:
+    def _track(self, class_name, distance, seen_frames=5, cx=320, tid=1):
+        t = types.SimpleNamespace()
+        t.id = tid
+        t.class_name = class_name
+        t.distance = distance
+        t.velocity = 0.0
+        t.seen_frames = seen_frames
+        t.box = [cx - 20, 100, cx + 20, 300]
+        return t
+
+    def _router(self, tracks=None, threats=None, scene_ok=True):
+        voice = FakeInfoVoice()
+        scene = FakeScene(ok=scene_ok)
+        snapshot = MOD.NavigationSnapshot()
+        tracks = tracks if tracks is not None else []
+        threats = threats if threats is not None else []
+        snapshot.update(
+            tracks=tracks,
+            threats=threats,
+            fps=9.8,
+            user_moving=True,
+            ego_reliable=True,
+            frame_count=7,
+            frame_width=640,
+            voice_status=voice.status_summary(),
+        )
+        return MOD.CommandRouter(voice, scene, snapshot), voice, scene, snapshot
+
+    def test_nearest_speaks_closest_confirmed_object(self):
+        tracks = [
+            self._track("chair", 150, tid=1, cx=250),
+            self._track("person", 90, tid=2, cx=430),
+            self._track("bottle", 30, seen_frames=1, tid=3),
+        ]
+        router, voice, _, _ = self._router(tracks=tracks)
+        router.handle_transcript("what is nearest")
+        assert voice.infos[-1] == "Nearest, person on your right, 0.9 meters"
+
+    def test_people_speaks_count_and_closest_person(self):
+        tracks = [
+            self._track("person", 160, tid=1, cx=200),
+            self._track("person", 120, tid=2, cx=430),
+            self._track("chair", 80, tid=3),
+        ]
+        router, voice, _, _ = self._router(tracks=tracks)
+        router.handle_transcript("how many people")
+        assert voice.infos[-1] == "2 people. Closest, person on your right, 1.2 meters"
+
+    def test_describe_routes_to_scene_describer(self):
+        router, voice, scene, _ = self._router(scene_ok=True)
+        router.handle_transcript("describe scene")
+        assert scene.requests == 1
+        assert voice.infos == []
+
+    def test_describe_failure_is_spoken(self):
+        router, voice, scene, _ = self._router(scene_ok=False)
+        router.handle_transcript("describe scene")
+        assert scene.requests == 1
+        assert voice.infos[-1] == "Scene description unavailable"
+
+    def test_status_includes_runtime_snapshot(self):
+        tracks = [self._track("chair", 150), self._track("person", 90, tid=2)]
+        router, voice, _, _ = self._router(tracks=tracks)
+        router.handle_transcript("status")
+        assert voice.infos[-1] == "Status, 9.8 FPS, moving, ego OK, 2 confirmed objects, voice idle"
+
+    def test_unknown_transcript_has_deterministic_fallback(self):
+        router, voice, _, _ = self._router()
+        router.handle_transcript("turn on the headlights")
+        assert voice.infos[-1] == "Command not recognized"
+
+    def test_repeat_replays_last_info_response(self):
+        router, voice, _, _ = self._router()
+        router.handle_transcript("status")
+        first = voice.infos[-1]
+        router.handle_transcript("repeat")
+        assert voice.infos[-1] == first
+
+
+class TestVoiceCommandListener:
+    class SlowRecorder:
+        def __init__(self, delay=0.05):
+            self.delay = delay
+
+        def record(self):
+            time.sleep(self.delay)
+            return _make_wav()
+
+    class SlowTranscriber:
+        model = "fake-stt"
+
+        def __init__(self, text="status", delay=0.05):
+            self.text = text
+            self.delay = delay
+
+        def transcribe(self, wav_path):
+            time.sleep(self.delay)
+            return self.text
+
+    class FailingRecorder:
+        def record(self):
+            raise RuntimeError("mic missing")
+
+    def test_missing_openai_key_fails_before_import(self):
+        transcriber = MOD.OpenAICommandTranscriber(api_key="")
+        with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
+            transcriber.transcribe("sample.wav")
+
+    def test_request_capture_runs_off_thread_while_snapshot_updates(self):
+        voice = FakeInfoVoice()
+        scene = FakeScene()
+        snapshot = MOD.NavigationSnapshot()
+        router = MOD.CommandRouter(voice, scene, snapshot)
+        listener = MOD.VoiceCommandListener(
+            router, voice,
+            recorder=self.SlowRecorder(delay=0.10),
+            transcriber=self.SlowTranscriber(text="status", delay=0.10),
+            enabled=True,
+        )
+
+        assert listener.request_capture() is True
+        for frame in range(5):
+            snapshot.update([], [], fps=frame + 1, user_moving=True,
+                            ego_reliable=True, frame_count=frame,
+                            frame_width=640, voice_status="idle")
+            time.sleep(0.02)
+
+        deadline = time.time() + 2.0
+        while listener._busy.is_set() and time.time() < deadline:
+            time.sleep(0.01)
+
+        assert listener._busy.is_set() is False
+        assert snapshot.get()["frame_count"] == 4
+        assert voice.infos[-1].startswith("Status,")
+
+    def test_recorder_failure_speaks_failure_without_crashing(self):
+        voice = FakeInfoVoice()
+        router = MOD.CommandRouter(voice, FakeScene(), MOD.NavigationSnapshot())
+        listener = MOD.VoiceCommandListener(
+            router, voice,
+            recorder=self.FailingRecorder(),
+            transcriber=self.SlowTranscriber(),
+            enabled=True,
+        )
+        assert listener.request_capture() is True
+        deadline = time.time() + 1.0
+        while listener._busy.is_set() and time.time() < deadline:
+            time.sleep(0.01)
+        assert voice.infos[-1] == "Voice command failed"
