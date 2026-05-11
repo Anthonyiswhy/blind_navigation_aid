@@ -1,0 +1,17 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-11T17:50:02.040291+00:00,2.0,2,keyboard,61.6,44,0.0,True,WARNING,1,False,on your right,0.709,0.0,False,
+2026-05-11T17:50:15.240064+00:00,1.9,2,keyboard,61.6,44,0.0,True,WARNING,1,False,on your right,0.711,-6.1,True,
+2026-05-11T17:50:29.519567+00:00,1.4,4,person,106.5,29,0.0,True,CRITICAL,1,False,on your left,0.2,0.4,True,person:29cm:on your left|tv:58cm:ahead|keyboard:43cm:ahead
+2026-05-11T17:50:42.805945+00:00,3.6,2,keyboard,60.5,45,0.0,True,WARNING,1,False,on your right,0.667,-3.3,False,keyboard:45cm:on your right|tv:64cm:on your right
+2026-05-11T17:50:54.469306+00:00,2.3,1,chair,0.4,285,0.0,True,SAFE,2,False,ahead,0.566,0.0,False,
+2026-05-11T17:51:05.959261+00:00,2.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-11T17:51:16.213795+00:00,2.5,0,,0,-1,0,True,NONE,0,False,,-1,4.6,True,
+2026-05-11T17:51:25.841547+00:00,1.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-11T17:51:35.078035+00:00,4.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-11T17:51:45.114674+00:00,2.8,0,,0,-1,0,True,NONE,0,False,,-1,-18.4,True,
+2026-05-11T17:51:54.993175+00:00,3.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-11T17:52:06.209056+00:00,2.2,2,person,0.0,646,0.0,True,SAFE,0,False,ahead,0.362,0.0,False,
+2026-05-11T17:52:17.953057+00:00,2.3,5,chair,2.3,215,0.0,True,SAFE,1,False,on your right,0.87,0.0,False,
+2026-05-11T17:52:30.177532+00:00,2.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-11T17:52:40.488843+00:00,2.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-11T17:52:51.263145+00:00,2.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,

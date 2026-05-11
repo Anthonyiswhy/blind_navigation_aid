@@ -1,0 +1,29 @@
+[17:49:49.213] [VOICE_CMD] Disabled (set BLINDNAV_VOICE_INPUT=1 to enable)
+[17:49:49.503] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:50:08.846] [TTC]  keyboard#15(f4) on your right: dist=45cm vel=-6.3cm/s TTC=7.2s tier=AWARE ego=OK
+[17:50:11.223] [TTC]  keyboard#17(f3) on your right: dist=45cm vel=-4.7cm/s TTC=9.6s tier=NONE ego=OK
+[17:50:11.474] [TTC]  keyboard#17(f3) on your right: dist=45cm vel=-5.0cm/s TTC=8.9s tier=NONE ego=OK
+[17:50:12.260] [TTC]  keyboard#17(f4) on your right: dist=45cm vel=-5.2cm/s TTC=8.6s tier=NONE ego=OK
+[17:50:33.012] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1778521789.504 enqueued=0.000s tts_start=0.001s play_start=40.400s play_end=43.508s queue_wait=0.001s synth=40.399s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=yes silence_ms=150
+[17:50:33.015] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:50:41.447] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778521831.730 enqueued=0.000s tts_start=1.314s play_start=4.764s play_end=9.718s queue_wait=1.314s synth=3.450s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=no silence_ms=0
+[17:50:41.448] [VOICE] WARN: "obstacle on your right, 0.5 meters"
+[17:50:46.785] [TTC]  keyboard#52(f13) on your right: dist=15cm vel=-9.5cm/s TTC=1.6s tier=URGENT ego=BAD
+[17:50:47.219] [TTC]  tv#53(f13) on your right: dist=17cm vel=-23.9cm/s TTC=0.7s tier=URGENT ego=BAD
+[17:50:47.248] [TTC]  tv#53(f13) on your right: dist=50cm vel=-25.1cm/s TTC=2.0s tier=URGENT ego=BAD
+[17:50:49.696] [LATENCY] label=WARN text="obstacle on your right, 0.5 meters" event_created=1778521840.753 enqueued=0.000s tts_start=0.695s play_start=4.567s play_end=8.943s queue_wait=0.695s synth=3.872s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=no silence_ms=0
+[17:50:49.696] [VOICE] URGENT: "obstacle on your right, 0.2 meters"
+[17:50:50.861] [TTC]  person#54(f3) on your right: dist=105cm vel=-53.0cm/s TTC=2.0s tier=URGENT ego=BAD
+[17:50:50.906] [VOICE_POLICY] person#54(f3) on your right: dist=196cm raw_vel=-23.2cm/s eff_vel=0.0cm/s ttc=n/a score=5.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:50:55.731] [LATENCY] label=URGENT text="obstacle on your right, 0.2 meters" event_created=1778521847.220 enqueued=0.000s tts_start=2.552s play_start=4.372s play_end=8.511s queue_wait=2.552s synth=1.821s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=no silence_ms=0
+[17:50:55.731] [VOICE] Expired (4.9s old, TTL=3.0s): "person on your right, 1.1 meters"
+[17:51:42.268] [VOICE_POLICY] person#67(f3) on your left: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:42.307] [VOICE_POLICY] person#67(f3) on your left: dist=690cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:12.807] [VOICE_POLICY] person#74(f3) ahead: dist=398cm raw_vel=-14.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:52:13.148] [VOICE_POLICY] person#74(f3) ahead: dist=516cm raw_vel=1.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:52:23.812] [VOICE_POLICY] person#86(f3) on your right: dist=141cm raw_vel=-30.0cm/s eff_vel=0.0cm/s ttc=n/a score=5.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:24.464] [VOICE] AWARE: "Heads up, person on your right, 1.1 meters"
+[17:52:24.513] [TTC]  person#86(f4) on your right: dist=115cm vel=-26.8cm/s TTC=4.3s tier=AWARE ego=BAD
+[17:52:25.561] [TTC]  person#86(f5) on your right: dist=113cm vel=-21.3cm/s TTC=5.3s tier=AWARE ego=BAD
+[17:52:25.628] [VOICE_POLICY] person#86(f5) on your right: dist=113cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=18.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:32.202] [LATENCY] label=AWARE text="Heads up, person on your right, 1.1 mete" event_created=1778521944.464 enqueued=0.000s tts_start=0.048s play_start=4.056s play_end=7.738s queue_wait=0.048s synth=4.008s launch_wait=0.000s mode=piper_live cache=n/a cold_stream=yes silence_ms=150
