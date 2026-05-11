@@ -1,0 +1,61 @@
+[17:45:07.249] [VOICE_CMD] Disabled (set BLINDNAV_VOICE_INPUT=1 to enable)
+[17:45:08.072] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:45:13.311] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1778521508.073 enqueued=0.000s tts_start=0.005s play_start=2.533s play_end=5.239s queue_wait=0.005s synth=2.528s launch_wait=0.000s mode=piper_alert cache=miss cold_stream=yes silence_ms=150
+[17:45:13.311] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:45:13.655] [TTC]  tv#9(f3) ahead: dist=18cm vel=-15.9cm/s TTC=1.1s tier=URGENT ego=OK
+[17:45:15.950] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1778521511.756 enqueued=0.000s tts_start=1.559s play_start=1.595s play_end=4.193s queue_wait=1.559s synth=0.035s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=no silence_ms=0
+[17:45:15.951] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:45:22.212] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1778521514.245 enqueued=0.000s tts_start=1.825s play_start=4.983s play_end=7.966s queue_wait=1.825s synth=3.158s launch_wait=0.000s mode=piper_alert cache=miss cold_stream=no silence_ms=0
+[17:45:24.714] [VOICE] URGENT: "Obstacle, 0.2 meters"
+[17:45:27.585] [LATENCY] label=URGENT text="Obstacle, 0.2 meters" event_created=1778521524.715 enqueued=0.000s tts_start=0.048s play_start=0.103s play_end=2.870s queue_wait=0.048s synth=0.055s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=yes silence_ms=150
+[17:45:33.526] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:45:36.386] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1778521533.526 enqueued=0.000s tts_start=0.007s play_start=0.012s play_end=2.860s queue_wait=0.007s synth=0.005s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=yes silence_ms=150
+[17:45:42.104] [VOICE_POLICY] person#41(f3) on your left: dist=302cm raw_vel=39.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:42.671] [VOICE_POLICY] person#41(f4) on your left: dist=646cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:46.307] [VOICE_POLICY] person#46(f3) ahead: dist=529cm raw_vel=83.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:46.373] [VOICE_POLICY] person#46(f3) ahead: dist=620cm raw_vel=96.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:46.930] [VOICE_POLICY] person#46(f3) ahead: dist=639cm raw_vel=114.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:47.589] [VOICE_POLICY] person#47(f4) on your left: dist=538cm raw_vel=39.4cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:47.716] [VOICE_POLICY] person#47(f4) on your left: dist=667cm raw_vel=65.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:48.445] [VOICE_POLICY] person#47(f5) on your left: dist=558cm raw_vel=68.4cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:48.607] [VOICE_POLICY] person#47(f5) on your left: dist=596cm raw_vel=51.9cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:50.380] [VOICE_POLICY] person#47(f7) on your left: dist=626cm raw_vel=-2.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:50.516] [VOICE_POLICY] person#47(f7) on your left: dist=645cm raw_vel=15.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:51.005] [VOICE_POLICY] person#47(f8) on your left: dist=690cm raw_vel=31.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:51.500] [VOICE_POLICY] person#47(f8) on your left: dist=722cm raw_vel=46.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:55.899] [VOICE_POLICY] person#60(f3) on your left: dist=767cm raw_vel=-13.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:58.229] [VOICE_POLICY] person#60(f5) on your left: dist=767cm raw_vel=-13.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:59.652] [VOICE_POLICY] person#67(f3) on your left: dist=787cm raw_vel=-4.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:45:59.697] [VOICE_POLICY] person#67(f3) on your left: dist=749cm raw_vel=-2.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:00.608] [VOICE_POLICY] person#67(f4) on your left: dist=758cm raw_vel=-10.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:03.083] [VOICE_POLICY] person#73(f3) on your left: dist=749cm raw_vel=-28.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:03.583] [VOICE_POLICY] person#73(f3) on your left: dist=714cm raw_vel=-7.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:08.527] [VOICE_POLICY] person#80(f3) on your left: dist=626cm raw_vel=-7.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:08.954] [VOICE_POLICY] person#80(f3) on your left: dist=749cm raw_vel=21.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:13.123] [VOICE_POLICY] person#87(f3) on your left: dist=660cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:13.184] [VOICE_POLICY] person#87(f3) on your left: dist=646cm raw_vel=-10.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:13.881] [VOICE_POLICY] person#87(f4) on your left: dist=698cm raw_vel=9.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:16.258] [VOICE_POLICY] person#87(f7) on your left: dist=698cm raw_vel=10.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:17.055] [VOICE_POLICY] person#92(f4) on your left: dist=749cm raw_vel=76.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:36.989] [VOICE] WARN: "Watch out, person on your left, 1.1 meters"
+[17:46:37.025] [VOICE_POLICY] person#107(f3) on your left: dist=99cm raw_vel=-2.7cm/s eff_vel=0.0cm/s ttc=n/a score=57.8 tier=WARNING reason=side_pass_warning user=moving ego=BAD
+[17:46:43.983] [LATENCY] label=WARN text="Watch out, person on your left, 1.1 mete" event_created=1778521596.989 enqueued=0.000s tts_start=0.036s play_start=3.277s play_end=6.994s queue_wait=0.036s synth=3.240s launch_wait=0.000s mode=piper_alert cache=miss cold_stream=yes silence_ms=150
+[17:46:48.653] [VOICE_POLICY] person#123(f3) ahead: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:46:51.141] [VOICE_POLICY] person#123(f5) ahead: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:47:00.048] [VOICE_POLICY] person#147(f3) ahead: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:47:04.521] [VOICE_POLICY] person#158(f3) ahead: dist=758cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=no_actionable_distance_or_ttc user=moving ego=BAD
+[17:47:05.307] [VOICE] URGENT: "Obstacle, 0.5 meters"
+[17:47:08.331] [LATENCY] label=URGENT text="Obstacle, 0.5 meters" event_created=1778521625.306 enqueued=0.000s tts_start=0.002s play_start=0.103s play_end=2.986s queue_wait=0.002s synth=0.101s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=yes silence_ms=150
+[17:47:13.302] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:47:16.162] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1778521633.303 enqueued=0.000s tts_start=0.006s play_start=0.123s play_end=2.860s queue_wait=0.006s synth=0.117s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=yes silence_ms=150
+[17:47:30.749] [VOICE] URGENT: "Obstacle, 0.5 meters"
+[17:47:33.535] [LATENCY] label=URGENT text="Obstacle, 0.5 meters" event_created=1778521650.745 enqueued=0.000s tts_start=0.025s play_start=0.054s play_end=2.790s queue_wait=0.025s synth=0.030s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=yes silence_ms=150
+[17:47:33.866] [VOICE] URGENT: "obstacle on your right, 0.5 meters"
+[17:47:37.190] [LATENCY] label=URGENT text="obstacle on your right, 0.5 meters" event_created=1778521653.866 enqueued=0.000s tts_start=0.004s play_start=0.009s play_end=3.323s queue_wait=0.004s synth=0.005s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=no silence_ms=0
+[17:47:37.191] [VOICE] WARN: "obstacle on your right, 0.5 meters"
+[17:47:40.508] [LATENCY] label=WARN text="obstacle on your right, 0.5 meters" event_created=1778521654.920 enqueued=0.000s tts_start=2.315s play_start=2.317s play_end=5.554s queue_wait=2.315s synth=0.002s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=no silence_ms=0
+[17:47:40.509] [VOICE] Expired (3.3s old, TTL=3.0s): "Obstacle, 0.5 meters"
+[17:47:40.545] [VOICE] WARN: "obstacle on your right, 0.5 meters"
+[17:47:43.917] [LATENCY] label=WARN text="obstacle on your right, 0.5 meters" event_created=1778521660.211 enqueued=0.000s tts_start=0.393s play_start=0.396s play_end=3.706s queue_wait=0.393s synth=0.003s launch_wait=0.000s mode=piper_alert cache=hit cold_stream=no silence_ms=0
+[17:47:45.573] [VOICE] URGENT: "Obstacle, 0.5 meters"
+[17:47:48.693] [LATENCY] label=URGENT text="Obstacle, 0.5 meters" event_created=1778521665.487 enqueued=0.000s tts_start=0.190s play_start=0.460s play_end=3.207s queue_wait=0.190s synth=0.270s launch_wait=0.000s mode=piper_alert cache=miss cold_stream=yes silence_ms=150
