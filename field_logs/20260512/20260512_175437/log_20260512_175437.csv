@@ -1,0 +1,7 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-12T17:55:19.011401+00:00,2.2,1,keyboard,52.0,48,0.0,True,WARNING,1,False,on your right,0.795,-5.2,True,
+2026-05-12T17:55:30.749028+00:00,3.9,2,person,100.5,33,0.0,True,CRITICAL,1,False,on your left,0.059,-0.8,True,remote:28cm:ahead
+2026-05-12T17:55:45.059907+00:00,2.7,1,person,85.5,43,0.0,True,CRITICAL,1,False,on your left,0.103,-1.7,True,
+2026-05-12T17:55:55.863584+00:00,3.3,1,dining table,54.6,22,0.0,True,WARNING,1,False,ahead,0.499,-0.6,True,
+2026-05-12T17:56:05.905697+00:00,3.0,3,person,118.5,21,0.0,True,CRITICAL,1,False,on your left,0.282,-0.6,False,
+2026-05-12T17:56:15.084231+00:00,2.3,2,person,90.0,40,0.0,True,CRITICAL,1,False,on your left,0.12,0.0,False,

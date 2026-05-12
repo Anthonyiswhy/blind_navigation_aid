@@ -1,0 +1,13 @@
+[17:55:05.339] [VOICE_CMD] Disabled (set BLINDNAV_VOICE_INPUT=1 to enable)
+[17:55:06.330] [VOICE] URGENT: "Obstacle, 0.5 meters"
+[17:55:16.486] [TTC]  keyboard#8(f3) on your right: dist=48cm vel=-4.9cm/s TTC=9.8s tier=NONE ego=OK
+[17:55:51.401] [LATENCY] label=URGENT text="Obstacle, 0.5 meters" event_created=1778608506.330 enqueued=0.000s tts_start=0.001s play_start=41.221s play_end=45.054s queue_wait=0.001s synth=41.221s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=yes silence_ms=150
+[17:55:51.402] [VOICE] Expired (20.1s old, TTL=3.0s): "obstacle ahead, 0.2 meters"
+[17:55:51.402] [VOICE] Expired (19.4s old, TTL=5.0s): "path clear"
+[17:55:51.575] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:56:01.541] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778608551.575 enqueued=0.000s tts_start=0.036s play_start=5.896s play_end=9.963s queue_wait=0.036s synth=5.861s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=no silence_ms=0
+[17:56:01.542] [VOICE] Expired (6.3s old, TTL=3.0s): "person on your left, 0.5 meters"
+[17:56:01.543] [VOICE] Expired (6.3s old, TTL=5.0s): "path clear"
+[17:56:02.587] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:56:12.822] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778608562.587 enqueued=0.000s tts_start=0.003s play_start=6.387s play_end=10.225s queue_wait=0.003s synth=6.384s launch_wait=0.000s mode=openai_alert cache=n/a cold_stream=no silence_ms=0
+[17:56:12.823] [VOICE] Expired (7.6s old, TTL=3.0s): "person on your left, 0.5 meters"
