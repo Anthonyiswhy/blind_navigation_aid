@@ -1,0 +1,11 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-12T18:02:18.546213+00:00,12.0,3,keyboard,53.0,47,0.0,True,WARNING,1,False,on your left,0.336,0.0,False,tv:63cm:ahead|keyboard:47cm:on your left
+2026-05-12T18:02:21.384378+00:00,8.6,1,person,600.0,20,-36.2,True,CRITICAL,1,False,ahead,0.471,0.0,False,person:20cm:ahead
+2026-05-12T18:02:24.185055+00:00,7.8,4,person,110.6,33,0.0,True,CRITICAL,1,False,on your left,0.264,0.0,False,person:33cm:on your left|tv:60cm:ahead
+2026-05-12T18:02:26.445344+00:00,12.3,1,person,117.2,29,0.0,True,CRITICAL,1,False,on your left,0.356,0.0,True,person:29cm:on your left
+2026-05-12T18:02:28.853944+00:00,15.3,2,person,24.4,26,7.7,True,CAUTION,1,False,ahead,0.359,-7.7,False,person:26cm:ahead|tv:59cm:ahead
+2026-05-12T18:02:31.088589+00:00,15.0,2,person,21.9,27,7.7,True,CAUTION,1,False,on your left,0.199,-7.7,False,person:27cm:on your left|tv:59cm:ahead
+2026-05-12T18:02:33.806038+00:00,14.0,2,person,24.8,25,7.7,True,CAUTION,1,False,on your left,0.292,-7.7,False,person:25cm:on your left|tv:59cm:ahead
+2026-05-12T18:02:36.590178+00:00,6.0,6,person,239.0,33,-7.8,True,CRITICAL,1,False,on your right,0.909,0.0,False,keyboard:44cm:on your left|person:33cm:on your right|person:42cm:on your left
+2026-05-12T18:02:39.528741+00:00,10.0,2,person,19.5,35,5.7,True,CAUTION,1,False,on your left,0.087,-3.0,True,keyboard:43cm:on your left|person:35cm:on your left
+2026-05-12T18:02:41.764277+00:00,14.5,1,person,97.4,41,0.0,True,CRITICAL,1,False,on your left,0.142,0.0,True,person:41cm:on your left

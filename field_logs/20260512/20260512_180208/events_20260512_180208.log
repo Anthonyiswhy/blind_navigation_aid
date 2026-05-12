@@ -1,0 +1,43 @@
+[18:02:15.755] [VOICE_CMD] Disabled (set BLINDNAV_VOICE_INPUT=1 to enable)
+[18:02:16.012] [VOICE] URGENT: "Obstacle, 0.2 meters"
+[18:02:19.446] [LATENCY] label=URGENT text="Obstacle, 0.2 meters" event_created=1778608936.013 enqueued=0.000s tts_start=0.001s play_start=0.073s play_end=3.434s queue_wait=0.001s synth=0.073s launch_wait=0.000s mode=n/a cache=n/a cold_stream=yes silence_ms=220
+[18:02:19.447] [VOICE] CLEAR: "keyboard stopped, 0.5 meters away"
+[18:02:20.352] [TTC]  keyboard#2(f23) ahead: dist=15cm vel=-33.4cm/s TTC=0.4s tier=URGENT ego=BAD
+[18:02:20.516] [TTC]  keyboard#2(f23) ahead: dist=15cm vel=-33.4cm/s TTC=0.4s tier=URGENT ego=BAD
+[18:02:20.520] [TTC]  keyboard#2(f23) ahead: dist=15cm vel=-33.4cm/s TTC=0.4s tier=URGENT ego=BAD
+[18:02:20.741] [TTC]  keyboard#2(f23) ahead: dist=16cm vel=-54.0cm/s TTC=0.3s tier=URGENT ego=BAD
+[18:02:20.751] [TTC]  keyboard#2(f23) ahead: dist=16cm vel=-58.9cm/s TTC=0.3s tier=URGENT ego=BAD
+[18:02:20.944] [TTC]  tv#1(f25) ahead: dist=27cm vel=-54.8cm/s TTC=0.5s tier=URGENT ego=BAD
+[18:02:20.951] [TTC]  tv#1(f25) ahead: dist=15cm vel=-64.7cm/s TTC=0.2s tier=URGENT ego=BAD
+[18:02:21.151] [TTC]  tv#1(f25) ahead: dist=16cm vel=-64.9cm/s TTC=0.2s tier=URGENT ego=BAD
+[18:02:21.177] [TTC]  person#6(f4) ahead: dist=20cm vel=-46.7cm/s TTC=0.4s tier=URGENT ego=BAD
+[18:02:21.383] [TTC]  person#6(f5) ahead: dist=20cm vel=-36.2cm/s TTC=0.6s tier=URGENT ego=BAD
+[18:02:21.386] [TTC]  person#6(f5) ahead: dist=20cm vel=-18.1cm/s TTC=1.1s tier=URGENT ego=BAD
+[18:02:21.587] [TTC]  person#6(f6) ahead: dist=20cm vel=-9.0cm/s TTC=2.2s tier=WARN ego=BAD
+[18:02:21.590] [TTC]  person#6(f6) ahead: dist=22cm vel=-4.5cm/s TTC=4.9s tier=AWARE ego=BAD
+[18:02:22.955] [TTC]  tv#8(f3) ahead: dist=27cm vel=-38.8cm/s TTC=0.7s tier=URGENT ego=BAD
+[18:02:23.177] [TTC]  tv#8(f3) ahead: dist=29cm vel=-72.5cm/s TTC=0.4s tier=URGENT ego=BAD
+[18:02:23.185] [TTC]  tv#8(f3) ahead: dist=61cm vel=-36.2cm/s TTC=1.7s tier=URGENT ego=BAD
+[18:02:23.414] [TTC]  tv#8(f3) ahead: dist=61cm vel=-18.1cm/s TTC=3.4s tier=WARN ego=BAD
+[18:02:23.456] [LATENCY] label=CLEAR text="keyboard stopped, 0.5 meters away" event_created=1778608939.308 enqueued=0.000s tts_start=0.143s play_start=0.204s play_end=4.148s queue_wait=0.143s synth=0.061s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:23.456] [VOICE] URGENT: "obstacle ahead, 0.2 meters"
+[18:02:25.886] [TTC]  person#6(f32) on your left: dist=28cm vel=-4.9cm/s TTC=5.7s tier=AWARE ego=OK
+[18:02:27.094] [LATENCY] label=URGENT text="obstacle ahead, 0.2 meters" event_created=1778608943.178 enqueued=0.000s tts_start=0.280s play_start=0.375s play_end=3.916s queue_wait=0.280s synth=0.094s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:27.094] [VOICE] URGENT: "person on your left, 0.2 meters"
+[18:02:31.102] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1778608947.022 enqueued=0.000s tts_start=0.075s play_start=0.135s play_end=4.077s queue_wait=0.075s synth=0.060s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:31.124] [VOICE] URGENT: "person on your left, 0.2 meters"
+[18:02:31.958] [TTC]  tv#11(f13) ahead: dist=27cm vel=-31.8cm/s TTC=0.9s tier=URGENT ego=BAD
+[18:02:32.189] [TTC]  tv#11(f13) ahead: dist=28cm vel=-62.0cm/s TTC=0.5s tier=URGENT ego=BAD
+[18:02:32.193] [TTC]  tv#11(f13) ahead: dist=59cm vel=-27.1cm/s TTC=2.2s tier=WARN ego=BAD
+[18:02:32.389] [TTC]  tv#11(f13) ahead: dist=59cm vel=-9.7cm/s TTC=6.1s tier=AWARE ego=BAD
+[18:02:35.194] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1778608951.088 enqueued=0.000s tts_start=0.037s play_start=0.111s play_end=4.107s queue_wait=0.037s synth=0.074s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:35.196] [VOICE] URGENT: "person on your left, 0.5 meters"
+[18:02:36.126] [TTC]  keyboard#13(f3) on your left: dist=45cm vel=-25.5cm/s TTC=1.8s tier=URGENT ego=BAD
+[18:02:36.158] [TTC]  keyboard#13(f3) on your left: dist=43cm vel=-50.4cm/s TTC=0.9s tier=URGENT ego=BAD
+[18:02:36.589] [TTC]  person#15(f3) on your right: dist=33cm vel=-7.8cm/s TTC=4.2s tier=AWARE ego=BAD
+[18:02:36.601] [TTC]  person#15(f3) on your right: dist=33cm vel=-3.9cm/s TTC=8.5s tier=NONE ego=BAD
+[18:02:39.240] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778608955.092 enqueued=0.000s tts_start=0.106s play_start=0.162s play_end=4.147s queue_wait=0.106s synth=0.055s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:39.240] [VOICE] URGENT: "person on your left, 0.5 meters"
+[18:02:41.940] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778608959.171 enqueued=0.000s tts_start=0.071s play_start=0.158s play_end=2.770s queue_wait=0.071s synth=0.088s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
+[18:02:41.941] [VOICE] URGENT: "person on your left, 0.5 meters"
+[18:02:45.903] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1778608961.372 enqueued=0.000s tts_start=0.570s play_start=0.598s play_end=4.531s queue_wait=0.570s synth=0.028s launch_wait=0.000s mode=n/a cache=n/a cold_stream=no silence_ms=0
