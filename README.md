@@ -145,6 +145,17 @@ bash tools/run_tts_local.sh
 OPENAI_API_KEY="sk-..." bash tools/run_tts_openai.sh
 ```
 
+To use high-quality pre-generated local alert clips:
+
+```bash
+source ~/.config/blindnav/secrets.env
+python3 tools/generate_alert_clips.py
+bash tools/run_tts_clips.sh
+```
+
+Clip mode uses `~/blindnav_alert_clips` by default and falls back to
+`espeak-ng` if a phrase clip is missing.
+
 To upload each completed run's CSV and event log to GitHub automatically:
 
 ```bash
@@ -173,8 +184,8 @@ pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 Current collected totals:
 
 - `tests/test_blindnav.py`: 37 tests
-- `tests/test_blindnav_v326.py`: 158 tests
-- Combined: 195 tests
+- `tests/test_blindnav_v326.py`: 159 tests
+- Combined: 196 tests
 
 ## Performance Notes
 
