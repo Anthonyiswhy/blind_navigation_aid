@@ -43,6 +43,25 @@ export BLINDNAV_VOICE_INPUT=0
 ./tools/run_tts_openai.sh
 ```
 
+Generate high-quality local alert clips:
+
+```bash
+cd ~/blind_navigation_aid
+source ~/blindnav-venv/bin/activate
+source ~/.config/blindnav/secrets.env
+python3 tools/generate_alert_clips.py
+```
+
+Run local clip mode:
+
+```bash
+cd ~/blind_navigation_aid
+source ~/blindnav-venv/bin/activate
+export BLINDNAV_LOG_UPLOAD=1
+export BLINDNAV_VOICE_INPUT=0
+./tools/run_tts_clips.sh
+```
+
 Voice command input test:
 
 ```bash
@@ -81,5 +100,6 @@ export BLINDNAV_LOG_RECOVERY_UPLOAD_RUNS=1
 
 - Do not replace safety alerts with cloud-only speech.
 - Keep voice input disabled during TTS latency comparisons.
-- If OpenAI TTS is slow, expensive, or unreliable, benchmark another TTS provider as a third candidate instead of replacing the local safety fallback.
+- If OpenAI TTS is slow, expensive, or unreliable, use cloud TTS only to generate local alert clips ahead of time.
+- `BLINDNAV_ALERT_TTS=clips` is the preferred production candidate for high-quality fast safety speech.
 - JAX Whisper should not replace OpenAI STT on the Pi unless it is benchmarked under live YOLO/RealSense load and shown not to reduce detection FPS.

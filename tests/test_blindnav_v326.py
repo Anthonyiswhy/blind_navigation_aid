@@ -715,6 +715,39 @@ class TestPiperAlertCache:
         assert "Heads up, person on your left, 1.4 meters" in seen
 
 
+class TestAlertClipMode:
+    def test_clip_mode_uses_local_wav_without_live_synthesis(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._last_alert_synth_meta = {}
+        clip_dir = tempfile.mkdtemp(prefix="blindnav_clip_test_")
+        text = "person on your left, 0.5 meters"
+        clip_path = os.path.join(clip_dir, f"{MOD.PiperVoice._clip_key(text)}.wav")
+        source_wav = _make_wav(0)
+        shutil.copyfile(source_wav, clip_path)
+        os.unlink(source_wav)
+        piper.prepend_silence = MOD.PiperVoice.prepend_silence.__get__(piper, MOD.PiperVoice)
+
+        out = None
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "clips"), \
+                 patch.object(MOD, "ALERT_CLIP_DIR", clip_dir):
+                out = MOD.PiperVoice.synthesize_alert_to_file(piper, text, silence_ms=0)
+            assert out and os.path.exists(out)
+            assert piper._last_alert_synth_meta["mode"] == "clip_alert"
+            assert piper._last_alert_synth_meta["cache"] == "hit"
+        finally:
+            for path in (out, clip_path):
+                try:
+                    if path:
+                        os.unlink(path)
+                except Exception:
+                    pass
+            try:
+                os.rmdir(clip_dir)
+            except Exception:
+                pass
+
+
 class TestOpenAIAlertTTS:
 
     class _FakeStreamingResponse:
