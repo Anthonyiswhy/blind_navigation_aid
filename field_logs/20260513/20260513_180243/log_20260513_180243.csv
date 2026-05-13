@@ -1,0 +1,16 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-13T18:02:58.051311+00:00,10.6,5,mouse,32.3,53,0.0,True,CAUTION,1,False,on your right,0.952,-12.6,True,chair:57cm:on your right|chair:285cm:on your left|person:347cm:on your left|mouse:53cm:on your right|person:293cm:on your left
+2026-05-13T18:03:03.289190+00:00,4.4,7,mouse,32.7,52,0.0,True,CAUTION,1,False,on your right,0.932,0.0,False,chair:56cm:on your right|person:289cm:on your left|tv:107cm:on your right
+2026-05-13T18:03:07.722303+00:00,7.0,3,chair,27.6,56,0.0,True,CAUTION,1,False,on your right,0.731,0.0,False,chair:56cm:on your right|person:296cm:on your left
+2026-05-13T18:03:12.363065+00:00,7.5,5,person,600.0,298,-46.0,True,CRITICAL,1,False,on your left,0.207,0.0,True,chair:56cm:on your right|person:293cm:on your left|person:357cm:on your left
+2026-05-13T18:03:16.402173+00:00,9.9,4,chair,5.5,56,72.4,True,SAFE,1,False,on your right,0.774,0.0,False,chair:56cm:on your right|person:307cm:on your left|person:375cm:on your left|tv:341cm:ahead
+2026-05-13T18:03:20.835321+00:00,6.9,6,chair,0.4,285,0.0,True,SAFE,2,False,ahead,0.595,0.0,False,person:301cm:on your right|chair:285cm:ahead
+2026-05-13T18:03:26.543933+00:00,7.2,4,person,3.8,231,0.0,True,SAFE,1,True,on your left,0.141,0.0,False,person:304cm:on your right|person:381cm:ahead|person:231cm:on your left
+2026-05-13T18:03:30.174736+00:00,9.2,4,person,113.9,31,0.0,True,CRITICAL,1,False,ahead,0.547,0.0,False,person:175cm:on your left|couch:34cm:ahead
+2026-05-13T18:03:34.385142+00:00,8.6,6,laptop,23.3,80,0.0,True,CAUTION,1,False,ahead,0.618,0.0,False,
+2026-05-13T18:03:38.817330+00:00,5.6,6,laptop,25.7,73,0.0,True,CAUTION,1,False,ahead,0.384,0.0,True,person:285cm:on your right|keyboard:45cm:on your right
+2026-05-13T18:03:42.406688+00:00,9.6,1,person,4.7,206,0.0,True,SAFE,1,True,ahead,0.498,0.0,False,person:206cm:ahead
+2026-05-13T18:03:45.472082+00:00,13.9,1,person,108.0,28,0.0,True,CRITICAL,1,False,ahead,0.499,0.0,False,person:28cm:ahead
+2026-05-13T18:03:49.193224+00:00,6.6,6,tv,477.0,23,-40.2,True,CRITICAL,1,False,on your right,0.838,0.0,False,
+2026-05-13T18:03:53.525989+00:00,6.0,3,person,320.6,32,-12.6,True,CRITICAL,1,False,on your left,0.134,7.0,True,person:32cm:on your left|keyboard:45cm:ahead|mouse:25cm:on your left
+2026-05-13T18:03:58.273555+00:00,6.6,3,person,117.0,22,3.7,True,CRITICAL,1,False,on your left,0.21,-3.6,True,person:22cm:on your left|mouse:25cm:on your left|person:33cm:on your left
