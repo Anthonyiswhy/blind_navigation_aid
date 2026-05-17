@@ -1,5 +1,5 @@
 opencv-python>=4.8.0
-numpy>=1.24.0
+numpy==1.26.4
 picamera2>=0.3.16
 onnxruntime>=1.16.0
 pyserial>=3.5

@@ -715,6 +715,107 @@ class TestPiperAlertCache:
         assert "Heads up, person on your left, 1.4 meters" in seen
 
 
+class TestAlertClipMode:
+    def test_clip_mode_uses_local_wav_without_live_synthesis(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._last_alert_synth_meta = {}
+        clip_dir = tempfile.mkdtemp(prefix="blindnav_clip_test_")
+        text = "person on your left, 0.5 meters"
+        clip_path = os.path.join(clip_dir, f"{MOD.PiperVoice._clip_key(text)}.wav")
+        source_wav = _make_wav(0)
+        shutil.copyfile(source_wav, clip_path)
+        os.unlink(source_wav)
+        piper.prepend_silence = MOD.PiperVoice.prepend_silence.__get__(piper, MOD.PiperVoice)
+
+        out = None
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "clips"), \
+                 patch.object(MOD, "ALERT_CLIP_DIR", clip_dir):
+                out = MOD.PiperVoice.synthesize_alert_to_file(piper, text, silence_ms=0)
+            assert out and os.path.exists(out)
+            assert piper._last_alert_synth_meta["mode"] == "clip_alert"
+            assert piper._last_alert_synth_meta["cache"] == "hit"
+        finally:
+            for path in (out, clip_path):
+                try:
+                    if path:
+                        os.unlink(path)
+                except Exception:
+                    pass
+            try:
+                os.rmdir(clip_dir)
+            except Exception:
+                pass
+
+    def test_clip_mode_routes_awareness_away_from_live_piper_by_default(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "clips"), \
+             patch.object(MOD, "CLIP_MODE_ALLOW_LIVE_PIPER", False):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_awareness("Busy area, 4 objects")
+        assert wait_for_idle(va, timeout=2.0)
+        assert len(fake_tts.alert_synthesized) == 1
+        assert len(fake_tts.synthesized) == 0
+
+    def test_clip_mode_can_allow_live_piper_for_awareness(self):
+        fake_tts = FakeFastAlertTTS(synth_delay=0.01)
+        with patch.object(MOD, "ALERT_TTS_MODE", "clips"), \
+             patch.object(MOD, "CLIP_MODE_ALLOW_LIVE_PIPER", True):
+            va = MOD.VoiceAssistant(
+                _tts_override=fake_tts,
+                _player_fn=fast_player(0.02),
+            )
+        va.speak_awareness("long scene response")
+        assert wait_for_idle(va, timeout=2.0)
+        assert len(fake_tts.alert_synthesized) == 0
+        assert len(fake_tts.synthesized) == 1
+
+    def test_empty_clip_file_is_treated_as_missing(self):
+        piper = object.__new__(MOD.PiperVoice)
+        piper._last_alert_synth_meta = {}
+        piper._espeak_cmd = None
+        piper.synthesize_to_file = lambda *args, **kwargs: pytest.fail(
+            "clip mode should not fall back to live Piper by default"
+        )
+        clip_dir = tempfile.mkdtemp(prefix="blindnav_empty_clip_test_")
+        text = "person on your left, 0.5 meters"
+        clip_path = os.path.join(clip_dir, f"{MOD.PiperVoice._clip_key(text)}.wav")
+        open(clip_path, "wb").close()
+
+        try:
+            with patch.object(MOD, "ALERT_TTS_MODE", "clips"), \
+                 patch.object(MOD, "CLIP_MODE_ALLOW_LIVE_PIPER", False), \
+                 patch.object(MOD, "ALERT_CLIP_DIR", clip_dir):
+                out = MOD.PiperVoice.synthesize_alert_to_file(piper, text, silence_ms=0)
+            assert out is None
+            assert piper._last_alert_synth_meta["mode"] == "clip_alert"
+            assert piper._last_alert_synth_meta["cache"] == "miss"
+        finally:
+            try:
+                os.unlink(clip_path)
+            except Exception:
+                pass
+            try:
+                os.rmdir(clip_dir)
+            except Exception:
+                pass
+
+    def test_clip_generator_covers_observed_field_phrases(self):
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        tool_path = os.path.join(repo_root, "tools", "generate_alert_clips.py")
+        spec = importlib.util.spec_from_file_location("generate_alert_clips", tool_path)
+        tool = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(tool)
+
+        phrases = set(tool.clip_phrases())
+        assert "Stop! person on your left, 2.3 meters" in phrases
+        assert "Busy area, 4 objects" in phrases
+        assert "No command heard" in phrases
+
+
 class TestOpenAIAlertTTS:
 
     class _FakeStreamingResponse:

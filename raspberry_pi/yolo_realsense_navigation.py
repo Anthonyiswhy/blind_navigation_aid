@@ -95,6 +95,7 @@ import wave
 import threading
 import math
 import re
+import json
 import hashlib
 import shutil
 import subprocess
@@ -162,7 +163,7 @@ PIPER_CONFIG = os.path.expanduser(
 PIPER_SPEED  = 0.85
 PIPER_SILENCE_MS = 150
 ALERT_TTS_MODE = os.environ.get("BLINDNAV_ALERT_TTS", "piper").strip().lower()
-if ALERT_TTS_MODE not in {"piper", "espeak", "openai"}:
+if ALERT_TTS_MODE not in {"piper", "espeak", "openai", "clips"}:
     ALERT_TTS_MODE = "piper"
 OPENAI_ALERT_TTS_MODEL = os.environ.get(
     "BLINDNAV_OPENAI_TTS_MODEL", "gpt-4o-mini-tts"
@@ -184,6 +185,12 @@ ALERT_CACHE_DIR = os.path.expanduser(
     os.environ.get("BLINDNAV_ALERT_CACHE_DIR",
                    os.path.join(tempfile.gettempdir(), "blindnav_alert_cache"))
 )
+ALERT_CLIP_DIR = os.path.expanduser(
+    os.environ.get("BLINDNAV_ALERT_CLIP_DIR", "~/blindnav_alert_clips")
+)
+CLIP_MODE_ALLOW_LIVE_PIPER = os.environ.get(
+    "BLINDNAV_CLIP_MODE_ALLOW_LIVE_PIPER", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
 ALERT_CACHE_PREWARM = os.environ.get(
     "BLINDNAV_ALERT_CACHE_PREWARM", "1"
 ).strip().lower() not in {"0", "false", "no"}
@@ -703,6 +710,30 @@ class PiperVoice:
         ).hexdigest()
         return os.path.join(self._alert_cache_dir, f"{digest}.wav")
 
+    @staticmethod
+    def _clip_key(text):
+        normalized = " ".join((text or "").strip().lower().split())
+        return hashlib.sha1(normalized.encode("utf-8")).hexdigest()
+
+    def _alert_clip_path(self, text):
+        return os.path.join(ALERT_CLIP_DIR, f"{self._clip_key(text)}.wav")
+
+    def _materialize_alert_clip(self, text):
+        clip_path = self._alert_clip_path(text)
+        if os.path.exists(clip_path) and os.path.getsize(clip_path) > 44:
+            self._last_alert_synth_meta = {
+                "mode": "clip_alert",
+                "cache": "hit",
+                "silence_ms": 0,
+            }
+            return self._copy_to_temp(clip_path)
+        self._last_alert_synth_meta = {
+            "mode": "clip_alert",
+            "cache": "miss",
+            "silence_ms": 0,
+        }
+        return None
+
     def _prime_alert_cache_async(self):
         try:
             phrases = self._prime_alert_cache()
@@ -878,6 +909,14 @@ class PiperVoice:
             return wav_path
 
     def synthesize_alert_to_file(self, text, silence_ms=0):
+        if ALERT_TTS_MODE == "clips":
+            tmpfile = self._materialize_alert_clip(text)
+            if tmpfile is not None:
+                if silence_ms > 0:
+                    self._last_alert_synth_meta["silence_ms"] = silence_ms
+                    return self.prepend_silence(tmpfile, silence_ms)
+                return tmpfile
+
         if ALERT_TTS_MODE == "openai":
             try:
                 return self._synthesize_openai_alert_to_file(text, silence_ms=silence_ms)
@@ -892,7 +931,7 @@ class PiperVoice:
                 if not OPENAI_ALERT_TTS_FALLBACK:
                     return None
 
-        if self._use_piper and getattr(self, "_alert_cache_enabled", False):
+        if getattr(self, "_use_piper", False) and getattr(self, "_alert_cache_enabled", False):
             tmpfile = self._materialize_cached_alert(text)
             if tmpfile is None:
                 return None
@@ -903,6 +942,14 @@ class PiperVoice:
             return tmpfile
 
         if self._espeak_cmd is None:
+            if ALERT_TTS_MODE == "clips" and not CLIP_MODE_ALLOW_LIVE_PIPER:
+                self._last_alert_synth_meta = {
+                    "mode": "clip_alert",
+                    "cache": "miss",
+                    "silence_ms": silence_ms,
+                    "error": "espeak unavailable and live Piper fallback disabled",
+                }
+                return None
             return self.synthesize_to_file(text, silence_ms=silence_ms)
         try:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -927,10 +974,24 @@ class PiperVoice:
                 except Exception:
                     pass
                 return self.synthesize_to_file(text, silence_ms=silence_ms)
+            self._last_alert_synth_meta = {
+                "mode": "espeak_alert",
+                "cache": "fallback" if ALERT_TTS_MODE == "clips" else "n/a",
+                "silence_ms": 0,
+            }
             if silence_ms > 0:
+                self._last_alert_synth_meta["silence_ms"] = silence_ms
                 return self.prepend_silence(tmpfile, silence_ms)
             return tmpfile
         except Exception:
+            if ALERT_TTS_MODE == "clips" and not CLIP_MODE_ALLOW_LIVE_PIPER:
+                self._last_alert_synth_meta = {
+                    "mode": "espeak_alert",
+                    "cache": "failed",
+                    "silence_ms": silence_ms,
+                    "error": "espeak alert synthesis failed",
+                }
+                return None
             return self.synthesize_to_file(text, silence_ms=silence_ms)
 
 
@@ -989,9 +1050,16 @@ class VoiceAssistant:
         self._tts = _tts_override if _tts_override is not None else PiperVoice()
         self.available = self._tts.available
         self._alert_tts_mode = ALERT_TTS_MODE
+        self._clip_mode_allow_live_piper = CLIP_MODE_ALLOW_LIVE_PIPER
         self._alert_synth_available = hasattr(self._tts, "synthesize_alert_to_file")
 
     def _use_alert_synth(self, priority):
+        if (
+            self._alert_tts_mode == "clips"
+            and not self._clip_mode_allow_live_piper
+            and priority is not None
+        ):
+            return self._alert_synth_available
         return (
             priority is not None
             and priority <= self.PRIO_WARNING
@@ -1001,7 +1069,7 @@ class VoiceAssistant:
     def _alert_silence_ms(self, need_silence):
         if not need_silence:
             return 0
-        if self._alert_tts_mode == "espeak":
+        if self._alert_tts_mode in {"espeak", "clips"}:
             return FAST_ALERT_SILENCE_MS
         return PIPER_SILENCE_MS
 
@@ -1070,7 +1138,7 @@ class VoiceAssistant:
                                        enqueued_ts, event_created_ts)
 
             # Start presyn if semaphore free
-            if self._tts._use_piper and not self._use_alert_synth(priority):
+            if getattr(self._tts, "_use_piper", False) and not self._use_alert_synth(priority):
                 existing = self._prefetch[priority]
                 if existing is None or existing[1] != text:
                     if existing is not None:
@@ -2582,9 +2650,10 @@ def main():
         f"[VOICE] 3-slot priority queue | no aplay SIGTERM | "
         f"voice={os.path.splitext(os.path.basename(PIPER_MODEL))[0]} | "
         f"alert_tts={ALERT_TTS_MODE} | "
-        f"cache={'on' if ALERT_TTS_MODE == 'piper' else 'fallback' if ALERT_TTS_MODE == 'openai' and OPENAI_ALERT_TTS_FALLBACK else 'off'} | "
+        f"cache={'clips' if ALERT_TTS_MODE == 'clips' else 'on' if ALERT_TTS_MODE == 'piper' else 'fallback' if ALERT_TTS_MODE == 'openai' and OPENAI_ALERT_TTS_FALLBACK else 'off'} | "
         f"openai_model={OPENAI_ALERT_TTS_MODEL if ALERT_TTS_MODE == 'openai' else 'n/a'} | "
-        f"silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE == 'espeak' else PIPER_SILENCE_MS}ms\n"
+        f"clip_live_piper={'on' if CLIP_MODE_ALLOW_LIVE_PIPER else 'off'} | "
+        f"silence={FAST_ALERT_SILENCE_MS if ALERT_TTS_MODE in {'espeak', 'clips'} else PIPER_SILENCE_MS}ms\n"
     )
 
     frame_count       = 0

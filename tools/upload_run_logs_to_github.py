@@ -92,6 +92,19 @@ def ensure_git_identity(workdir):
         run(["git", "config", "user.email", "blindnav-logs@users.noreply.github.com"], cwd=workdir)
 
 
+def push_upload_branch(workdir, branch):
+    result = run(["git", "push", "origin", f"HEAD:{branch}"], cwd=workdir, check=False)
+    if result.returncode == 0:
+        return
+
+    print("initial push failed; rebasing onto remote log branch and retrying", flush=True)
+    fetch = run(["git", "fetch", "origin", branch], cwd=workdir, check=False)
+    if fetch.returncode != 0:
+        raise RuntimeError(f"failed to fetch remote branch before retry: {branch}")
+    run(["git", "rebase", f"origin/{branch}"], cwd=workdir)
+    run(["git", "push", "origin", f"HEAD:{branch}"], cwd=workdir)
+
+
 def upload_logs(repo_root, remote, branch, log_paths, run_id):
     with tempfile.TemporaryDirectory(prefix="blindnav-log-upload-") as tmp:
         workdir = os.path.join(tmp, "repo")
@@ -108,7 +121,7 @@ def upload_logs(repo_root, remote, branch, log_paths, run_id):
             print("logs already uploaded; no commit needed", flush=True)
             return 0
         run(["git", "commit", "-m", f"Upload BlindNav logs {run_id}"], cwd=workdir)
-        run(["git", "push", "origin", f"HEAD:{branch}"], cwd=workdir)
+        push_upload_branch(workdir, branch)
         print(f"uploaded {len(copied)} log file(s) to branch {branch}", flush=True)
         return 0
 

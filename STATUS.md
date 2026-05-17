@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: April 27, 2026
+Last updated: May 17, 2026
 Current repo target: `v3.30 HEADLESS`
 
 ## Verified in Code and Tests
@@ -14,7 +14,10 @@ Current repo target: `v3.30 HEADLESS`
   - safe urgent supersession before playback
   - Piper as the default urgent/warning alert voice
   - optional OpenAI alert TTS field-test mode via `BLINDNAV_ALERT_TTS=openai`
+  - generated local alert clip mode via `BLINDNAV_ALERT_TTS=clips`
   - local fallback for OpenAI alert TTS failures
+  - `espeak-ng` fallback for missing generated clips
+  - live Piper fallback disabled by default during clip-mode field tests
   - prewarmed cached alert clips for common short safety phrases
   - bucketed spoken distances for cache reuse
   - explicit queue/synth/cache latency diagnostics in `events.log`
@@ -40,7 +43,7 @@ Current repo target: `v3.30 HEADLESS`
 - Hardware-free validation currently passes:
   - `tests/test_blindnav.py`
   - `tests/test_blindnav_v326.py`
-  - combined result: `195 passed`
+  - combined result: `200 passed`
 
 ## Confirmed Design Invariants
 
@@ -53,8 +56,8 @@ Current repo target: `v3.30 HEADLESS`
   compensation is worse than no compensation.
 - Voice commands use `voice.speak_info()` only; urgent/warning obstacle alerts
   remain owned by the main detection loop.
-- OpenAI alert TTS mode changes only speech synthesis for urgent/warning/cleared
-  WAV output; threat scoring, cooldowns, queueing, and `aplay` playback policy
+- OpenAI alert TTS and generated-clip modes change only WAV generation/playback
+  source; threat scoring, cooldowns, queueing, and `aplay` playback policy
   remain unchanged.
 
 ## What Is Hardware-Validated vs Simulated
@@ -78,6 +81,7 @@ Current repo target: `v3.30 HEADLESS`
 - actual Bluetooth wake timing under field conditions
 - OpenAI TTS latency, timeout behavior, and cellular/Wi-Fi reliability in the
   urgent alert path
+- generated clip coverage for every phrase produced during real hallway runs
 - walking sessions with harness sway
 - thermal behavior above 65 C
 - tracker stability with crowded scenes and occlusions
@@ -99,17 +103,20 @@ Current repo target: `v3.30 HEADLESS`
 - OpenAI alert TTS also requires `OPENAI_API_KEY`; fallback is enabled by
   default, but network stalls can still increase `synth` and `play_start`
   latency before fallback returns.
+- Generated clip mode requires a prebuilt `~/blindnav_alert_clips` directory for
+  high-quality speech; missing phrases fall back to `espeak-ng`.
 
 ## Pending Work
 
 - Heatsink: highest hardware priority
-- Review and merge v3.30 to GitHub main
+- Review and merge the generated-clip follow-up for v3.30
 - Schedule a field test with Ricardo Salazar
 - Record five bag-file regression scenarios
 - Add traffic-light color classification
 - Field-test push-to-talk voice input and tune command phrasing
-- Compare `tools/run_tts_local.sh` against `tools/run_tts_openai.sh` on the
-  same course and keep the lower worst-case alert latency path
+- Compare `tools/run_tts_local.sh`, `tools/run_tts_openai.sh`, and
+  `tools/run_tts_clips.sh` on the same course and keep the lower worst-case
+  alert latency path
 
 ## CI State
 

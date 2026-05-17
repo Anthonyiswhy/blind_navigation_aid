@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pytest numpy
+        run: pip install pytest numpy==1.26.4
 
       - name: Run test suites
         run: pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
