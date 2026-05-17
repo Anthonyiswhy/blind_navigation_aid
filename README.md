@@ -3,14 +3,14 @@
 Wearable navigation assistant for blind users built for Raspberry Pi 4 + Intel
 RealSense D435. The system detects obstacles, estimates threat from distance
 and time-to-collision, and speaks warnings through Bluetooth headphones using
-Piper neural TTS.
+local audio/TTS paths.
 
 Current production version: `v3.30 HEADLESS`
 
 - Production script: `raspberry_pi/yolo_realsense_navigation.py`
 - Foundational regression suite: `tests/test_blindnav.py`
 - Advanced voice/latency regression suite: `tests/test_blindnav_v326.py`
-- Verified locally on April 27, 2026: `195 passed`
+- Verified locally on May 17, 2026: `200 passed`
 
 ## What It Does
 
@@ -23,6 +23,8 @@ Current production version: `v3.30 HEADLESS`
 - Provides on-demand scene description with the `d` key.
 - Provides optional push-to-talk voice commands with OpenAI speech-to-text.
 - Provides an optional OpenAI alert TTS field-test mode.
+- Provides a local generated-alert-clip mode for high-quality safety speech
+  without live cloud/Piper synthesis during walking.
 
 ## Recent Changes
 
@@ -30,6 +32,10 @@ Current production version: `v3.30 HEADLESS`
 
 - Added `BLINDNAV_ALERT_TTS=openai` as a field-test mode for urgent, warning,
   and cleared alert speech.
+- Added `BLINDNAV_ALERT_TTS=clips` for local pre-generated alert WAV playback
+  with `espeak-ng` fallback when a phrase is missing.
+- In clip mode, live Piper fallback is disabled by default for queued speech so
+  awareness/info messages do not unexpectedly add Pi-side synthesis latency.
 - Keeps detection, threat scoring, voice queueing, and `aplay` playback policy
   unchanged so the field test compares TTS output only.
 - Uses OpenAI WAV speech output with local fallback enabled by default.
@@ -184,8 +190,8 @@ pytest tests/test_blindnav.py tests/test_blindnav_v326.py -v
 Current collected totals:
 
 - `tests/test_blindnav.py`: 37 tests
-- `tests/test_blindnav_v326.py`: 159 tests
-- Combined: 196 tests
+- `tests/test_blindnav_v326.py`: 163 tests
+- Combined: 200 tests
 
 ## Performance Notes
 
@@ -200,8 +206,8 @@ Current collected totals:
 - Review and merge the v3.30 repo state, then field-test it with Ricardo Salazar.
 - Record bag-file scenarios for regression playback.
 - Field-test push-to-talk voice input on the Pi with the real microphone.
-- Field-test local Piper alert TTS against OpenAI alert TTS using the same
-  walking route and compare `[LATENCY] play_start` in `events.log`.
+- Field-test local Piper, OpenAI alert TTS, and generated local clips using the
+  same walking route and compare `[LATENCY] play_start` in `events.log`.
 - Add traffic-light color classification after the base obstacle system is
   stable.
 

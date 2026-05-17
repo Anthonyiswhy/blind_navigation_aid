@@ -4,6 +4,7 @@
 *.bag
 bags/
 blindnav_logs/
+blindnav_alert_clips/
 *.csv
 __pycache__/
 *.pyc

@@ -19,8 +19,10 @@ from pathlib import Path
 
 ALERT_DISTANCE_BUCKET_CM = 30
 ALERT_SPOKEN_OFFSET_CM = 20
-ALERT_CACHE_MAX_BUCKET = 5
+DEFAULT_ALERT_CLIP_MAX_BUCKET = 10
 ALERT_CACHE_POSITIONS = ("ahead", "on your left", "on your right")
+BUSY_AREA_MIN_OBJECTS = 4
+BUSY_AREA_MAX_OBJECTS = 10
 DEFAULT_CLIP_DIR = "~/blindnav_alert_clips"
 DEFAULT_ELEVEN_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
 DEFAULT_ELEVEN_MODEL = "eleven_flash_v2_5"
@@ -32,7 +34,7 @@ def clip_key(text):
     return hashlib.sha1(normalized.encode("utf-8")).hexdigest()
 
 
-def clip_phrases(max_bucket=ALERT_CACHE_MAX_BUCKET):
+def clip_phrases(max_bucket=DEFAULT_ALERT_CLIP_MAX_BUCKET):
     distances_m = tuple(
         ((bucket * ALERT_DISTANCE_BUCKET_CM) + ALERT_SPOKEN_OFFSET_CM) / 100.0
         for bucket in range(max_bucket + 1)
@@ -53,10 +55,20 @@ def clip_phrases(max_bucket=ALERT_CACHE_MAX_BUCKET):
             ])
     phrases.extend([
         "path clear",
+        "Analyzing scene",
         "Command not recognized",
+        "No command heard",
+        "No confirmed objects nearby",
+        "No confirmed people nearby",
+        "Nothing to repeat",
+        "Still processing voice command",
+        "Voice command canceled",
         "Voice command failed",
         "Scene description unavailable",
+        "Scene description failed",
     ])
+    for count in range(BUSY_AREA_MIN_OBJECTS, BUSY_AREA_MAX_OBJECTS + 1):
+        phrases.append(f"Busy area, {count} objects")
     return sorted(set(phrases), key=str.lower)
 
 
@@ -126,7 +138,7 @@ def main():
     parser.add_argument("--model", default=os.environ.get("ELEVENLABS_TTS_MODEL", DEFAULT_ELEVEN_MODEL))
     parser.add_argument("--output-format", default=os.environ.get("ELEVENLABS_OUTPUT_FORMAT", DEFAULT_ELEVEN_OUTPUT_FORMAT))
     parser.add_argument("--timeout", type=float, default=float(os.environ.get("ELEVENLABS_TIMEOUT_S", "30")))
-    parser.add_argument("--max-bucket", type=int, default=ALERT_CACHE_MAX_BUCKET)
+    parser.add_argument("--max-bucket", type=int, default=DEFAULT_ALERT_CLIP_MAX_BUCKET)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--list", action="store_true", help="Print phrases without generating clips")
     parser.add_argument("--limit", type=int, default=0, help="Generate only the first N phrases, for smoke tests")

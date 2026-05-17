@@ -1,8 +1,10 @@
-# BlindNav v3.30 Log Upload Handoff
+# BlindNav v3.30 Voice, Log Upload, and Clip Mode Handoff
 
-Branch: `codex/v330-log-upload`
+Branch: `codex/v330-clip-infra-cleanup`
 
-PR: https://github.com/Anthonyiswhy/blind_navigation_aid/pull/14
+Base PR: https://github.com/Anthonyiswhy/blind_navigation_aid/pull/14
+
+Latest follow-up: local alert clip mode and repo infrastructure cleanup.
 
 ## What Changed
 
@@ -11,12 +13,22 @@ PR: https://github.com/Anthonyiswhy/blind_navigation_aid/pull/14
 - Added `BLINDNAV_LOG_UPLOAD=1` to upload completed run logs to GitHub.
 - Added automatic pruning for `~/blindnav_logs`.
 - Added startup recovery upload for the newest previous completed run when log upload is enabled.
+- Added generated local alert clip mode with `BLINDNAV_ALERT_TTS=clips`.
+- Expanded the clip generator to cover observed 2.3m phrases and common
+  awareness/info replies.
+- In clip mode, live Piper fallback is disabled by default so a desk/field test
+  does not silently reintroduce Pi-side synthesis latency.
+- Added a GitHub pull request template with BlindNav-specific safety checks.
+- Pinned CI and Pi requirements to `numpy==1.26.4`.
 - Made `tools/run_tts_local.sh` and `tools/run_tts_openai.sh` executable.
 
 ## Runtime Defaults
 
 - Voice input is off by default: `BLINDNAV_VOICE_INPUT=0`.
 - Alert TTS defaults to local Piper unless a helper script overrides it.
+- Clip mode is explicit: `BLINDNAV_ALERT_TTS=clips`.
+- Clip mode does not use live Piper fallback unless
+  `BLINDNAV_CLIP_MODE_ALLOW_LIVE_PIPER=1` is set.
 - Log upload is off by default: `BLINDNAV_LOG_UPLOAD=0`.
 - Log retention keeps the newest 10 navigation runs by default.
 
@@ -51,6 +63,9 @@ source ~/blindnav-venv/bin/activate
 source ~/.config/blindnav/secrets.env
 python3 tools/generate_alert_clips.py
 ```
+
+The default generator now covers distance buckets from 0.2m through 3.2m,
+including the observed field phrase `Stop! person on your left, 2.3 meters`.
 
 Run local clip mode:
 
@@ -92,9 +107,10 @@ export BLINDNAV_LOG_RECOVERY_UPLOAD_RUNS=1
 ## Validation
 
 - `python -m pytest tests/test_blindnav.py tests/test_blindnav_v326.py -q`
-  - First run hit an unrelated random-noise ego-motion edge.
-  - Rerun passed: `195 passed`.
-- `python -m py_compile raspberry_pi/yolo_realsense_navigation.py tools/upload_run_logs_to_github.py`
+  - Current result: `200 passed`.
+- `python -m py_compile raspberry_pi/yolo_realsense_navigation.py tools/generate_alert_clips.py tools/upload_run_logs_to_github.py tools/test_transcribe.py`
+- `python tools/generate_alert_clips.py --list`
+  - Current result: `294 phrase(s)`.
 
 ## Open Questions
 
@@ -102,4 +118,6 @@ export BLINDNAV_LOG_RECOVERY_UPLOAD_RUNS=1
 - Keep voice input disabled during TTS latency comparisons.
 - If OpenAI TTS is slow, expensive, or unreliable, use cloud TTS only to generate local alert clips ahead of time.
 - `BLINDNAV_ALERT_TTS=clips` is the preferred production candidate for high-quality fast safety speech.
+- In clip-mode field logs, investigate every `mode=espeak_alert cache=fallback`
+  line and add the missing phrase to `tools/generate_alert_clips.py`.
 - JAX Whisper should not replace OpenAI STT on the Pi unless it is benchmarked under live YOLO/RealSense load and shown not to reduce detection FPS.
