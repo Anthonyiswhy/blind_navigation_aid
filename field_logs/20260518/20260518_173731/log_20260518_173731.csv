@@ -1,0 +1,162 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-18T17:37:44.821787+00:00,6.0,4,person,600.0,56,-101.9,True,CRITICAL,1,True,on your left,0.366,6.6,True,person:56cm:on your left|person:56cm:ahead|person:55cm:on your left
+2026-05-18T17:37:47.857559+00:00,9.9,1,person,1.0,279,0.0,True,SAFE,1,True,on your right,0.777,0.0,False,
+2026-05-18T17:37:50.826932+00:00,10.3,1,tv,0.6,204,20.4,True,SAFE,1,True,on your right,0.702,-93.2,True,tv:204cm:on your right
+2026-05-18T17:37:53.795478+00:00,9.3,3,tv,25.3,74,0.0,False,CAUTION,1,True,on your right,0.746,0.0,False,chair:476cm:on your left
+2026-05-18T17:37:56.261267+00:00,12.1,1,toilet,0.0,367,0.0,True,SAFE,1,True,on your left,0.275,0.0,False,
+2026-05-18T17:37:58.534822+00:00,13.3,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:01.101354+00:00,12.0,1,person,0.0,660,0.0,True,SAFE,1,True,on your left,0.073,0.0,False,person:660cm:on your left
+2026-05-18T17:38:03.335495+00:00,14.2,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:05.473785+00:00,13.8,1,person,0.0,-1,0.0,True,SAFE,0,True,ahead,0.513,0.0,False,
+2026-05-18T17:38:07.677872+00:00,14.0,2,person,0.0,-1,0.0,True,SAFE,0,True,ahead,0.432,0.0,False,person:758cm:ahead
+2026-05-18T17:38:10.539935+00:00,11.9,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:12.575520+00:00,14.5,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:15.113335+00:00,13.8,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:17.178530+00:00,15.0,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:19.413205+00:00,15.0,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:21.518162+00:00,15.0,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:23.619307+00:00,13.2,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:25.620909+00:00,15.1,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:27.785134+00:00,14.9,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:29.891289+00:00,15.0,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:32.030177+00:00,14.4,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:34.090263+00:00,14.5,0,,0,-1,0,True,NONE,0,True,,-1,-42.6,True,
+2026-05-18T17:38:36.397245+00:00,12.4,3,person,0.0,-1,0.0,True,SAFE,0,True,ahead,0.524,0.0,False,
+2026-05-18T17:38:38.530378+00:00,14.5,2,person,0.0,787,0.0,True,SAFE,0,True,on your left,0.264,0.0,False,
+2026-05-18T17:38:40.728958+00:00,14.6,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:42.866005+00:00,14.2,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:45.067963+00:00,14.9,1,person,0.0,-1,0.0,True,SAFE,0,True,on your left,0.139,0.0,False,
+2026-05-18T17:38:47.766262+00:00,10.1,4,person,0.4,292,0.0,True,SAFE,1,True,on your left,0.127,0.0,False,person:620cm:on your left
+2026-05-18T17:38:49.970884+00:00,15.0,1,person,0.0,-1,0.0,True,SAFE,0,True,ahead,0.504,0.0,False,
+2026-05-18T17:38:52.138815+00:00,13.8,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:38:55.410368+00:00,8.2,0,,0,-1,0,True,NONE,0,True,,-1,12.1,True,
+2026-05-18T17:38:58.976831+00:00,8.6,1,person,0.0,-1,0.0,True,SAFE,0,True,ahead,0.616,0.0,False,
+2026-05-18T17:39:01.442601+00:00,14.4,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:39:03.581555+00:00,14.9,0,,0,-1,0,True,NONE,0,True,,-1,-54.5,True,
+2026-05-18T17:39:05.715600+00:00,15.0,0,,0,-1,0,True,NONE,0,True,,-1,0.0,False,
+2026-05-18T17:39:07.883692+00:00,14.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:10.016112+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:12.086319+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:14.254170+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:16.455242+00:00,13.5,2,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.427,0.0,False,
+2026-05-18T17:39:19.288886+00:00,8.5,1,person,0.0,626,0.0,False,SAFE,1,False,on your left,0.054,0.0,False,person:626cm:on your left
+2026-05-18T17:39:23.795689+00:00,13.2,3,person,0.0,-1,0.0,True,SAFE,0,False,on your right,0.839,0.0,False,
+2026-05-18T17:39:26.362800+00:00,12.8,1,person,0.0,491,0.0,True,SAFE,1,False,on your right,0.921,0.0,False,person:491cm:on your right
+2026-05-18T17:39:28.830687+00:00,12.6,2,person,0.0,614,0.0,False,SAFE,1,False,ahead,0.38,0.0,False,person:614cm:ahead
+2026-05-18T17:39:31.162656+00:00,12.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:33.233974+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:35.396935+00:00,13.1,1,microwave,3.0,211,0.0,True,SAFE,1,False,ahead,0.347,0.0,False,
+2026-05-18T17:39:37.539011+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-18T17:39:39.741121+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:41.875858+00:00,12.5,1,person,0.0,465,0.0,True,SAFE,2,False,on your left,0.267,0.0,False,
+2026-05-18T17:39:44.275723+00:00,14.3,1,toilet,0.0,375,0.0,True,SAFE,2,False,ahead,0.566,0.0,False,
+2026-05-18T17:39:46.574823+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:48.881062+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,15.6,True,
+2026-05-18T17:39:50.914080+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:39:53.219093+00:00,14.0,1,person,0.0,465,0.0,True,SAFE,1,False,ahead,0.53,0.0,False,
+2026-05-18T17:39:55.748466+00:00,10.4,1,person,0.0,495,0.0,True,SAFE,1,False,ahead,0.531,18.9,True,person:495cm:ahead
+2026-05-18T17:39:58.867015+00:00,10.2,1,person,0.0,479,0.0,True,SAFE,1,False,ahead,0.52,0.0,True,person:479cm:ahead
+2026-05-18T17:40:09.523811+00:00,12.1,1,person,0.0,401,0.0,True,SAFE,1,False,on your left,0.095,0.0,False,person:401cm:on your left
+2026-05-18T17:40:11.769234+00:00,13.9,1,person,0.0,445,0.0,True,SAFE,1,False,on your left,0.274,0.0,False,
+2026-05-18T17:40:16.598759+00:00,12.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:19.034063+00:00,13.0,1,chair,1.6,240,0.0,True,SAFE,1,False,on your right,0.883,0.0,False,
+2026-05-18T17:40:21.368108+00:00,12.1,1,person,0.0,455,23.0,True,SAFE,1,False,on your left,0.13,10.6,True,person:455cm:on your left
+2026-05-18T17:40:24.068696+00:00,13.2,1,person,0.0,412,0.0,True,SAFE,1,False,on your left,0.147,0.0,False,
+2026-05-18T17:40:26.705542+00:00,13.6,1,chair,0.5,280,0.0,True,SAFE,1,False,on your right,0.895,0.0,False,
+2026-05-18T17:40:29.040180+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,51.2,True,
+2026-05-18T17:40:31.808182+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:34.078994+00:00,14.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:36.181156+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:38.284711+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:40.388654+00:00,14.6,2,couch,44.4,26,0.0,False,WARNING,1,False,ahead,0.499,0.0,False,person:412cm:ahead|couch:26cm:ahead
+2026-05-18T17:40:42.348569+00:00,15.4,2,couch,397.2,38,-174.7,True,CRITICAL,1,False,ahead,0.5,0.0,False,person:38cm:ahead
+2026-05-18T17:40:44.374890+00:00,16.0,1,bed,147.1,20,-21.4,True,CRITICAL,1,False,ahead,0.499,0.0,False,
+2026-05-18T17:40:46.241249+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:47.923588+00:00,17.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:50.288402+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:52.288118+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:54.357053+00:00,13.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:56.395190+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:40:58.530455+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:41:00.662267+00:00,13.9,0,,0,-1,0,True,NONE,0,False,,-1,75.4,True,
+2026-05-18T17:41:03.303130+00:00,11.0,2,person,0.0,333,0.0,True,SAFE,1,False,on your left,0.323,0.0,False,person:333cm:on your left
+2026-05-18T17:41:06.075268+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:41:08.801483+00:00,11.1,2,person,0.0,675,0.0,True,SAFE,0,False,ahead,0.365,0.0,False,person:675cm:ahead
+2026-05-18T17:41:11.306274+00:00,15.1,6,person,0.0,639,0.0,True,SAFE,0,False,ahead,0.581,0.0,False,
+2026-05-18T17:41:14.438444+00:00,9.7,2,person,0.0,372,0.0,True,SAFE,1,False,on your right,0.895,0.0,False,person:372cm:on your right|person:332cm:on your left
+2026-05-18T17:41:16.640792+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:41:18.907893+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:41:21.052693+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:41:23.248606+00:00,14.5,1,person,7.6,162,0.0,True,SAFE,1,False,on your left,0.173,0.0,False,person:162cm:on your left
+2026-05-18T17:41:25.513869+00:00,13.3,1,person,3.9,230,0.0,True,SAFE,1,False,on your left,0.364,0.0,False,person:230cm:on your left
+2026-05-18T17:41:28.016014+00:00,12.5,1,person,3.4,238,0.0,True,SAFE,1,False,ahead,0.577,0.0,False,person:238cm:ahead
+2026-05-18T17:41:30.457808+00:00,11.5,3,person,4.6,217,0.0,True,SAFE,1,False,ahead,0.627,0.0,False,person:217cm:ahead|person:219cm:ahead
+2026-05-18T17:41:33.017526+00:00,10.9,1,person,4.7,215,0.0,True,SAFE,1,False,ahead,0.609,0.0,False,person:215cm:ahead
+2026-05-18T17:41:35.586683+00:00,10.6,4,person,3.0,239,0.0,False,SAFE,0,False,ahead,0.36,0.0,False,person:250cm:ahead|person:675cm:on your left
+2026-05-18T17:41:38.456633+00:00,15.1,2,person,0.0,318,0.0,True,SAFE,1,False,ahead,0.598,0.0,False,person:318cm:ahead
+2026-05-18T17:41:41.258746+00:00,11.6,1,person,0.0,347,0.0,True,SAFE,1,False,ahead,0.411,0.0,False,person:347cm:ahead
+2026-05-18T17:41:43.960056+00:00,12.0,3,person,0.0,767,0.0,False,SAFE,0,False,on your left,0.254,0.0,False,person:767cm:on your left|person:465cm:on your left
+2026-05-18T17:41:46.564102+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,-100.8,True,
+2026-05-18T17:41:48.829898+00:00,14.9,1,microwave,0.0,330,0.0,True,SAFE,1,False,ahead,0.5,0.0,False,
+2026-05-18T17:41:51.001081+00:00,13.3,3,person,0.0,337,0.0,False,SAFE,1,False,on your right,0.784,-160.0,True,
+2026-05-18T17:41:53.336656+00:00,13.1,3,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.537,0.0,False,person:767cm:on your left
+2026-05-18T17:41:55.438483+00:00,14.5,1,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.527,0.0,False,
+2026-05-18T17:41:57.603711+00:00,13.3,1,person,0.0,468,0.0,True,SAFE,0,False,ahead,0.579,0.0,False,
+2026-05-18T17:41:59.638757+00:00,14.4,3,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.652,0.0,False,
+2026-05-18T17:42:01.706515+00:00,14.3,3,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.548,0.0,False,
+2026-05-18T17:42:03.740712+00:00,15.1,1,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.666,0.0,False,
+2026-05-18T17:42:05.909824+00:00,14.9,4,person,0.0,-1,0.0,True,SAFE,0,False,on your right,0.798,0.0,False,
+2026-05-18T17:42:08.013358+00:00,13.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:42:10.054950+00:00,14.8,0,,0,-1,0,True,NONE,0,False,,-1,-30.9,True,
+2026-05-18T17:42:12.180808+00:00,15.1,6,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.496,0.0,False,
+2026-05-18T17:42:14.684947+00:00,11.9,4,person,0.0,767,0.0,True,SAFE,0,False,on your right,0.74,0.0,False,person:767cm:on your right|person:767cm:on your left
+2026-05-18T17:42:16.786484+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,-160.0,True,
+2026-05-18T17:42:19.050625+00:00,13.8,2,person,1.6,271,0.0,True,SAFE,1,False,ahead,0.453,0.0,False,person:271cm:ahead
+2026-05-18T17:42:21.891002+00:00,9.4,1,person,7.2,170,0.0,True,SAFE,1,False,on your left,0.116,0.0,False,
+2026-05-18T17:42:24.025614+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:42:26.291116+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:42:28.435416+00:00,13.6,1,suitcase,0.0,499,0.0,True,SAFE,1,False,on your right,0.869,0.0,False,
+2026-05-18T17:42:30.662792+00:00,13.3,2,chair,0.0,458,0.0,True,SAFE,0,False,on your right,0.73,0.0,False,
+2026-05-18T17:42:33.131860+00:00,12.0,3,chair,0.0,483,0.0,True,SAFE,1,False,on your right,0.864,0.0,False,chair:483cm:on your right
+2026-05-18T17:42:35.840652+00:00,11.1,4,person,14.0,122,0.0,True,CAUTION,1,False,on your right,0.945,-8.8,True,person:135cm:on your left|person:391cm:on your right
+2026-05-18T17:42:38.465540+00:00,10.9,3,person,22.5,105,0.0,False,CAUTION,2,False,on your left,0.248,0.0,True,person:375cm:on your left|person:160cm:on your right|person:105cm:on your left
+2026-05-18T17:42:41.238094+00:00,10.9,4,person,600.0,152,-36.7,True,CRITICAL,1,False,on your right,0.851,14.2,True,person:152cm:on your right|person:372cm:on your left
+2026-05-18T17:42:43.939640+00:00,9.9,2,person,1.5,163,15.4,True,SAFE,1,False,on your right,0.852,-15.8,True,person:163cm:on your right|person:375cm:on your left
+2026-05-18T17:42:46.510519+00:00,11.0,4,person,22.5,105,0.0,False,CAUTION,2,False,on your left,0.129,15.3,True,person:386cm:on your right|person:110cm:on your left|person:105cm:on your left
+2026-05-18T17:42:49.375121+00:00,12.0,3,person,24.8,105,0.0,True,CAUTION,2,False,on your left,0.282,0.0,True,person:105cm:on your left|person:375cm:on your right
+2026-05-18T17:42:52.212411+00:00,10.7,3,person,294.0,135,-19.1,True,CRITICAL,2,False,on your left,0.308,0.0,True,person:135cm:on your left|person:165cm:on your right|person:135cm:on your left
+2026-05-18T17:42:55.013258+00:00,11.3,3,person,22.5,105,0.0,True,CAUTION,2,False,on your left,0.167,0.0,True,person:175cm:ahead|person:165cm:on your right|person:105cm:on your left
+2026-05-18T17:42:57.619347+00:00,10.0,3,person,600.0,75,-213.9,True,CRITICAL,2,False,on your left,0.238,0.0,False,person:156cm:on your right|person:75cm:on your left
+2026-05-18T17:43:00.581386+00:00,8.5,4,person,289.5,152,-17.1,True,CRITICAL,1,False,on your right,0.805,30.0,True,person:152cm:on your right|person:75cm:on your left|person:165cm:ahead
+2026-05-18T17:43:03.256715+00:00,11.9,3,person,37.0,76,0.0,False,CAUTION,1,False,on your left,0.267,0.0,False,person:386cm:on your right|person:76cm:on your left|person:79cm:ahead
+2026-05-18T17:43:05.961648+00:00,9.6,4,person,455.8,149,-27.6,True,CRITICAL,1,False,on your right,0.86,0.0,True,person:178cm:on your left|person:149cm:on your right
+2026-05-18T17:43:08.826203+00:00,10.8,3,chair,0.0,426,0.0,True,SAFE,1,False,ahead,0.342,0.0,False,chair:426cm:ahead
+2026-05-18T17:43:11.093802+00:00,14.1,1,person,0.0,660,0.0,False,SAFE,1,False,on your left,0.173,160.0,True,
+2026-05-18T17:43:13.261529+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:15.328763+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:17.368264+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:19.432870+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:21.498019+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:23.603033+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:25.668590+00:00,14.6,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:27.704584+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:29.740339+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:31.842184+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:33.873961+00:00,15.0,1,person,0.0,660,196.0,True,SAFE,1,False,on your right,0.934,-26.3,True,
+2026-05-18T17:43:35.911109+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:37.976675+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:40.048111+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:42.184057+00:00,12.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:44.317581+00:00,14.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:46.351283+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:48.325460+00:00,15.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-18T17:43:50.755941+00:00,12.0,2,chair,437.4,80,-61.7,True,CRITICAL,1,False,on your right,0.688,0.0,False,
+2026-05-18T17:43:53.755288+00:00,9.4,2,person,5.5,139,0.0,False,SAFE,1,False,on your left,0.075,0.0,False,person:213cm:on your left
+2026-05-18T17:43:56.189800+00:00,10.9,1,tv,400.0,308,-46.0,True,CRITICAL,1,False,on your right,0.954,-76.0,True,
+2026-05-18T17:43:59.094514+00:00,9.6,10,person,180.5,55,-8.9,True,CRITICAL,1,False,on your right,0.83,0.0,False,person:77cm:on your right|person:55cm:on your right|person:261cm:on your left|person:257cm:on your left
+2026-05-18T17:44:02.523370+00:00,9.0,8,person,600.0,85,-71.5,True,CRITICAL,1,False,on your left,0.202,0.0,False,person:620cm:on your right|person:405cm:on your right|person:85cm:on your left|person:483cm:ahead
+2026-05-18T17:44:05.663400+00:00,10.0,4,person,8.2,75,89.1,True,SAFE,2,False,on your left,0.079,0.0,False,person:75cm:on your left
+2026-05-18T17:44:08.164468+00:00,13.4,2,laptop,84.0,16,0.0,True,CRITICAL,1,False,ahead,0.341,0.0,False,person:465cm:on your left
+2026-05-18T17:44:10.465704+00:00,12.0,4,laptop,600.0,24,-156.3,True,CRITICAL,0,False,ahead,0.41,0.0,False,laptop:24cm:ahead|laptop:44cm:on your right
+2026-05-18T17:44:13.325688+00:00,11.4,3,keyboard,274.9,26,-20.1,True,CRITICAL,1,False,on your left,0.188,0.0,False,laptop:26cm:ahead|mouse:22cm:on your right
+2026-05-18T17:44:15.897505+00:00,3.8,3,keyboard,194.0,33,-12.7,True,CRITICAL,1,False,ahead,0.597,0.0,False,tv:52cm:ahead|keyboard:33cm:ahead
