@@ -162,6 +162,17 @@ bash tools/run_tts_clips.sh
 Clip mode uses `~/blindnav_alert_clips` by default and falls back to
 `espeak-ng` if a phrase clip is missing.
 
+To test clip mode with optional non-speech proximity tones:
+
+```bash
+export BLINDNAV_LOG_UPLOAD=1
+bash tools/run_tts_clips_tones.sh
+```
+
+This keeps speech for action-level alerts and adds local stereo pulses for
+nearby hazards. Set `BLINDNAV_AUDIO_MODE=quiet|balanced|training` and
+`BLINDNAV_TONE_VOLUME=0.0..1.0` to tune it.
+
 To upload each completed run's CSV and event log to GitHub automatically:
 
 ```bash
