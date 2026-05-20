@@ -312,6 +312,20 @@ class TestSelectVoiceMessage:
         assert tier == "awareness"
         assert "person on your right" in msg
 
+    def test_side_pass_warning_is_queued_as_urgent(self):
+        decision = MOD._select_voice_decision(
+            "person", "on your left", 105, 0,
+            user_moving=True, ego_reliable=False,
+            approaching=False, very_close=False, close=False,
+            fast_approach=False, ttc=999.0)
+        assert decision["reason"] == "side_pass_warning"
+        assert decision["tier"] == "warning"
+        assert MOD._queue_tier_for_voice_decision(
+            decision["tier"], decision["reason"]) == "urgent"
+
+    def test_busy_area_speech_is_off_by_default(self):
+        assert MOD.SPEAK_BUSY_AREA is False
+
     def test_far_fast_person_is_not_spoken(self):
         tier, msg = self._call(675, -221, user_moving=True, ego_reliable=True,
                                obj="person", pos="ahead")

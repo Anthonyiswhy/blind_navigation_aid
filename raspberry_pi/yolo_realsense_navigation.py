@@ -144,6 +144,10 @@ WALL_COOLDOWN_S   = 3.0
 
 BUSY_TRACK_THRESHOLD = 4
 BUSY_COOLDOWN_S      = 10.0
+SPEAK_BUSY_AREA = (
+    os.environ.get("BLINDNAV_SPEAK_BUSY_AREA", "0").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 
 VOICE_COOLDOWN = 5.0
 
@@ -537,6 +541,12 @@ def _select_voice_message(obj, pos, dist_cm, vel,
         user_moving, ego_reliable,
         approaching, very_close, close, fast_approach, ttc)
     return decision["tier"], decision["message"]
+
+
+def _queue_tier_for_voice_decision(tier, reason):
+    if reason == "side_pass_warning":
+        return "urgent"
+    return tier
 
 
 def _repo_root():
@@ -2978,10 +2988,14 @@ def main():
             confirmed_count = sum(1 for t in tracks if t.seen_frames >= 3)
             if (confirmed_count >= BUSY_TRACK_THRESHOLD and user_moving
                     and now - last_busy_alert > BUSY_COOLDOWN_S):
-                voice.speak_awareness(f"Busy area, {confirmed_count} objects",
-                                      key="busy_area")
                 last_busy_alert = now
-                print(f"[BUSY] {confirmed_count} confirmed tracks")
+                busy_msg = f"[BUSY] {confirmed_count} confirmed tracks"
+                print(busy_msg)
+                log_event(busy_msg)
+                if SPEAK_BUSY_AREA:
+                    voice.speak_awareness(
+                        f"Busy area, {confirmed_count} objects",
+                        key="busy_area")
 
             # Wall fallback — URGENT (was WARNING in v3.24)
             if user_moving and now - last_wall_alert > WALL_COOLDOWN_S:
@@ -3052,18 +3066,20 @@ def main():
                         tier = decision["tier"]
                         msg = decision["message"]
                         reason = decision["reason"]
+                        queue_tier = _queue_tier_for_voice_decision(tier, reason)
 
-                        if tier == "urgent":
+                        if queue_tier == "urgent":
                             voice.speak_urgent(
                                 msg, key=_voice_key(pos, obj,
-                                    "dist_urg" if (very_close or close) else "ttc_urg",
+                                    "side_pass_urg" if reason == "side_pass_warning"
+                                    else ("dist_urg" if (very_close or close) else "ttc_urg"),
                                     dbucket))
-                        elif tier == "warning":
+                        elif queue_tier == "warning":
                             voice.speak_warning(
                                 msg, key=_voice_key(pos, obj,
                                     "dist_wrn" if close else "ttc_wrn",
                                     dbucket))
-                        elif tier == "awareness":
+                        elif queue_tier == "awareness":
                             voice.speak_awareness(
                                 msg, key=_voice_key(pos, obj, "aware", 0))
                         else:
