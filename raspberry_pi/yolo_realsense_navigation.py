@@ -209,8 +209,17 @@ ESPEAK_ALERT_AMPLITUDE = 180
 
 SIDE_PASS_PERSON_AWARE_CM = 150
 SIDE_PASS_PERSON_WARN_CM = 110
+MAX_VOICE_DISTANCE_CM = 320
 BAD_EGO_TTC_MAX_DISTANCE_CM = 120
 VOICE_POLICY_LOG_COOLDOWN_S = 2.0
+GLOBAL_AWARENESS_COOLDOWN_S = 10.0
+GLOBAL_CLEAR_COOLDOWN_S = 12.0
+QUEUE_AWARENESS_WHEN_BUSY = os.environ.get(
+    "BLINDNAV_QUEUE_AWARENESS_WHEN_BUSY", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
+QUEUE_CLEAR_WHEN_BUSY = os.environ.get(
+    "BLINDNAV_QUEUE_CLEAR_WHEN_BUSY", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
 
 POSITION_CAMERA_HFOV_DEG = 69.0
 POSITION_SIDE_ENTER_DEG  = 13.1
@@ -332,6 +341,12 @@ def _spoken_distance_m(dist_cm):
     return _bucket_distance_cm(_distance_bucket(dist_cm)) / 100.0
 
 
+def _within_voice_distance(obj, dist_cm):
+    if dist_cm is None or dist_cm < 0:
+        return False
+    return dist_cm <= MAX_VOICE_DISTANCE_CM
+
+
 def _spoken_object_name(obj, tier):
     if obj == "person":
         return obj
@@ -341,11 +356,19 @@ def _spoken_object_name(obj, tier):
 def _select_voice_decision(obj, pos, dist_cm, vel,
                            user_moving, ego_reliable,
                            approaching, very_close, close, fast_approach, ttc):
+    if not _within_voice_distance(obj, dist_cm):
+        return {
+            "tier": None,
+            "message": None,
+            "reason": "beyond_voice_distance",
+            "spoken_distance_m": _spoken_distance_m(dist_cm),
+            "spoken_object": obj,
+        }
+
     spoken_dist_m = _spoken_distance_m(dist_cm)
     side_pass_person = (
         obj == "person"
         and pos != "ahead"
-        and user_moving
         and dist_cm <= SIDE_PASS_PERSON_AWARE_CM
     )
 
@@ -398,7 +421,7 @@ def _select_voice_decision(obj, pos, dist_cm, vel,
             }
         return {
             "tier": "awareness",
-            "message": f"Heads up, person {pos}, {spoken_dist_m:.1f} meters",
+            "message": f"person {pos}, {spoken_dist_m:.1f} meters",
             "reason": "side_pass_awareness",
             "spoken_distance_m": spoken_dist_m,
             "spoken_object": "person",
@@ -436,12 +459,13 @@ def _select_voice_decision(obj, pos, dist_cm, vel,
         }
 
     if ttc < 8:
+        spoken_obj = _spoken_object_name(obj, "awareness")
         return {
             "tier": "awareness",
-            "message": f"Heads up, {obj} {pos}, {spoken_dist_m:.1f} meters",
+            "message": f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters",
             "reason": "ttc_awareness",
             "spoken_distance_m": spoken_dist_m,
-            "spoken_object": obj,
+            "spoken_object": spoken_obj,
         }
 
     return {
@@ -1043,6 +1067,7 @@ class VoiceAssistant:
 
         self._current_proc    = None
         self._last_announcement = {}
+        self._last_label_start   = {}
         self._last_speech_end   = 0.0
         self._workers          = set()
         self._shutting_down    = False
@@ -1085,7 +1110,7 @@ class VoiceAssistant:
         self._enqueue(text, key, self.COOLDOWN_AWARENESS, "AWARE",  self.PRIO_AWARE)
 
     def speak_cleared(self, text, key=None):
-        self._enqueue(text, key, self.COOLDOWN_CLEARED,   "CLEAR",  self.PRIO_WARNING)
+        self._enqueue(text, key, self.COOLDOWN_CLEARED,   "CLEAR",  self.PRIO_AWARE)
 
     def speak_info(self, text):
         self._enqueue(text, None, 0, "INFO", self.PRIO_AWARE)
@@ -1114,6 +1139,20 @@ class VoiceAssistant:
         with self._lock:
             if self._shutting_down:
                 return
+            if label == "AWARE":
+                if (event_created_ts - self._last_label_start.get(label, 0.0)
+                        < GLOBAL_AWARENESS_COOLDOWN_S):
+                    return
+                if self.is_speaking and not QUEUE_AWARENESS_WHEN_BUSY:
+                    self._log_drop_locked(label, text, "busy_audio_channel")
+                    return
+            if label == "CLEAR":
+                if (event_created_ts - self._last_label_start.get(label, 0.0)
+                        < GLOBAL_CLEAR_COOLDOWN_S):
+                    return
+                if self.is_speaking and not QUEUE_CLEAR_WHEN_BUSY:
+                    self._log_drop_locked(label, text, "busy_audio_channel")
+                    return
             if key and cooldown > 0:
                 if (event_created_ts - self._last_announcement.get(key, 0)) < cooldown:
                     return
@@ -1153,6 +1192,12 @@ class VoiceAssistant:
         if pf:
             threading.Thread(target=self._rm_wav, args=(pf[0],), daemon=True).start()
 
+    def _log_drop_locked(self, label, text, reason):
+        msg = f"[VOICE] Dropped {label} ({reason}): \"{text}\""
+        print(msg)
+        if self._event_logger:
+            self._event_logger(msg)
+
     @staticmethod
     def _rm_wav(path):
         try:
@@ -1182,6 +1227,7 @@ class VoiceAssistant:
         """Start speech. Must hold self._lock."""
         if key and cooldown > 0:
             self._last_announcement[key] = time.time()
+        self._last_label_start[label] = time.time()
         self.is_speaking   = True
 
         log_msg = f"[VOICE] {label}: \"{text}\""
@@ -2788,8 +2834,20 @@ def main():
                     very_close    = dist_cm < 40
                     close         = dist_cm < 70
                     fast_approach = motion_eval["fast_approach"]
+                    side_person_near = (
+                        obj == "person"
+                        and pos != "ahead"
+                        and dist_cm <= SIDE_PASS_PERSON_AWARE_CM
+                    )
 
-                    if not user_moving and not very_close and not close and not approaching:
+                    if not _within_voice_distance(obj, dist_cm):
+                        log_voice_policy(
+                            now, track, pos, score, motion_eval,
+                            reason="beyond_voice_distance",
+                            tier="NONE",
+                        )
+                    elif (not user_moving and not very_close and not close
+                          and not approaching and not side_person_near):
                         if now - last_paused_print > 3.0:
                             print(f"[PAUSED] Static {obj} {dist_m:.1f}m — suppressed")
                             last_paused_print = now

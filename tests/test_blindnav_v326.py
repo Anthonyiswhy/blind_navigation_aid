@@ -306,6 +306,17 @@ class TestSelectVoiceMessage:
         assert "person on your right" in msg
         assert "1.4 meters" in msg
 
+    def test_side_pass_person_does_not_depend_on_imu_moving_state(self):
+        tier, msg = self._call(129, 0, user_moving=False, ego_reliable=False,
+                               obj="person", pos="on your right")
+        assert tier == "awareness"
+        assert "person on your right" in msg
+
+    def test_far_fast_person_is_not_spoken(self):
+        tier, msg = self._call(675, -221, user_moving=True, ego_reliable=True,
+                               obj="person", pos="ahead")
+        assert tier is None and msg is None
+
     def test_bad_ego_far_stationary_person_stays_silent(self):
         tier, msg = self._call(639, -90, user_moving=False, ego_reliable=False,
                                ttc=999.0, obj="person", pos="ahead")
@@ -1115,6 +1126,56 @@ class TestVoicePriorityQueue:
         assert "person from track 5" in spoken
         # [P1] Both track 6 AND track 7 must be blocked (was `or`, now `and`)
         assert "person from track 6" not in spoken and "person from track 7" not in spoken
+
+    def test_awareness_drops_when_audio_is_busy(self):
+        events = []
+        va = MOD.VoiceAssistant(
+            event_logger=events.append,
+            _tts_override=FakeTTS(synth_delay=0.01),
+            _player_fn=fast_player(0.25),
+        )
+        va.speak_urgent("blocking urgent")
+        time.sleep(0.05)
+        va.speak_awareness("noncritical awareness")
+        assert wait_for_idle(va, timeout=2.0)
+
+        assert "noncritical awareness" not in [s[0] for s in va._tts.synthesized]
+        assert any("Dropped AWARE" in msg for msg in events)
+
+    def test_clear_drops_when_audio_is_busy(self):
+        events = []
+        va = MOD.VoiceAssistant(
+            event_logger=events.append,
+            _tts_override=FakeTTS(synth_delay=0.01),
+            _player_fn=fast_player(0.25),
+        )
+        va.speak_urgent("blocking urgent")
+        time.sleep(0.05)
+        va.speak_cleared("path clear")
+        assert wait_for_idle(va, timeout=2.0)
+
+        assert "path clear" not in [s[0] for s in va._tts.synthesized]
+        assert any("Dropped CLEAR" in msg for msg in events)
+
+    def test_warning_still_queues_when_audio_is_busy(self):
+        va, tts, player = build_voice(synth_delay=0.01, play_duration=0.20)
+        va.speak_urgent("blocking urgent")
+        time.sleep(0.05)
+        va.speak_warning("important warning")
+        assert wait_for_idle(va, timeout=2.0)
+
+        assert "important warning" in [s[0] for s in tts.synthesized]
+
+    def test_global_awareness_cooldown_blocks_rapid_awareness(self):
+        va, tts, player = build_voice(synth_delay=0.01, play_duration=0.02)
+        va.speak_awareness("first awareness")
+        assert wait_for_idle(va, timeout=2.0)
+        va.speak_awareness("second awareness")
+        assert wait_for_idle(va, timeout=2.0)
+
+        spoken = [s[0] for s in tts.synthesized]
+        assert "first awareness" in spoken
+        assert "second awareness" not in spoken
 
 
 # ============================================================
