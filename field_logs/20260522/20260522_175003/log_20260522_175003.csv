@@ -1,0 +1,380 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-22T17:50:25.486772+00:00,10.1,3,person,6.1,189,0.0,True,SAFE,1,False,ahead,0.575,0.0,False,person:189cm:ahead
+2026-05-22T17:50:29.155363+00:00,7.1,5,person,7.2,85,89.9,True,SAFE,1,False,ahead,0.371,0.0,False,person:375cm:ahead
+2026-05-22T17:50:32.094133+00:00,7.6,3,chair,0.9,265,0.0,True,SAFE,1,False,ahead,0.462,0.0,False,chair:308cm:ahead|tv:333cm:on your right
+2026-05-22T17:50:35.094750+00:00,11.3,1,person,600.0,225,-291.4,True,CRITICAL,2,False,on your left,0.07,160.0,True,
+2026-05-22T17:50:37.298690+00:00,7.5,1,person,7.9,71,136.1,True,SAFE,1,False,on your right,0.713,0.0,False,
+2026-05-22T17:50:39.831689+00:00,12.0,1,person,0.0,351,0.0,True,SAFE,1,False,on your right,0.904,0.0,False,person:351cm:on your right
+2026-05-22T17:50:42.034316+00:00,12.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:44.137464+00:00,13.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:46.640739+00:00,12.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:48.706228+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:50.942074+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:53.011608+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:50:55.180685+00:00,12.0,1,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.521,0.0,False,
+2026-05-22T17:50:57.482432+00:00,11.9,3,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.535,0.0,False,
+2026-05-22T17:51:00.114500+00:00,5.9,2,person,0.0,579,0.0,True,SAFE,0,False,on your left,0.232,0.0,False,person:579cm:on your left
+2026-05-22T17:51:02.451150+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:04.585383+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:06.655733+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:08.720510+00:00,15.0,4,person,0.0,-1,0.0,True,SAFE,0,False,on your right,0.723,0.0,False,
+2026-05-22T17:51:10.888554+00:00,12.0,6,person,0.0,-1,0.0,True,SAFE,0,False,on your right,0.805,0.0,False,person:698cm:ahead
+2026-05-22T17:51:13.457042+00:00,12.0,1,person,0.0,620,0.0,True,SAFE,0,False,on your left,0.171,0.0,False,person:620cm:on your left
+2026-05-22T17:51:15.528631+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:17.560862+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-57.6,True,
+2026-05-22T17:51:19.563919+00:00,15.1,1,refrigerator,0.0,468,0.0,True,SAFE,1,False,on your left,0.098,0.0,False,
+2026-05-22T17:51:21.732280+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,-160.0,True,
+2026-05-22T17:51:23.867663+00:00,12.1,2,person,0.0,714,0.0,True,SAFE,1,False,on your left,0.03,0.0,False,
+2026-05-22T17:51:26.170438+00:00,14.0,2,person,0.0,-1,0.0,True,SAFE,0,False,on your left,0.32,0.0,False,
+2026-05-22T17:51:29.138015+00:00,10.3,1,person,8.2,135,0.0,True,SAFE,2,False,on your left,0.165,0.0,False,person:135cm:on your left
+2026-05-22T17:51:31.607254+00:00,13.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:33.839508+00:00,13.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:36.042691+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,-136.0,True,
+2026-05-22T17:51:38.110710+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:40.032921+00:00,16.0,1,person,127.5,15,0.0,True,CRITICAL,1,False,ahead,0.553,0.0,False,
+2026-05-22T17:51:41.844625+00:00,16.4,2,cat,263.9,47,-21.1,True,CRITICAL,1,False,ahead,0.5,0.0,False,
+2026-05-22T17:51:43.874138+00:00,15.6,1,person,6.8,176,0.0,True,SAFE,1,False,ahead,0.5,0.0,False,
+2026-05-22T17:51:46.017880+00:00,13.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:48.252567+00:00,14.0,4,person,0.0,-1,0.0,True,SAFE,0,False,ahead,0.619,0.0,False,
+2026-05-22T17:51:50.578618+00:00,16.9,2,person,127.5,15,0.0,True,CRITICAL,1,False,ahead,0.501,0.0,False,
+2026-05-22T17:51:52.326845+00:00,18.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:54.564059+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:51:57.122453+00:00,11.9,2,person,0.0,516,0.0,True,SAFE,1,False,on your right,0.934,0.0,False,person:516cm:on your right
+2026-05-22T17:51:59.860797+00:00,12.5,1,person,0.0,337,0.0,True,SAFE,1,False,ahead,0.622,0.0,False,person:337cm:ahead
+2026-05-22T17:52:02.129886+00:00,11.4,1,person,0.0,379,0.0,True,SAFE,1,False,ahead,0.569,0.0,False,person:379cm:ahead
+2026-05-22T17:52:04.696647+00:00,8.5,1,person,0.0,423,0.0,True,SAFE,1,False,ahead,0.534,0.0,False,person:423cm:ahead
+2026-05-22T17:52:07.625183+00:00,10.4,3,person,0.0,777,0.0,True,SAFE,1,False,on your left,0.298,0.0,False,person:479cm:on your left
+2026-05-22T17:52:10.166918+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:12.403299+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:14.503168+00:00,13.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:16.611081+00:00,14.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:18.636793+00:00,16.8,1,person,123.0,18,0.0,True,CRITICAL,0,False,ahead,0.466,0.0,False,
+2026-05-22T17:52:21.083159+00:00,11.9,1,person,0.0,401,0.0,True,SAFE,1,False,ahead,0.548,0.0,False,
+2026-05-22T17:52:23.375393+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:25.543279+00:00,12.0,1,refrigerator,600.0,321,-100.3,True,CRITICAL,1,False,on your left,0.089,65.1,True,
+2026-05-22T17:52:27.645675+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:52:29.883028+00:00,14.1,2,cat,600.0,45,-172.3,True,CRITICAL,2,False,on your left,0.273,0.0,False,person:165cm:on your left
+2026-05-22T17:52:32.249811+00:00,14.4,1,chair,0.0,375,0.0,True,SAFE,2,False,on your right,0.944,0.0,False,
+2026-05-22T17:52:34.626512+00:00,12.3,4,chair,12.0,105,0.0,True,CAUTION,1,False,on your left,0.088,0.0,False,chair:239cm:on your right
+2026-05-22T17:52:37.723052+00:00,9.7,2,chair,0.7,160,41.3,True,SAFE,1,False,on your right,0.745,-143.5,True,chair:160cm:on your right
+2026-05-22T17:52:40.489154+00:00,6.7,1,person,6.5,170,0.0,True,SAFE,1,False,on your right,0.916,15.4,True,
+2026-05-22T17:52:43.294392+00:00,10.0,4,person,550.4,83,-31.1,True,CRITICAL,1,False,on your left,0.274,-6.6,True,person:225cm:ahead|person:83cm:on your left
+2026-05-22T17:52:46.359592+00:00,10.3,2,person,7.3,84,8.0,True,SAFE,1,False,ahead,0.474,-7.9,True,person:84cm:ahead|chair:55cm:on your left
+2026-05-22T17:52:49.260088+00:00,11.1,3,chair,25.6,54,0.0,True,CAUTION,1,False,on your left,0.102,0.0,True,chair:54cm:on your left|person:111cm:ahead|person:111cm:ahead
+2026-05-22T17:52:52.263609+00:00,8.4,1,person,3.5,236,0.0,True,SAFE,1,False,on your left,0.223,0.0,False,person:236cm:on your left
+2026-05-22T17:52:55.631396+00:00,7.0,3,chair,11.7,106,0.0,False,CAUTION,2,False,ahead,0.38,23.4,True,dining table:195cm:on your right
+2026-05-22T17:52:57.970216+00:00,14.5,1,sink,5.7,133,0.0,True,SAFE,1,False,ahead,0.501,0.0,False,
+2026-05-22T17:53:00.338913+00:00,9.9,6,person,6.0,138,0.0,True,SAFE,1,False,on your left,0.096,0.0,False,chair:240cm:ahead|person:590cm:on your right
+2026-05-22T17:53:03.673979+00:00,11.0,4,tv,1.8,246,0.0,True,SAFE,1,False,on your left,0.168,0.0,False,person:574cm:on your right
+2026-05-22T17:53:07.011840+00:00,9.1,3,person,0.0,304,0.0,True,SAFE,1,False,on your right,0.887,0.0,False,person:304cm:on your right|tv:487cm:on your left
+2026-05-22T17:53:10.079136+00:00,8.8,1,person,35.5,79,0.0,True,CAUTION,1,False,on your right,0.606,0.0,False,person:79cm:on your right
+2026-05-22T17:53:13.047011+00:00,10.4,1,chair,0.0,316,0.0,True,SAFE,1,False,on your right,0.956,0.0,False,
+2026-05-22T17:53:15.580799+00:00,9.2,2,chair,2.4,209,0.0,True,SAFE,1,False,on your right,0.818,0.0,False,chair:381cm:on your left
+2026-05-22T17:53:17.832324+00:00,12.7,1,chair,483.1,185,-132.1,True,CRITICAL,1,False,on your right,0.829,-105.7,True,
+2026-05-22T17:53:19.951529+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-25.5,True,
+2026-05-22T17:53:22.020401+00:00,12.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:53:24.262593+00:00,14.6,2,keyboard,5.0,75,38.5,True,SAFE,2,False,on your right,0.851,0.0,False,
+2026-05-22T17:53:26.922133+00:00,13.0,0,,0,-1,0,True,NONE,0,False,,-1,10.6,True,
+2026-05-22T17:53:29.559013+00:00,14.6,2,tv,28.7,64,0.0,True,CAUTION,1,False,on your left,0.192,2.7,True,
+2026-05-22T17:53:32.198595+00:00,9.4,1,laptop,402.0,72,-37.6,True,CRITICAL,1,False,ahead,0.635,5.7,True,laptop:72cm:ahead
+2026-05-22T17:53:34.926738+00:00,12.0,3,laptop,14.7,106,0.0,True,CAUTION,1,False,on your left,0.297,0.0,False,
+2026-05-22T17:53:38.134445+00:00,10.5,2,person,7.4,166,0.0,True,SAFE,1,False,on your left,0.127,0.0,False,person:235cm:on your left|person:166cm:on your left
+2026-05-22T17:53:41.231501+00:00,10.3,3,chair,18.7,80,0.0,True,CAUTION,1,False,on your left,0.131,0.0,True,person:172cm:on your left
+2026-05-22T17:53:44.700621+00:00,8.6,4,laptop,246.9,97,-20.7,True,CRITICAL,1,False,ahead,0.524,0.0,True,person:195cm:ahead
+2026-05-22T17:53:48.038626+00:00,11.3,1,tv,28.7,64,4.5,True,CAUTION,1,False,on your left,0.153,-7.6,True,
+2026-05-22T17:53:51.240054+00:00,10.0,2,person,1.2,181,70.9,True,SAFE,1,False,on your left,0.115,8.8,True,person:181cm:on your left|laptop:165cm:on your left
+2026-05-22T17:53:53.606936+00:00,10.1,1,laptop,21.0,87,0.0,True,CAUTION,1,False,on your left,0.109,0.0,True,
+2026-05-22T17:53:56.644727+00:00,9.7,2,laptop,21.3,86,0.0,True,CAUTION,1,False,on your left,0.157,8.1,True,laptop:86cm:on your left|person:209cm:on your left
+2026-05-22T17:53:59.479378+00:00,10.0,3,person,515.3,162,-33.9,True,CRITICAL,1,False,on your left,0.113,13.9,True,person:162cm:on your left|laptop:97cm:on your left
+2026-05-22T17:54:02.611747+00:00,12.7,2,laptop,18.0,96,0.0,True,CAUTION,1,False,on your left,0.165,0.0,True,person:159cm:on your left
+2026-05-22T17:54:05.648975+00:00,8.6,2,person,1.1,204,70.3,True,SAFE,1,False,on your left,0.127,0.0,True,person:204cm:on your left|laptop:225cm:on your left
+2026-05-22T17:54:08.289409+00:00,11.9,4,person,600.0,135,-40.0,True,CRITICAL,2,False,on your left,0.075,0.0,True,person:135cm:on your left|laptop:73cm:on your right
+2026-05-22T17:54:10.686196+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,-28.6,True,
+2026-05-22T17:54:13.123465+00:00,12.1,1,person,600.0,155,-75.6,True,CRITICAL,1,False,on your left,0.081,-6.4,True,
+2026-05-22T17:54:15.690244+00:00,11.3,4,laptop,16.3,101,0.0,True,CAUTION,1,False,ahead,0.442,0.0,True,person:151cm:on your left|person:153cm:on your left
+2026-05-22T17:54:18.662066+00:00,6.0,4,chair,22.1,67,0.0,True,CAUTION,1,False,on your left,0.095,-4.2,True,person:142cm:on your left|chair:67cm:on your left|laptop:101cm:ahead
+2026-05-22T17:54:21.994860+00:00,7.5,3,laptop,18.7,94,0.0,True,CAUTION,1,False,on your left,0.23,3.2,True,person:137cm:on your left|laptop:94cm:on your left
+2026-05-22T17:54:24.901043+00:00,12.0,5,laptop,17.7,97,0.0,True,CAUTION,1,False,on your left,0.277,4.4,True,person:135cm:on your left|laptop:97cm:on your left|person:138cm:on your left
+2026-05-22T17:54:27.941891+00:00,9.3,2,laptop,27.3,68,0.0,True,CAUTION,1,False,on your right,0.839,0.0,False,
+2026-05-22T17:54:30.319038+00:00,8.7,5,laptop,23.7,79,0.0,True,CAUTION,1,False,on your right,0.932,0.0,True,mouse:92cm:on your left|person:153cm:on your left|laptop:114cm:on your left
+2026-05-22T17:54:33.106473+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:54:35.441907+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,14.6,True,
+2026-05-22T17:54:37.907469+00:00,12.0,3,chair,3.3,178,0.0,True,SAFE,1,False,on your right,0.88,0.0,False,
+2026-05-22T17:54:41.010225+00:00,12.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:54:43.949392+00:00,8.5,3,person,600.0,209,-47.0,True,CRITICAL,1,False,ahead,0.681,63.9,True,person:209cm:ahead
+2026-05-22T17:54:47.190896+00:00,11.5,2,chair,15.7,91,0.0,True,CAUTION,1,False,on your right,0.691,0.0,False,chair:225cm:on your left
+2026-05-22T17:54:50.617386+00:00,12.0,2,couch,12.0,90,0.0,True,CAUTION,1,False,on your right,0.936,0.0,True,chair:265cm:ahead
+2026-05-22T17:54:53.787520+00:00,9.4,1,chair,286.3,255,-35.6,True,CRITICAL,2,False,ahead,0.476,7.1,True,chair:255cm:ahead
+2026-05-22T17:54:56.787413+00:00,9.4,3,chair,3.6,178,0.0,True,SAFE,1,False,ahead,0.442,0.0,False,chair:247cm:on your left|chair:270cm:on your right|chair:178cm:ahead
+2026-05-22T17:54:59.725233+00:00,10.0,4,chair,3.5,181,0.0,True,SAFE,1,False,on your left,0.271,0.0,False,chair:179cm:on your left|chair:255cm:on your right|chair:181cm:on your left
+2026-05-22T17:55:02.624335+00:00,10.0,3,chair,3.5,170,0.0,True,SAFE,1,False,ahead,0.446,0.0,False,chair:170cm:ahead|chair:315cm:on your right|chair:246cm:on your left
+2026-05-22T17:55:05.661730+00:00,10.3,3,chair,3.9,167,0.0,True,SAFE,1,False,on your left,0.292,0.0,False,chair:167cm:on your left|chair:274cm:on your right|chair:190cm:on your left
+2026-05-22T17:55:08.996599+00:00,9.2,3,chair,16.5,88,0.0,False,CAUTION,1,False,on your left,0.173,0.0,False,chair:88cm:on your left|chair:112cm:ahead
+2026-05-22T17:55:12.067048+00:00,10.9,2,keyboard,8.1,128,0.0,True,SAFE,1,False,on your left,0.279,0.0,False,person:187cm:ahead|keyboard:128cm:on your left
+2026-05-22T17:55:15.034268+00:00,12.0,2,person,5.1,208,0.0,True,SAFE,1,False,ahead,0.587,6.7,True,person:208cm:ahead|keyboard:135cm:ahead
+2026-05-22T17:55:18.205404+00:00,9.9,2,person,5.0,210,0.0,True,SAFE,1,False,ahead,0.623,-5.0,True,person:210cm:ahead|keyboard:135cm:ahead
+2026-05-22T17:55:20.874980+00:00,11.9,2,person,4.2,223,0.0,True,SAFE,1,False,on your right,0.664,0.0,True,person:223cm:on your right|keyboard:139cm:ahead
+2026-05-22T17:55:23.773445+00:00,13.4,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.388,10.3,True,person:226cm:on your right|keyboard:136cm:ahead
+2026-05-22T17:55:27.076447+00:00,10.0,3,tv,4.1,88,14.8,True,SAFE,1,False,on your right,0.938,-17.7,True,person:225cm:ahead|keyboard:133cm:ahead
+2026-05-22T17:55:29.778447+00:00,10.0,4,person,1.1,195,11.9,True,SAFE,1,False,on your left,0.161,-1.8,True,person:227cm:on your right|keyboard:138cm:ahead
+2026-05-22T17:55:32.515806+00:00,10.6,4,tv,4.9,153,0.0,True,SAFE,1,False,ahead,0.377,-4.7,True,person:226cm:ahead|keyboard:138cm:ahead|keyboard:145cm:ahead
+2026-05-22T17:55:35.292544+00:00,11.9,3,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.366,-2.8,True,person:227cm:on your right|keyboard:136cm:ahead
+2026-05-22T17:55:38.992551+00:00,9.8,3,keyboard,168.5,133,-14.8,True,CRITICAL,1,False,ahead,0.313,10.3,True,keyboard:133cm:ahead|person:227cm:on your right
+2026-05-22T17:55:41.952918+00:00,12.0,3,keyboard,4.3,137,0.0,True,SAFE,1,False,ahead,0.348,0.0,True,keyboard:137cm:ahead|person:230cm:ahead
+2026-05-22T17:55:44.920546+00:00,11.3,2,keyboard,4.4,138,0.0,True,SAFE,1,False,ahead,0.393,-2.9,True,keyboard:138cm:ahead|person:220cm:ahead
+2026-05-22T17:55:47.522776+00:00,12.9,2,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.386,0.0,True,keyboard:137cm:ahead|person:223cm:ahead
+2026-05-22T17:55:50.190950+00:00,10.7,3,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.388,0.0,True,keyboard:136cm:ahead|person:219cm:ahead
+2026-05-22T17:55:53.161326+00:00,11.5,2,keyboard,5.5,135,0.0,True,SAFE,1,False,on your left,0.34,0.0,True,keyboard:135cm:on your left|person:230cm:ahead
+2026-05-22T17:55:56.262630+00:00,9.2,2,keyboard,3.3,141,0.0,True,SAFE,1,False,ahead,0.377,8.5,True,keyboard:141cm:ahead|person:235cm:ahead
+2026-05-22T17:55:59.197114+00:00,8.7,2,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.366,-4.9,True,keyboard:136cm:ahead|person:234cm:ahead
+2026-05-22T17:56:01.769333+00:00,12.0,3,keyboard,5.7,133,0.0,True,SAFE,1,False,ahead,0.371,-20.6,True,keyboard:133cm:ahead|person:230cm:ahead|person:229cm:ahead
+2026-05-22T17:56:04.634126+00:00,11.9,4,tv,4.8,156,0.0,True,SAFE,1,False,ahead,0.395,20.8,True,keyboard:138cm:ahead|person:233cm:on your right
+2026-05-22T17:56:07.705061+00:00,11.8,2,keyboard,1.0,135,12.9,True,SAFE,1,False,ahead,0.363,-14.6,True,keyboard:135cm:ahead|person:228cm:ahead
+2026-05-22T17:56:10.503884+00:00,10.5,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.359,-2.9,True,keyboard:136cm:ahead|person:227cm:ahead
+2026-05-22T17:56:13.373528+00:00,9.2,2,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.363,-2.9,True,keyboard:136cm:ahead|person:230cm:ahead
+2026-05-22T17:56:16.007570+00:00,12.0,2,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.377,0.0,True,keyboard:137cm:ahead|person:226cm:ahead
+2026-05-22T17:56:18.743019+00:00,10.9,3,laptop,4.8,157,0.0,True,SAFE,1,False,ahead,0.477,0.0,False,keyboard:142cm:ahead|person:228cm:on your right
+2026-05-22T17:56:21.348650+00:00,11.9,3,person,5.7,187,0.0,True,SAFE,1,False,on your left,0.105,0.0,False,keyboard:136cm:ahead|person:229cm:on your right
+2026-05-22T17:56:24.116248+00:00,10.0,2,keyboard,4.4,138,0.0,True,SAFE,1,False,ahead,0.451,3.4,True,keyboard:138cm:ahead|person:226cm:on your right
+2026-05-22T17:56:26.591758+00:00,14.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T17:56:29.285527+00:00,10.6,2,keyboard,4.4,138,0.0,True,SAFE,1,False,ahead,0.408,0.0,False,person:224cm:on your right|keyboard:138cm:ahead
+2026-05-22T17:56:31.885101+00:00,12.0,2,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.408,0.0,True,person:225cm:on your right|keyboard:137cm:ahead
+2026-05-22T17:56:34.486594+00:00,12.5,2,keyboard,5.5,135,0.0,True,SAFE,1,False,ahead,0.393,-3.0,True,person:225cm:on your right|keyboard:135cm:ahead
+2026-05-22T17:56:37.523159+00:00,8.6,2,keyboard,7.7,129,0.0,True,SAFE,1,False,ahead,0.42,-14.7,True,person:224cm:on your right|keyboard:129cm:ahead
+2026-05-22T17:56:40.657249+00:00,10.2,2,keyboard,1.0,136,9.6,True,SAFE,1,False,ahead,0.445,-2.9,True,keyboard:136cm:ahead|person:216cm:on your right
+2026-05-22T17:56:43.794032+00:00,6.5,0,,0,-1,0,True,NONE,0,False,,-1,-2.7,True,
+2026-05-22T17:56:46.097282+00:00,12.6,1,keyboard,300.3,119,-29.0,True,CRITICAL,1,False,ahead,0.35,-3.6,True,
+2026-05-22T17:56:48.829176+00:00,12.0,2,keyboard,12.7,112,0.0,True,CAUTION,1,False,on your left,0.27,-3.3,True,keyboard:112cm:on your left
+2026-05-22T17:56:51.537885+00:00,13.2,1,keyboard,3.3,101,18.8,True,SAFE,1,False,on your left,0.258,-27.0,True,
+2026-05-22T17:56:53.900935+00:00,11.8,1,keyboard,6.7,130,0.0,True,SAFE,1,False,ahead,0.363,-4.2,True,
+2026-05-22T17:56:56.400546+00:00,11.7,1,keyboard,353.4,131,-31.5,True,CRITICAL,1,False,ahead,0.324,-1.7,True,keyboard:131cm:ahead
+2026-05-22T17:56:59.104292+00:00,10.0,3,person,3.5,230,0.0,True,SAFE,1,False,on your right,0.685,2.2,True,keyboard:151cm:on your left
+2026-05-22T17:57:01.605335+00:00,13.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:57:03.983690+00:00,13.0,1,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.334,0.0,True,keyboard:137cm:ahead
+2026-05-22T17:57:06.410629+00:00,12.2,2,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.352,-5.1,True,keyboard:136cm:ahead|person:227cm:on your right
+2026-05-22T17:57:08.978336+00:00,12.0,1,keyboard,6.0,132,0.0,True,SAFE,1,False,ahead,0.337,8.1,True,keyboard:132cm:ahead
+2026-05-22T17:57:11.414229+00:00,13.2,0,,0,-1,0,True,NONE,0,False,,-1,-1.6,True,
+2026-05-22T17:57:14.013887+00:00,12.0,1,person,3.8,224,0.0,True,SAFE,1,False,on your right,0.67,-5.7,True,person:224cm:on your right
+2026-05-22T17:57:16.717508+00:00,6.7,2,keyboard,5.3,134,0.0,True,SAFE,1,False,ahead,0.37,4.2,True,keyboard:136cm:ahead
+2026-05-22T17:57:19.550434+00:00,10.7,2,person,3.4,233,0.0,True,SAFE,1,False,ahead,0.629,0.0,True,
+2026-05-22T17:57:22.318717+00:00,14.9,1,keyboard,5.0,135,0.0,True,SAFE,1,False,on your left,0.299,0.0,True,
+2026-05-22T17:57:25.121849+00:00,10.5,2,keyboard,4.8,137,0.0,True,SAFE,1,False,on your left,0.29,3.3,True,keyboard:137cm:on your left
+2026-05-22T17:57:27.892942+00:00,11.9,1,keyboard,4.0,139,0.0,True,SAFE,1,False,on your left,0.314,9.4,True,keyboard:139cm:on your left
+2026-05-22T17:57:30.729327+00:00,14.4,1,keyboard,6.3,131,0.0,True,SAFE,1,False,on your left,0.269,15.1,True,keyboard:131cm:on your left
+2026-05-22T17:57:33.894423+00:00,10.5,1,keyboard,2.0,144,0.0,True,SAFE,1,False,on your left,0.274,2.8,True,keyboard:144cm:on your left
+2026-05-22T17:57:36.063494+00:00,13.4,1,keyboard,7.0,131,0.0,True,SAFE,1,False,on your left,0.248,0.0,True,
+2026-05-22T17:57:38.464940+00:00,12.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:57:40.968645+00:00,11.3,1,keyboard,0.6,141,11.4,True,SAFE,1,False,on your left,0.263,7.3,True,keyboard:141cm:on your left
+2026-05-22T17:57:43.499597+00:00,11.3,1,keyboard,1.4,131,18.5,True,SAFE,1,False,on your left,0.312,-9.2,True,keyboard:131cm:on your left
+2026-05-22T17:57:46.235513+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,-2.2,True,
+2026-05-22T17:57:48.574240+00:00,14.8,0,,0,-1,0,True,NONE,0,False,,-1,-2.2,True,
+2026-05-22T17:57:50.607537+00:00,14.6,0,,0,-1,0,True,NONE,0,False,,-1,1.3,True,
+2026-05-22T17:57:53.177568+00:00,14.7,0,,0,-1,0,True,NONE,0,False,,-1,3.1,True,
+2026-05-22T17:57:55.808663+00:00,10.6,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:57:57.981733+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:00.212399+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:02.523805+00:00,13.2,1,person,7.4,153,0.0,True,SAFE,1,False,on your left,0.188,0.0,True,
+2026-05-22T17:58:04.852301+00:00,13.1,0,,0,-1,0,True,NONE,0,False,,-1,1.4,True,
+2026-05-22T17:58:07.090102+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:09.117844+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:11.287851+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,-1.8,True,
+2026-05-22T17:58:13.354694+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,2.0,True,
+2026-05-22T17:58:15.489255+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:17.532422+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,2.2,True,
+2026-05-22T17:58:19.756483+00:00,12.6,1,suitcase,1.7,125,215.0,True,SAFE,1,False,ahead,0.62,2.3,True,
+2026-05-22T17:58:21.860412+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:23.936986+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:26.034642+00:00,13.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:28.197857+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:30.199153+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:32.268059+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:34.503147+00:00,13.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:36.570289+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:38.605149+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-22T17:58:40.773323+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:42.774457+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:44.843144+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:47.277007+00:00,11.0,1,person,108.0,28,0.0,True,CRITICAL,1,False,on your right,0.897,0.0,True,person:28cm:on your right
+2026-05-22T17:58:49.857456+00:00,11.8,0,,0,-1,0,True,NONE,0,False,,-1,3.6,True,
+2026-05-22T17:58:52.713960+00:00,12.0,1,person,11.5,127,0.0,True,CAUTION,1,False,on your right,0.887,1.8,True,person:127cm:on your right
+2026-05-22T17:58:55.118004+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:58:57.486689+00:00,13.2,0,,0,-1,0,True,NONE,0,False,,-1,-1.8,True,
+2026-05-22T17:58:59.721722+00:00,13.3,2,chair,53.6,33,0.0,True,WARNING,1,False,on your right,0.84,5.3,True,
+2026-05-22T17:59:02.120003+00:00,12.4,1,person,11.5,127,0.0,True,CAUTION,1,False,ahead,0.62,1.5,True,
+2026-05-22T17:59:04.891502+00:00,11.1,1,person,1.4,157,44.3,True,SAFE,1,False,on your left,0.176,6.6,True,person:157cm:on your left
+2026-05-22T17:59:07.392187+00:00,11.1,3,person,600.0,16,-242.3,True,CRITICAL,1,False,ahead,0.405,-1.7,True,person:16cm:ahead
+2026-05-22T17:59:10.056057+00:00,11.0,2,person,600.0,135,-61.5,True,CRITICAL,1,False,ahead,0.408,-2.9,True,person:135cm:ahead
+2026-05-22T17:59:12.761311+00:00,10.7,0,,0,-1,0,True,NONE,0,False,,-1,3.1,True,
+2026-05-22T17:59:15.263502+00:00,10.9,2,person,2.1,131,240.6,True,SAFE,1,False,on your left,0.345,-2.2,True,person:131cm:on your left|person:136cm:ahead
+2026-05-22T17:59:18.098672+00:00,10.4,0,,0,-1,0,True,NONE,0,False,,-1,-1.8,True,
+2026-05-22T17:59:20.234218+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:22.501396+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,1.8,True,
+2026-05-22T17:59:24.570449+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,2.2,True,
+2026-05-22T17:59:26.605333+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:28.673549+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,4.5,True,
+2026-05-22T17:59:30.772988+00:00,12.0,1,chair,3.7,161,0.0,True,SAFE,1,False,on your left,0.058,-1.2,True,
+2026-05-22T17:59:33.041837+00:00,12.0,1,chair,3.9,154,0.0,True,SAFE,1,False,on your left,0.053,-1.2,True,
+2026-05-22T17:59:35.315038+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:37.378815+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:39.415373+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:41.482945+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:43.921008+00:00,12.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-22T17:59:46.386083+00:00,12.2,1,person,23.4,22,65.7,True,CAUTION,1,False,on your right,0.677,0.0,False,
+2026-05-22T17:59:48.523342+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-12.7,True,
+2026-05-22T17:59:51.357590+00:00,10.3,3,person,179.9,81,-9.7,True,CRITICAL,1,False,on your right,0.669,6.3,True,person:81cm:on your right|laptop:72cm:ahead|laptop:71cm:ahead
+2026-05-22T17:59:54.158567+00:00,10.0,2,laptop,600.0,69,-63.4,True,CRITICAL,1,False,ahead,0.398,0.0,True,laptop:69cm:ahead
+2026-05-22T17:59:57.109946+00:00,9.9,3,person,35.5,79,0.0,True,CAUTION,1,False,on your right,0.688,0.0,False,laptop:74cm:ahead|laptop:73cm:ahead
+2026-05-22T17:59:59.728647+00:00,12.0,2,person,35.5,79,0.0,True,CAUTION,1,False,ahead,0.668,0.0,False,laptop:73cm:on your left
+2026-05-22T18:00:02.332731+00:00,11.5,1,laptop,26.8,77,0.0,True,CAUTION,1,False,on your right,0.71,3.9,True,laptop:77cm:on your right
+2026-05-22T18:00:05.064357+00:00,11.3,1,suitcase,4.7,158,0.0,True,SAFE,1,False,on your right,0.847,0.0,False,
+2026-05-22T18:00:07.534185+00:00,11.5,2,chair,3.7,161,0.0,True,SAFE,1,False,on your left,0.203,0.0,False,
+2026-05-22T18:00:10.135509+00:00,11.9,0,,0,-1,0,True,NONE,0,False,,-1,-32.7,True,
+2026-05-22T18:00:12.638032+00:00,11.2,2,chair,219.8,145,-27.3,True,CRITICAL,1,False,on your left,0.065,-6.0,True,
+2026-05-22T18:00:15.306838+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,10.7,True,
+2026-05-22T18:00:17.508039+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,6.8,True,
+2026-05-22T18:00:19.946986+00:00,13.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:00:22.811130+00:00,9.1,3,keyboard,4.4,138,0.0,True,SAFE,1,False,ahead,0.499,0.0,True,keyboard:138cm:ahead|person:237cm:on your right
+2026-05-22T18:00:25.948676+00:00,8.0,3,cup,5.2,98,0.0,True,SAFE,1,False,on your right,0.75,-2.3,True,keyboard:135cm:ahead|person:238cm:on your right
+2026-05-22T18:00:28.915563+00:00,10.0,3,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.475,-9.7,True,person:236cm:on your right|keyboard:133cm:ahead
+2026-05-22T18:00:31.585865+00:00,10.9,3,cup,5.3,97,0.0,True,SAFE,1,False,on your right,0.819,2.4,True,person:237cm:on your right|keyboard:136cm:ahead
+2026-05-22T18:00:34.389692+00:00,11.1,3,laptop,4.6,163,0.0,True,SAFE,1,False,on your left,0.115,-2.2,True,keyboard:144cm:ahead|person:247cm:on your right
+2026-05-22T18:00:37.388490+00:00,11.3,1,keyboard,3.7,140,0.0,True,SAFE,1,False,ahead,0.433,16.4,True,keyboard:140cm:ahead
+2026-05-22T18:00:40.391243+00:00,11.8,4,cup,5.0,100,0.0,True,SAFE,1,False,on your right,0.7,-1.8,True,keyboard:145cm:ahead|cup:100cm:on your right
+2026-05-22T18:00:43.527722+00:00,10.7,3,tv,4.9,153,0.0,True,SAFE,1,False,on your left,0.055,0.0,True,keyboard:145cm:ahead|person:238cm:ahead
+2026-05-22T18:00:46.703545+00:00,8.8,2,keyboard,1.0,136,8.0,True,SAFE,1,False,ahead,0.398,-6.1,True,keyboard:136cm:ahead|person:239cm:ahead
+2026-05-22T18:00:49.831466+00:00,9.2,3,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.401,0.0,True,
+2026-05-22T18:00:52.632960+00:00,12.0,1,keyboard,6.3,131,0.0,True,SAFE,1,False,ahead,0.417,0.0,False,keyboard:131cm:ahead
+2026-05-22T18:00:55.569599+00:00,9.2,4,keyboard,8.0,126,0.0,True,SAFE,1,False,ahead,0.412,-3.5,True,keyboard:126cm:ahead|person:238cm:on your right|keyboard:133cm:ahead
+2026-05-22T18:00:58.604699+00:00,10.6,2,person,2.9,241,0.0,True,SAFE,1,False,on your right,0.674,-5.4,True,keyboard:135cm:ahead|person:241cm:on your right
+2026-05-22T18:01:01.907539+00:00,9.5,2,keyboard,8.4,127,0.0,True,SAFE,1,False,on your left,0.294,3.4,True,
+2026-05-22T18:01:05.077314+00:00,8.0,2,person,11.5,127,0.0,True,CAUTION,1,False,ahead,0.354,0.0,False,
+2026-05-22T18:01:07.678895+00:00,11.2,1,keyboard,4.0,139,0.0,True,SAFE,1,False,ahead,0.366,3.1,True,keyboard:139cm:ahead
+2026-05-22T18:01:10.579417+00:00,11.4,2,keyboard,5.5,135,0.0,True,SAFE,1,False,ahead,0.385,5.0,True,keyboard:135cm:ahead|person:242cm:ahead
+2026-05-22T18:01:13.577888+00:00,10.2,2,keyboard,9.2,125,0.0,True,SAFE,1,False,ahead,0.369,2.0,True,keyboard:125cm:ahead
+2026-05-22T18:01:16.549900+00:00,12.0,1,keyboard,5.7,133,0.0,True,SAFE,1,False,ahead,0.463,-2.5,True,keyboard:133cm:ahead
+2026-05-22T18:01:19.319222+00:00,9.7,4,person,524.0,233,-34.7,True,CRITICAL,1,False,on your right,0.722,10.0,True,person:233cm:on your right
+2026-05-22T18:01:22.386328+00:00,10.0,3,keyboard,1.5,130,20.2,True,SAFE,1,False,ahead,0.45,-16.0,True,person:230cm:on your right|keyboard:130cm:ahead
+2026-05-22T18:01:25.393688+00:00,6.6,2,keyboard,256.2,131,-22.7,True,CRITICAL,1,False,ahead,0.398,1.5,True,person:236cm:ahead|keyboard:131cm:ahead
+2026-05-22T18:01:28.258740+00:00,11.2,2,keyboard,142.7,142,-12.7,True,CRITICAL,1,False,ahead,0.381,-1.5,True,person:238cm:ahead|keyboard:142cm:ahead
+2026-05-22T18:01:31.094289+00:00,11.3,2,person,3.2,241,0.0,True,SAFE,1,False,ahead,0.613,-2.4,True,person:241cm:ahead|keyboard:140cm:ahead
+2026-05-22T18:01:34.031117+00:00,10.3,2,keyboard,5.7,133,0.0,True,SAFE,1,False,ahead,0.409,-2.2,True,person:241cm:ahead|keyboard:133cm:ahead
+2026-05-22T18:01:36.830998+00:00,10.0,4,laptop,0.9,160,6.6,True,SAFE,1,False,on your left,0.101,-13.2,True,person:239cm:on your right|keyboard:139cm:ahead
+2026-05-22T18:01:39.867140+00:00,10.0,2,keyboard,4.0,138,0.0,True,SAFE,1,False,ahead,0.399,5.5,True,person:244cm:ahead|keyboard:138cm:ahead
+2026-05-22T18:01:42.736829+00:00,9.9,5,keyboard,322.9,135,-31.8,True,CRITICAL,1,False,ahead,0.383,14.9,True,person:238cm:ahead|keyboard:135cm:ahead
+2026-05-22T18:01:46.039208+00:00,5.1,2,person,471.2,193,-28.2,True,CRITICAL,1,False,ahead,0.61,1.4,True,person:193cm:ahead|keyboard:139cm:ahead
+2026-05-22T18:01:48.757180+00:00,11.3,2,person,6.0,191,0.0,True,SAFE,1,False,ahead,0.623,4.1,True,person:191cm:ahead|keyboard:137cm:ahead
+2026-05-22T18:01:51.542543+00:00,11.8,2,person,5.9,192,0.0,True,SAFE,1,False,ahead,0.632,5.8,True,person:192cm:ahead|keyboard:135cm:ahead
+2026-05-22T18:01:54.243131+00:00,11.5,2,person,5.9,192,0.0,True,SAFE,1,False,ahead,0.627,0.0,True,person:192cm:ahead|keyboard:135cm:ahead
+2026-05-22T18:01:56.911882+00:00,12.0,2,person,5.9,193,0.0,True,SAFE,1,False,ahead,0.611,0.0,True,person:193cm:ahead|keyboard:135cm:ahead
+2026-05-22T18:01:59.657200+00:00,9.9,4,cell phone,16.7,100,0.0,True,CAUTION,1,False,on your right,0.682,2.0,True,person:254cm:ahead|keyboard:133cm:ahead
+2026-05-22T18:02:02.483121+00:00,10.9,3,keyboard,5.3,134,0.0,True,SAFE,1,False,ahead,0.412,2.4,True,person:267cm:ahead|keyboard:134cm:ahead
+2026-05-22T18:02:05.152111+00:00,11.1,3,tv,4.8,157,0.0,True,SAFE,1,False,on your left,0.058,1.8,True,person:269cm:ahead|keyboard:138cm:ahead
+2026-05-22T18:02:08.056768+00:00,11.2,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.399,4.1,True,keyboard:136cm:ahead|person:271cm:ahead
+2026-05-22T18:02:10.855426+00:00,11.3,2,keyboard,8.8,126,0.0,True,SAFE,1,False,ahead,0.41,-7.8,True,keyboard:126cm:ahead|person:263cm:ahead
+2026-05-22T18:02:13.857399+00:00,11.1,2,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.391,0.0,False,keyboard:134cm:ahead
+2026-05-22T18:02:16.628916+00:00,10.9,3,keyboard,132.5,134,-12.7,True,CRITICAL,1,False,ahead,0.519,5.4,True,keyboard:134cm:ahead
+2026-05-22T18:02:19.532218+00:00,11.6,4,person,11.6,129,0.0,True,CAUTION,1,False,on your left,0.241,0.0,False,keyboard:136cm:ahead|person:129cm:on your left
+2026-05-22T18:02:22.431053+00:00,10.4,2,keyboard,2.9,142,0.0,True,SAFE,1,False,ahead,0.402,2.4,True,keyboard:142cm:ahead|person:262cm:ahead
+2026-05-22T18:02:25.299905+00:00,12.0,2,keyboard,5.0,135,0.0,True,SAFE,1,False,ahead,0.376,-2.2,True,keyboard:135cm:ahead|person:261cm:ahead
+2026-05-22T18:02:28.369603+00:00,6.9,5,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.364,1.8,True,keyboard:133cm:ahead|person:252cm:ahead|person:182cm:on your left
+2026-05-22T18:02:31.771743+00:00,10.0,3,keyboard,5.5,135,0.0,True,SAFE,1,False,ahead,0.391,0.0,False,keyboard:135cm:ahead|person:254cm:ahead
+2026-05-22T18:02:34.606883+00:00,11.9,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.399,-4.1,True,keyboard:136cm:ahead|person:269cm:ahead
+2026-05-22T18:02:37.308608+00:00,12.0,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.402,0.0,True,keyboard:136cm:ahead|person:263cm:ahead
+2026-05-22T18:02:40.211257+00:00,8.0,3,keyboard,213.0,126,-20.5,True,CRITICAL,1,False,ahead,0.391,1.5,True,keyboard:126cm:ahead|person:263cm:ahead
+2026-05-22T18:02:43.021006+00:00,5.0,3,keyboard,0.9,137,12.8,True,SAFE,1,False,ahead,0.393,3.1,True,keyboard:137cm:ahead|person:268cm:ahead
+2026-05-22T18:02:45.748677+00:00,11.4,3,cup,5.0,100,0.0,True,SAFE,1,False,ahead,0.663,6.0,True,keyboard:136cm:ahead|person:265cm:ahead
+2026-05-22T18:02:48.682617+00:00,10.9,3,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.385,-2.4,True,keyboard:134cm:ahead|person:268cm:ahead
+2026-05-22T18:02:51.522468+00:00,10.3,3,keyboard,4.3,137,0.0,True,SAFE,1,False,ahead,0.391,5.6,True,keyboard:137cm:ahead|person:268cm:ahead
+2026-05-22T18:02:54.389278+00:00,12.0,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.369,1.8,True,keyboard:133cm:ahead|person:264cm:ahead
+2026-05-22T18:02:57.156164+00:00,10.9,2,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.39,0.0,True,keyboard:136cm:ahead|person:268cm:ahead
+2026-05-22T18:02:59.824171+00:00,12.0,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.366,4.1,True,keyboard:133cm:ahead|person:264cm:ahead
+2026-05-22T18:03:02.693610+00:00,10.0,3,cup,72.3,105,-22.6,True,WARNING,1,False,ahead,0.664,10.1,True,keyboard:135cm:ahead|person:264cm:ahead
+2026-05-22T18:03:05.694926+00:00,10.7,2,keyboard,358.7,132,-35.3,True,CRITICAL,1,False,ahead,0.395,12.6,True,keyboard:132cm:ahead|person:263cm:ahead
+2026-05-22T18:03:08.833330+00:00,8.4,3,person,414.9,259,-27.5,True,CRITICAL,1,False,on your right,0.645,-6.7,True,keyboard:131cm:ahead|person:259cm:on your right
+2026-05-22T18:03:11.666214+00:00,10.9,2,keyboard,3.7,139,0.0,True,SAFE,1,False,ahead,0.357,10.4,True,keyboard:139cm:ahead|person:259cm:ahead
+2026-05-22T18:03:14.438410+00:00,10.1,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.377,0.0,True,keyboard:133cm:ahead|person:263cm:ahead
+2026-05-22T18:03:17.422744+00:00,10.2,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.37,0.0,True,keyboard:136cm:ahead|person:260cm:ahead
+2026-05-22T18:03:20.309545+00:00,11.8,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.375,1.6,True,keyboard:133cm:ahead|person:260cm:ahead
+2026-05-22T18:03:23.108671+00:00,10.4,3,keyboard,6.6,132,0.0,True,SAFE,1,False,ahead,0.355,-1.5,True,keyboard:143cm:ahead|person:261cm:ahead|keyboard:132cm:ahead
+2026-05-22T18:03:25.743609+00:00,12.0,2,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.37,-1.8,True,person:265cm:ahead|keyboard:134cm:ahead
+2026-05-22T18:03:28.378858+00:00,12.0,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.378,6.0,True,person:263cm:ahead|keyboard:136cm:ahead
+2026-05-22T18:03:31.213257+00:00,6.7,2,keyboard,5.0,135,0.0,True,SAFE,1,False,ahead,0.368,-5.0,True,person:263cm:ahead|keyboard:135cm:ahead
+2026-05-22T18:03:34.358003+00:00,5.8,3,keyboard,12.1,117,0.0,True,CAUTION,1,False,ahead,0.341,0.0,False,keyboard:141cm:on your left|person:249cm:ahead
+2026-05-22T18:03:37.619555+00:00,11.8,5,keyboard,5.5,135,0.0,True,SAFE,1,False,ahead,0.425,7.7,True,tv:152cm:on your left
+2026-05-22T18:03:40.488145+00:00,11.5,2,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.376,2.4,True,keyboard:136cm:ahead|person:264cm:ahead
+2026-05-22T18:03:43.455076+00:00,10.9,2,keyboard,4.0,138,0.0,True,SAFE,1,False,ahead,0.408,3.6,True,keyboard:138cm:ahead|person:265cm:ahead
+2026-05-22T18:03:46.258460+00:00,10.9,2,keyboard,4.4,138,0.0,True,SAFE,1,False,ahead,0.439,6.6,True,keyboard:138cm:ahead|person:263cm:ahead
+2026-05-22T18:03:48.893395+00:00,12.0,3,laptop,4.7,158,0.0,True,SAFE,1,False,on your left,0.097,0.0,True,keyboard:137cm:ahead|person:264cm:ahead
+2026-05-22T18:03:51.795061+00:00,12.1,2,keyboard,4.3,137,0.0,True,SAFE,1,False,ahead,0.429,-1.4,True,keyboard:137cm:ahead|person:264cm:ahead
+2026-05-22T18:03:54.797310+00:00,10.4,2,keyboard,1.3,132,33.6,True,SAFE,1,False,ahead,0.418,-13.4,True,keyboard:132cm:ahead|person:263cm:ahead
+2026-05-22T18:03:57.598614+00:00,10.0,2,keyboard,5.0,135,0.0,True,SAFE,1,False,ahead,0.419,-3.5,True,keyboard:135cm:ahead|person:262cm:ahead
+2026-05-22T18:04:00.401159+00:00,11.2,3,laptop,4.7,160,0.0,True,SAFE,1,False,on your left,0.113,4.6,True,keyboard:137cm:ahead|person:263cm:ahead
+2026-05-22T18:04:03.304291+00:00,10.4,3,keyboard,4.7,136,0.0,True,SAFE,1,False,ahead,0.403,4.6,True,keyboard:136cm:ahead|person:270cm:ahead
+2026-05-22T18:04:06.171863+00:00,10.9,3,keyboard,5.1,136,0.0,True,SAFE,1,False,ahead,0.427,-2.0,True,keyboard:136cm:ahead|person:267cm:ahead
+2026-05-22T18:04:09.240037+00:00,10.0,3,tv,4.8,155,0.0,True,SAFE,1,False,on your left,0.055,0.0,True,keyboard:138cm:ahead|tv:155cm:on your left|person:267cm:ahead
+2026-05-22T18:04:12.110592+00:00,9.0,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.386,-1.3,True,person:265cm:ahead|keyboard:133cm:ahead
+2026-05-22T18:04:15.277593+00:00,10.6,3,keyboard,7.0,131,0.0,True,SAFE,1,False,ahead,0.384,0.0,False,keyboard:131cm:ahead|laptop:155cm:on your left
+2026-05-22T18:04:18.114145+00:00,10.1,1,keyboard,8.4,127,0.0,True,SAFE,1,False,on your left,0.274,0.0,False,keyboard:127cm:on your left
+2026-05-22T18:04:21.283324+00:00,9.1,2,cup,5.0,100,0.0,True,SAFE,1,False,ahead,0.59,0.0,True,keyboard:133cm:on your left|cup:100cm:ahead
+2026-05-22T18:04:24.162007+00:00,9.4,3,person,7.5,135,0.0,True,SAFE,1,False,on your left,0.265,0.0,False,keyboard:134cm:ahead|person:263cm:ahead
+2026-05-22T18:04:27.554703+00:00,10.4,3,tv,22.0,84,0.0,True,CAUTION,1,False,on your right,0.931,0.0,True,person:264cm:ahead|keyboard:131cm:on your left
+2026-05-22T18:04:30.355815+00:00,11.9,2,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.364,2.3,True,person:268cm:ahead|keyboard:134cm:ahead
+2026-05-22T18:04:33.090725+00:00,10.9,5,person,115.5,23,0.0,True,CRITICAL,1,False,ahead,0.417,0.0,False,person:259cm:ahead|keyboard:130cm:on your left
+2026-05-22T18:04:36.326491+00:00,9.5,3,keyboard,6.6,132,0.0,True,SAFE,1,False,on your left,0.351,0.0,False,person:267cm:ahead|keyboard:132cm:on your left
+2026-05-22T18:04:39.263393+00:00,10.9,2,keyboard,3.7,140,0.0,True,SAFE,1,False,ahead,0.398,2.4,True,keyboard:140cm:ahead
+2026-05-22T18:04:42.165174+00:00,10.6,3,tv,4.9,154,0.0,True,SAFE,1,False,on your left,0.052,-2.0,True,keyboard:138cm:ahead|person:267cm:ahead|tv:154cm:on your left
+2026-05-22T18:04:44.833228+00:00,10.6,2,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.395,3.4,True,keyboard:137cm:ahead|person:268cm:ahead
+2026-05-22T18:04:47.702528+00:00,10.3,2,keyboard,5.9,134,0.0,True,SAFE,1,False,ahead,0.366,0.0,True,keyboard:134cm:ahead|person:269cm:ahead
+2026-05-22T18:04:50.670848+00:00,10.7,2,keyboard,6.2,133,0.0,True,SAFE,1,False,ahead,0.373,-1.5,True,keyboard:133cm:ahead|person:263cm:ahead
+2026-05-22T18:04:53.308115+00:00,12.0,2,keyboard,4.0,139,0.0,True,SAFE,1,False,ahead,0.36,-1.8,True,keyboard:139cm:ahead|person:264cm:ahead
+2026-05-22T18:04:56.041194+00:00,10.4,2,keyboard,4.8,137,0.0,True,SAFE,1,False,ahead,0.377,1.5,True,keyboard:137cm:ahead|person:268cm:ahead
+2026-05-22T18:04:58.945263+00:00,7.1,2,person,600.0,209,-59.6,True,CRITICAL,1,False,ahead,0.599,1.4,True,keyboard:136cm:ahead|person:209cm:ahead
+2026-05-22T18:05:02.012661+00:00,10.6,1,person,8.2,135,0.0,True,SAFE,2,False,on your right,0.775,0.0,False,
+2026-05-22T18:05:05.124176+00:00,9.0,7,person,600.0,396,-129.6,True,CRITICAL,1,False,on your right,0.723,146.5,True,chair:274cm:on your left|chair:398cm:on your right
+2026-05-22T18:05:08.382955+00:00,11.2,3,chair,1.3,145,0.0,True,SAFE,1,False,on your left,0.051,0.0,False,
+2026-05-22T18:05:11.220240+00:00,10.7,3,chair,3.9,153,0.0,True,SAFE,1,False,on your left,0.29,0.0,False,chair:153cm:on your left|chair:154cm:on your left|person:345cm:on your left
+2026-05-22T18:05:14.154610+00:00,12.0,3,chair,4.0,150,0.0,True,SAFE,1,False,on your left,0.241,0.0,False,chair:150cm:on your left|chair:149cm:on your left|person:315cm:on your left
+2026-05-22T18:05:16.956596+00:00,10.6,6,chair,4.0,135,0.0,False,SAFE,2,False,on your left,0.222,0.0,False,chair:135cm:on your left|chair:145cm:on your left
+2026-05-22T18:05:19.926637+00:00,10.9,3,chair,1.6,241,0.0,True,SAFE,1,False,ahead,0.423,0.0,False,chair:241cm:ahead|chair:345cm:on your right
+2026-05-22T18:05:23.195742+00:00,10.4,5,tv,2.7,219,0.0,True,SAFE,1,False,on your left,0.197,-48.1,True,
+2026-05-22T18:05:26.329555+00:00,11.4,1,mouse,7.0,131,0.0,True,SAFE,1,False,on your left,0.066,0.0,False,
+2026-05-22T18:05:29.002903+00:00,11.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:31.768378+00:00,12.6,1,chair,0.0,472,0.0,True,SAFE,1,False,on your left,0.085,0.0,False,
+2026-05-22T18:05:36.539217+00:00,11.4,1,chair,0.0,468,0.0,True,SAFE,1,False,on your right,0.677,0.0,False,
+2026-05-22T18:05:39.340136+00:00,12.0,2,chair,20.0,75,0.0,False,CAUTION,2,False,on your right,0.841,0.0,False,
+2026-05-22T18:05:41.776575+00:00,13.0,1,person,600.0,23,-94.8,True,CRITICAL,0,False,on your left,0.087,0.0,False,
+2026-05-22T18:05:44.143087+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:46.578302+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:48.714389+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:50.782109+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:52.850187+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:54.852008+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:56.986620+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:05:59.187702+00:00,12.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:01.489760+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:03.691521+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,-137.6,True,
+2026-05-22T18:06:05.792917+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:08.263652+00:00,12.7,1,cell phone,3.5,194,0.0,True,SAFE,1,False,ahead,0.551,0.0,False,
+2026-05-22T18:06:10.405782+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:13.065426+00:00,12.0,1,toilet,3.7,190,0.0,True,SAFE,1,False,ahead,0.655,0.0,False,
+2026-05-22T18:06:15.333338+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:17.402509+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:19.540019+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:21.905897+00:00,10.9,1,person,6.0,180,0.0,True,SAFE,1,False,on your right,0.93,0.0,False,
+2026-05-22T18:06:23.972984+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:26.008401+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:28.109996+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:30.544492+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:32.745745+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:34.780734+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:37.015379+00:00,13.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:39.184681+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:41.549555+00:00,12.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:43.820113+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-127.2,True,
+2026-05-22T18:06:46.024306+00:00,14.8,1,person,7.2,155,0.0,True,SAFE,1,False,on your right,0.845,0.0,False,
+2026-05-22T18:06:48.694094+00:00,11.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-22T18:06:51.059236+00:00,12.4,0,,0,-1,0,True,NONE,0,False,,-1,-19.3,True,
+2026-05-22T18:06:53.330238+00:00,12.7,3,person,7.4,166,0.0,True,SAFE,1,False,on your left,0.139,0.0,False,person:166cm:on your left
+2026-05-22T18:06:56.069796+00:00,12.7,2,suitcase,600.0,75,-229.6,True,CRITICAL,2,False,on your right,0.86,0.0,False,
+2026-05-22T18:06:58.261054+00:00,10.0,7,person,132.0,20,0.0,False,CRITICAL,1,False,on your left,0.152,0.0,False,
+2026-05-22T18:07:01.007163+00:00,9.7,2,person,580.1,17,-30.4,True,CRITICAL,1,False,on your left,0.3,0.0,False,
