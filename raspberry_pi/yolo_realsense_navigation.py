@@ -230,10 +230,18 @@ if BLINDNAV_AUDIO_MODE not in {"quiet", "balanced", "training"}:
 PROXIMITY_TONES_ENABLED = os.environ.get(
     "BLINDNAV_PROXIMITY_TONES", "0"
 ).strip().lower() in {"1", "true", "yes", "on"}
+PROXIMITY_TONES_DURING_VOICE = os.environ.get(
+    "BLINDNAV_TONES_DURING_VOICE", "1"
+).strip().lower() in {"1", "true", "yes", "on"}
+TONE_REPLACES_OBSTACLE_VOICE = os.environ.get(
+    "BLINDNAV_TONE_REPLACES_OBSTACLE_VOICE", "1"
+).strip().lower() in {"1", "true", "yes", "on"}
 PROXIMITY_TONE_VOLUME = max(
     0.0, min(1.0, float(os.environ.get("BLINDNAV_TONE_VOLUME", "0.35")))
 )
 PROXIMITY_TONE_MIN_CM = 35
+PROXIMITY_TONE_VOICE_KEEP_CM = 90
+PROXIMITY_TONE_URGENT_VOICE_KEEP_CM = 100
 PROXIMITY_TONE_BALANCED_MAX_CM = 200
 PROXIMITY_TONE_TRAINING_MAX_CM = MAX_VOICE_DISTANCE_CM
 PROXIMITY_TONE_MIN_INTERVAL_S = 0.18
@@ -547,6 +555,17 @@ def _queue_tier_for_voice_decision(tier, reason):
     if reason == "side_pass_warning":
         return "urgent"
     return tier
+
+
+def _tone_replaces_voice(queue_tier, obj, reason, dist_cm, tones_enabled):
+    if (not tones_enabled or not TONE_REPLACES_OBSTACLE_VOICE
+            or queue_tier is None or obj == "person"):
+        return False
+    if dist_cm is None or dist_cm < 0:
+        return False
+    if queue_tier == "urgent":
+        return reason.startswith("ttc_") and dist_cm > PROXIMITY_TONE_URGENT_VOICE_KEEP_CM
+    return queue_tier in {"warning", "awareness"} and dist_cm > PROXIMITY_TONE_VOICE_KEEP_CM
 
 
 def _repo_root():
@@ -1512,10 +1531,12 @@ class ProximityTonePlayer:
 
     def __init__(self, enabled=PROXIMITY_TONES_ENABLED,
                  audio_mode=BLINDNAV_AUDIO_MODE, volume=PROXIMITY_TONE_VOLUME,
+                 allow_during_voice=PROXIMITY_TONES_DURING_VOICE,
                  event_logger=None, _player_fn=None):
         self.enabled = bool(enabled) and audio_mode != "quiet"
         self.audio_mode = audio_mode
         self.volume = max(0.0, min(1.0, float(volume)))
+        self.allow_during_voice = bool(allow_during_voice)
         self._event_logger = event_logger
         self._player_fn = _player_fn
         self._lock = threading.Lock()
@@ -1525,12 +1546,14 @@ class ProximityTonePlayer:
         self._shutting_down = False
 
     def update(self, threats, frame_width=640, frame_tag=None, voice_busy=False):
-        if not self.enabled or voice_busy:
+        if not self.enabled:
             return
         selected = self._select_track(threats, frame_width, frame_tag)
         if selected is None:
             return
         score, track, pos, interval = selected
+        if voice_busy and not self._should_play_while_voice(score, track, pos):
+            return
         now = time.time()
         with self._lock:
             if self._shutting_down:
@@ -1547,10 +1570,23 @@ class ProximityTonePlayer:
             self._thread = threading.Thread(
                 target=self._play_worker,
                 args=(left_gain, right_gain, freq, duration, track.class_name,
-                      pos, dist_cm, interval, score),
+                      pos, dist_cm, interval, score, voice_busy),
                 daemon=True,
             )
             self._thread.start()
+
+    def _should_play_while_voice(self, score, track, pos):
+        if not self.allow_during_voice:
+            return False
+        dist_cm = getattr(track, "distance", None)
+        if dist_cm is None or dist_cm < 0:
+            return False
+        side_person = (
+            track.class_name == "person"
+            and pos != "ahead"
+            and dist_cm <= SIDE_PASS_PERSON_AWARE_CM
+        )
+        return side_person or dist_cm <= SIDE_PASS_PERSON_WARN_CM or score >= 50
 
     def _select_track(self, threats, frame_width, frame_tag):
         max_cm = _proximity_tone_max_distance(self.audio_mode)
@@ -1577,7 +1613,7 @@ class ProximityTonePlayer:
         return None
 
     def _play_worker(self, left_gain, right_gain, freq, duration,
-                     obj, pos, dist_cm, interval, score):
+                     obj, pos, dist_cm, interval, score, voice_busy):
         wav_path = None
         try:
             wav_path = self._write_tone_wav(left_gain, right_gain, freq, duration)
@@ -1586,7 +1622,8 @@ class ProximityTonePlayer:
                 self._last_log = now
                 self._event_logger(
                     f"[TONE] {obj} {pos}: dist={dist_cm}cm "
-                    f"interval={interval:.2f}s score={score:.1f} mode={self.audio_mode}"
+                    f"interval={interval:.2f}s score={score:.1f} "
+                    f"mode={self.audio_mode} voice_busy={int(bool(voice_busy))}"
                 )
             if self._player_fn is not None:
                 proc = self._player_fn(wav_path)
@@ -3068,7 +3105,14 @@ def main():
                         reason = decision["reason"]
                         queue_tier = _queue_tier_for_voice_decision(tier, reason)
 
-                        if queue_tier == "urgent":
+                        if _tone_replaces_voice(
+                                queue_tier, obj, reason, dist_cm, tones.enabled):
+                            log_voice_policy(
+                                now, track, pos, score, motion_eval,
+                                reason="tone_replaces_obstacle_voice",
+                                tier=(queue_tier or "NONE").upper(),
+                            )
+                        elif queue_tier == "urgent":
                             voice.speak_urgent(
                                 msg, key=_voice_key(pos, obj,
                                     "side_pass_urg" if reason == "side_pass_warning"

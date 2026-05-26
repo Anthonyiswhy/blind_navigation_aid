@@ -323,6 +323,14 @@ class TestSelectVoiceMessage:
         assert MOD._queue_tier_for_voice_decision(
             decision["tier"], decision["reason"]) == "urgent"
 
+    def test_tones_can_replace_non_person_voice_when_enabled(self):
+        assert MOD._tone_replaces_voice(
+            "warning", "chair", "ttc_warning", 120, tones_enabled=True)
+        assert not MOD._tone_replaces_voice(
+            "warning", "person", "ttc_warning", 120, tones_enabled=True)
+        assert not MOD._tone_replaces_voice(
+            "urgent", "chair", "ttc_urgent_neutral", 80, tones_enabled=True)
+
     def test_busy_area_speech_is_off_by_default(self):
         assert MOD.SPEAK_BUSY_AREA is False
 
@@ -1231,12 +1239,29 @@ class TestProximityTonePlayer:
         tones = MOD.ProximityTonePlayer(
             enabled=True,
             audio_mode="balanced",
+            allow_during_voice=False,
             _player_fn=player,
         )
         track = self._track(distance=90)
         tones.update([(50, track)], frame_width=640, frame_tag=1, voice_busy=True)
         time.sleep(0.05)
         assert len(player.procs) == 0
+
+    def test_tone_can_play_for_side_person_while_voice_busy(self):
+        events = []
+        player = fast_player(0.01)
+        tones = MOD.ProximityTonePlayer(
+            enabled=True,
+            audio_mode="balanced",
+            allow_during_voice=True,
+            event_logger=events.append,
+            _player_fn=player,
+        )
+        track = self._track(distance=130, class_name="person")
+        tones.update([(50, track)], frame_width=640, frame_tag=1, voice_busy=True)
+        tones.shutdown(timeout=1.0)
+        assert len(player.procs) == 1
+        assert any("voice_busy=1" in msg for msg in events)
 
     def test_tone_plays_for_near_actionable_track(self):
         events = []
