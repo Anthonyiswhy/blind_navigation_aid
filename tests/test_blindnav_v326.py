@@ -323,6 +323,14 @@ class TestSelectVoiceMessage:
         assert MOD._queue_tier_for_voice_decision(
             decision["tier"], decision["reason"]) == "urgent"
 
+    def test_tones_can_replace_non_person_voice_when_enabled(self):
+        assert MOD._tone_replaces_voice(
+            "warning", "chair", "ttc_warning", 120, tones_enabled=True)
+        assert not MOD._tone_replaces_voice(
+            "warning", "person", "ttc_warning", 120, tones_enabled=True)
+        assert not MOD._tone_replaces_voice(
+            "urgent", "chair", "ttc_urgent_neutral", 80, tones_enabled=True)
+
     def test_busy_area_speech_is_off_by_default(self):
         assert MOD.SPEAK_BUSY_AREA is False
 
@@ -1190,6 +1198,85 @@ class TestVoicePriorityQueue:
         spoken = [s[0] for s in tts.synthesized]
         assert "first awareness" in spoken
         assert "second awareness" not in spoken
+
+
+# ============================================================
+# Proximity sonification
+# ============================================================
+
+class TestProximityTonePlayer:
+
+    def _track(self, distance=100, class_name="person", seen_frames=3,
+               box=None, tid=1):
+        return types.SimpleNamespace(
+            id=tid,
+            class_name=class_name,
+            distance=distance,
+            seen_frames=seen_frames,
+            box=box or [0, 120, 80, 320],
+        )
+
+    def test_interval_is_exponential_and_faster_when_close(self):
+        far = MOD._proximity_tone_interval_s(190, "balanced")
+        near = MOD._proximity_tone_interval_s(50, "balanced")
+        assert far is not None and near is not None
+        assert near < far
+
+    def test_balanced_mode_suppresses_far_tones(self):
+        assert MOD._proximity_tone_interval_s(260, "balanced") is None
+        assert MOD._proximity_tone_interval_s(260, "training") is not None
+
+    def test_directional_gains_pan_left_and_right(self):
+        left = MOD._proximity_tone_gains("on your left")
+        right = MOD._proximity_tone_gains("on your right")
+        ahead = MOD._proximity_tone_gains("ahead")
+        assert left[0] > left[1]
+        assert right[1] > right[0]
+        assert ahead[0] == ahead[1]
+
+    def test_tone_drops_when_voice_busy(self):
+        player = fast_player(0.01)
+        tones = MOD.ProximityTonePlayer(
+            enabled=True,
+            audio_mode="balanced",
+            allow_during_voice=False,
+            _player_fn=player,
+        )
+        track = self._track(distance=90)
+        tones.update([(50, track)], frame_width=640, frame_tag=1, voice_busy=True)
+        time.sleep(0.05)
+        assert len(player.procs) == 0
+
+    def test_tone_can_play_for_side_person_while_voice_busy(self):
+        events = []
+        player = fast_player(0.01)
+        tones = MOD.ProximityTonePlayer(
+            enabled=True,
+            audio_mode="balanced",
+            allow_during_voice=True,
+            event_logger=events.append,
+            _player_fn=player,
+        )
+        track = self._track(distance=130, class_name="person")
+        tones.update([(50, track)], frame_width=640, frame_tag=1, voice_busy=True)
+        tones.shutdown(timeout=1.0)
+        assert len(player.procs) == 1
+        assert any("voice_busy=1" in msg for msg in events)
+
+    def test_tone_plays_for_near_actionable_track(self):
+        events = []
+        player = fast_player(0.01)
+        tones = MOD.ProximityTonePlayer(
+            enabled=True,
+            audio_mode="balanced",
+            event_logger=events.append,
+            _player_fn=player,
+        )
+        track = self._track(distance=90)
+        tones.update([(50, track)], frame_width=640, frame_tag=1, voice_busy=False)
+        tones.shutdown(timeout=1.0)
+        assert len(player.procs) == 1
+        assert any("[TONE]" in msg and "dist=90cm" in msg for msg in events)
 
 
 # ============================================================
