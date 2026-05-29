@@ -572,6 +572,30 @@ def _repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
+def _get_pi_temperature():
+    """Reads Pi CPU temperature via vcgencmd or sysfs."""
+    try:
+        # Try vcgencmd first
+        res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True, timeout=1)
+        if res.returncode == 0:
+            # Output format: temp=45.2'C
+            m = re.search(r"temp=([\d.]+)", res.stdout)
+            if m:
+                return float(m.group(1))
+    except Exception:
+        pass
+
+    try:
+        # Fallback to sysfs
+        if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                return float(f.read().strip()) / 1000.0
+    except Exception:
+        pass
+
+    return None
+
+
 def _run_id_from_log_path(path):
     name = os.path.basename(path or "")
     for prefix, suffix in (("log_", ".csv"), ("events_", ".log")):
@@ -1720,9 +1744,9 @@ class ThreatTransitionTracker:
         dist_m = (track.distance / 100.0) if track.distance else 0
         if track.velocity_valid and vel < -10:
             return
-        if vel > 30:   msg = f"{track.class_name} moved away"
-        elif vel > 10: msg = f"{track.class_name} moving away"
-        elif vel > 3:  msg = f"{track.class_name} moved aside"
+        if track.velocity_valid and vel > 30:   msg = f"{track.class_name} moved away"
+        elif track.velocity_valid and vel > 10: msg = f"{track.class_name} moving away"
+        elif track.velocity_valid and vel > 3:  msg = f"{track.class_name} moved aside"
         else:          msg = f"{track.class_name} stopped, {dist_m:.1f} meters away"
         voice.speak_cleared(msg, key=f"cleared_{track.id}")
 
@@ -1904,8 +1928,11 @@ def _format_track_for_speech(track):
 
 
 class NavigationSnapshot:
+    _TEMP_CHECK_INTERVAL_S = 10.0
+
     def __init__(self):
         self._lock = threading.Lock()
+        self._last_temp_check = 0.0
         self._data = {
             "frame_count": 0,
             "updated_at": 0.0,
@@ -1914,6 +1941,7 @@ class NavigationSnapshot:
             "user_moving": True,
             "ego_reliable": False,
             "voice_status": "unknown",
+            "pi_temp": None,
         }
 
     def update(self, tracks, threats, fps, user_moving, ego_reliable,
@@ -1933,15 +1961,22 @@ class NavigationSnapshot:
                 "score": threat_scores.get(getattr(track, "id", None), 0.0),
             })
         snap_tracks.sort(key=lambda t: t["distance"])
+        now = time.time()
         with self._lock:
+            current_temp = self._data.get("pi_temp")
+            if now - self._last_temp_check > self._TEMP_CHECK_INTERVAL_S:
+                current_temp = _get_pi_temperature()
+                self._last_temp_check = now
+
             self._data = {
                 "frame_count": frame_count,
-                "updated_at": time.time(),
+                "updated_at": now,
                 "tracks": snap_tracks,
                 "fps": float(fps or 0.0),
                 "user_moving": bool(user_moving),
                 "ego_reliable": bool(ego_reliable),
                 "voice_status": voice_status,
+                "pi_temp": current_temp,
             }
 
     def get(self):
@@ -2020,9 +2055,10 @@ class CommandRouter:
         motion = "moving" if snap["user_moving"] else "still"
         ego = "OK" if snap["ego_reliable"] else "bad"
         count = len(snap["tracks"])
+        temp_str = f", temperature {snap['pi_temp']:.0f} degrees" if snap.get("pi_temp") is not None else ""
         self._speak_info(
             f"Status, {snap['fps']:.1f} FPS, {motion}, ego {ego}, "
-            f"{count} confirmed objects, voice {snap['voice_status']}"
+            f"{count} confirmed objects, voice {snap['voice_status']}{temp_str}"
         )
 
     def _handle_repeat(self):
