@@ -329,7 +329,19 @@ class TestSelectVoiceMessage:
         assert not MOD._tone_replaces_voice(
             "warning", "person", "ttc_warning", 120, tones_enabled=True)
         assert not MOD._tone_replaces_voice(
-            "urgent", "chair", "ttc_urgent_neutral", 80, tones_enabled=True)
+            "urgent", "chair", "ttc_urgent_neutral", 140, tones_enabled=True)
+
+    def test_stationary_near_person_still_speaks(self):
+        tier, msg = self._call(160, 0, user_moving=False, ego_reliable=False,
+                               ttc=999.0, obj="person", pos="ahead")
+        assert tier == "awareness"
+        assert msg == "person ahead, 1.7 meters"
+
+    def test_stationary_near_obstacle_still_speaks(self):
+        tier, msg = self._call(120, 0, user_moving=False, ego_reliable=False,
+                               ttc=999.0, obj="keyboard", pos="on your left")
+        assert tier == "awareness"
+        assert msg == "obstacle on your left, 1.4 meters"
 
     def test_busy_area_speech_is_off_by_default(self):
         assert MOD.SPEAK_BUSY_AREA is False

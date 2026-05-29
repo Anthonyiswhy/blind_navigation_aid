@@ -213,6 +213,8 @@ ESPEAK_ALERT_AMPLITUDE = 180
 
 SIDE_PASS_PERSON_AWARE_CM = 150
 SIDE_PASS_PERSON_WARN_CM = 110
+STATIONARY_PERSON_AWARE_CM = 220
+STATIONARY_OBSTACLE_AWARE_CM = 140
 MAX_VOICE_DISTANCE_CM = 320
 BAD_EGO_TTC_MAX_DISTANCE_CM = 120
 VOICE_POLICY_LOG_COOLDOWN_S = 2.0
@@ -375,6 +377,14 @@ def _within_voice_distance(obj, dist_cm):
     return dist_cm <= MAX_VOICE_DISTANCE_CM
 
 
+def _stationary_detection_should_speak(obj, pos, dist_cm):
+    if dist_cm is None or dist_cm < 0:
+        return False
+    if obj == "person":
+        return dist_cm <= STATIONARY_PERSON_AWARE_CM
+    return dist_cm <= STATIONARY_OBSTACLE_AWARE_CM
+
+
 def _proximity_tone_max_distance(audio_mode=BLINDNAV_AUDIO_MODE):
     if audio_mode == "training":
         return PROXIMITY_TONE_TRAINING_MAX_CM
@@ -482,6 +492,17 @@ def _select_voice_decision(obj, pos, dist_cm, vel,
             "spoken_object": "person",
         }
 
+    if (not user_moving and not approaching
+            and _stationary_detection_should_speak(obj, pos, dist_cm)):
+        spoken_obj = _spoken_object_name(obj, "awareness")
+        return {
+            "tier": "awareness",
+            "message": f"{spoken_obj} {pos}, {spoken_dist_m:.1f} meters",
+            "reason": "stationary_near_detection",
+            "spoken_distance_m": spoken_dist_m,
+            "spoken_object": spoken_obj,
+        }
+
     if ttc < 2:
         spoken_obj = _spoken_object_name(obj, "urgent")
         if spoken_obj == "person" and ego_reliable and fast_approach:
@@ -564,7 +585,7 @@ def _tone_replaces_voice(queue_tier, obj, reason, dist_cm, tones_enabled):
     if dist_cm is None or dist_cm < 0:
         return False
     if queue_tier == "urgent":
-        return reason.startswith("ttc_") and dist_cm > PROXIMITY_TONE_URGENT_VOICE_KEEP_CM
+        return False
     return queue_tier in {"warning", "awareness"} and dist_cm > PROXIMITY_TONE_VOICE_KEEP_CM
 
 
@@ -3094,6 +3115,8 @@ def main():
                         and pos != "ahead"
                         and dist_cm <= SIDE_PASS_PERSON_AWARE_CM
                     )
+                    stationary_near_detection = _stationary_detection_should_speak(
+                        obj, pos, dist_cm)
 
                     if not _within_voice_distance(obj, dist_cm):
                         log_voice_policy(
@@ -3102,7 +3125,8 @@ def main():
                             tier="NONE",
                         )
                     elif (not user_moving and not very_close and not close
-                          and not approaching and not side_person_near):
+                          and not approaching and not side_person_near
+                          and not stationary_near_detection):
                         if now - last_paused_print > 3.0:
                             print(f"[PAUSED] Static {obj} {dist_m:.1f}m — suppressed")
                             last_paused_print = now
