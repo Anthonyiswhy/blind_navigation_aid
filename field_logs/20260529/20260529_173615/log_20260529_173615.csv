@@ -1,0 +1,127 @@
+timestamp,fps,tracked_objects,top_threat,threat_score,distance_cm,velocity_cm_s,velocity_valid,threat_level,clusters,user_moving,position,bbox_cx_norm,ego_z_cm_s,ego_confident,all_tracks
+2026-05-29T17:36:28.253023+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,-0.8,True,
+2026-05-29T17:36:30.587662+00:00,11.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:32.827505+00:00,11.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:35.035153+00:00,11.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:37.833458+00:00,11.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:40.767632+00:00,10.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:43.131507+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:36:45.362181+00:00,10.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:47.500996+00:00,16.8,0,,0,-1,0,True,NONE,0,False,,-1,-1.5,False,
+2026-05-29T17:36:49.398856+00:00,15.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:51.735098+00:00,6.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:53.747639+00:00,11.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:56.238940+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:36:58.373452+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:00.409189+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-0.7,True,
+2026-05-29T17:37:02.343326+00:00,15.7,0,,0,-1,0,True,NONE,0,False,,-1,-0.7,True,
+2026-05-29T17:37:04.544592+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:06.881042+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:09.814526+00:00,7.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:12.587124+00:00,10.6,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:14.986852+00:00,12.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:17.258878+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:19.424347+00:00,15.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:21.858560+00:00,10.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:37:24.326074+00:00,12.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:26.861198+00:00,15.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:28.795409+00:00,16.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:30.695671+00:00,15.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:32.497941+00:00,16.8,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:34.499297+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:36.472002+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:38.876580+00:00,6.6,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:37:44.454216+00:00,3.6,1,person,109.5,27,0.0,True,CRITICAL,1,False,on your left,0.263,0.0,True,
+2026-05-29T17:37:48.948713+00:00,6.3,2,tv,32.0,54,0.0,True,CAUTION,1,False,on your left,0.134,0.0,False,tv:54cm:on your left
+2026-05-29T17:37:53.182319+00:00,7.6,3,tv,33.0,51,0.0,True,CAUTION,1,False,on your left,0.149,0.0,False,keyboard:54cm:on your right|tv:51cm:on your left
+2026-05-29T17:37:57.220030+00:00,8.5,3,tv,32.7,52,0.0,True,CAUTION,1,True,on your left,0.145,0.0,False,keyboard:55cm:on your right|laptop:60cm:ahead|tv:52cm:on your left
+2026-05-29T17:38:01.327246+00:00,6.4,2,tv,111.7,53,-7.9,True,CRITICAL,1,False,on your left,0.145,8.3,True,keyboard:55cm:on your right|tv:53cm:on your left
+2026-05-29T17:38:05.625835+00:00,9.0,2,tv,32.3,53,4.9,True,CAUTION,1,False,on your left,0.142,-4.9,False,tv:53cm:on your left
+2026-05-29T17:38:09.960740+00:00,6.0,3,keyboard,31.3,56,0.0,True,CAUTION,1,False,on your right,0.673,-15.0,False,tv:53cm:on your left|laptop:60cm:ahead
+2026-05-29T17:38:14.033690+00:00,10.0,3,tv,28.6,72,0.0,True,CAUTION,1,False,ahead,0.596,0.0,False,keyboard:67cm:on your right|tv:72cm:ahead
+2026-05-29T17:38:18.771252+00:00,6.0,2,tv,97.1,69,-6.1,True,CRITICAL,1,False,on your right,0.671,0.0,False,tv:69cm:on your right|keyboard:58cm:on your right
+2026-05-29T17:38:23.270843+00:00,9.2,2,keyboard,33.7,58,0.0,True,CAUTION,1,False,on your right,0.725,0.0,False,tv:66cm:on your right|keyboard:58cm:on your right
+2026-05-29T17:38:27.071118+00:00,6.7,3,keyboard,30.7,58,0.0,True,CAUTION,1,False,on your right,0.725,0.0,False,tv:66cm:on your right|keyboard:58cm:on your right|keyboard:58cm:on your right
+2026-05-29T17:38:30.668234+00:00,10.1,2,keyboard,32.6,61,0.0,True,CAUTION,1,False,on your right,0.662,0.0,False,tv:68cm:ahead|keyboard:61cm:on your right
+2026-05-29T17:38:33.670364+00:00,9.4,1,bed,42.5,15,0.0,True,WARNING,1,False,ahead,0.498,0.0,False,bed:15cm:ahead
+2026-05-29T17:38:36.285343+00:00,14.7,1,keyboard,30.3,59,0.0,True,CAUTION,1,False,ahead,0.665,0.0,False,
+2026-05-29T17:38:40.286735+00:00,6.4,2,keyboard,30.3,59,0.0,True,CAUTION,1,False,on your right,0.685,0.0,False,keyboard:59cm:on your right|tv:66cm:ahead
+2026-05-29T17:38:44.423509+00:00,9.4,2,person,105.0,30,0.0,True,CRITICAL,1,False,on your left,0.216,0.0,False,person:30cm:on your left|laptop:60cm:ahead
+2026-05-29T17:38:49.228214+00:00,5.9,2,person,102.0,32,0.0,True,CRITICAL,1,False,on your left,0.247,0.0,False,person:32cm:on your left
+2026-05-29T17:38:53.454777+00:00,6.5,2,person,112.2,32,0.0,True,CRITICAL,1,False,on your left,0.246,0.0,False,tv:57cm:ahead|person:32cm:on your left
+2026-05-29T17:38:57.361537+00:00,10.0,3,person,112.2,32,0.0,True,CRITICAL,1,False,on your left,0.24,0.0,False,person:32cm:on your left|person:32cm:on your left
+2026-05-29T17:39:01.330486+00:00,7.5,2,person,105.0,30,0.0,True,CRITICAL,1,False,on your left,0.18,0.0,False,person:30cm:on your left|tv:59cm:ahead
+2026-05-29T17:39:06.303917+00:00,7.5,2,person,99.0,34,0.0,True,CRITICAL,1,False,on your left,0.207,0.0,False,tv:60cm:ahead|person:34cm:on your left
+2026-05-29T17:39:10.374418+00:00,6.7,2,mouse,63.0,37,0.0,True,WARNING,1,False,on your left,0.104,0.0,False,
+2026-05-29T17:39:12.606305+00:00,13.3,0,,0,-1,0,True,NONE,0,True,,-1,-5.3,True,
+2026-05-29T17:39:14.877693+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:16.946780+00:00,15.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:18.976626+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,8.2,True,
+2026-05-29T17:39:21.919252+00:00,9.8,0,,0,-1,0,True,NONE,0,False,,-1,-1.0,True,
+2026-05-29T17:39:24.416908+00:00,9.1,0,,0,-1,0,True,NONE,0,False,,-1,-2.9,True,
+2026-05-29T17:39:26.882295+00:00,14.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:28.918574+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,2.2,True,
+2026-05-29T17:39:31.022719+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-29T17:39:33.087790+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:35.155222+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:37.157924+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-1.5,True,
+2026-05-29T17:39:39.229389+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:41.362729+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-29T17:39:43.400127+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:45.563630+00:00,13.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:47.634579+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-0.8,True,
+2026-05-29T17:39:49.903609+00:00,14.1,0,,0,-1,0,True,NONE,0,False,,-1,-0.7,True,
+2026-05-29T17:39:52.201025+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:54.203374+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:56.638077+00:00,10.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:39:58.839320+00:00,11.5,0,,0,-1,0,True,NONE,0,False,,-1,1.4,True,
+2026-05-29T17:40:00.911439+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-29T17:40:03.078544+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:05.311554+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:07.349146+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-29T17:40:09.580859+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:11.615855+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:13.954555+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:16.821107+00:00,8.6,1,mouse,33.0,51,0.0,True,CAUTION,1,False,on your left,0.037,-0.8,True,mouse:51cm:on your left
+2026-05-29T17:40:20.255516+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-9.5,True,
+2026-05-29T17:40:22.461066+00:00,8.6,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:24.729157+00:00,10.1,0,,0,-1,0,True,NONE,0,False,,-1,0.9,True,
+2026-05-29T17:40:26.760212+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-3.4,True,
+2026-05-29T17:40:28.961566+00:00,9.3,0,,0,-1,0,True,NONE,0,False,,-1,1.1,True,
+2026-05-29T17:40:31.229955+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,-1.3,True,
+2026-05-29T17:40:33.433519+00:00,14.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:35.599758+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,9.8,True,
+2026-05-29T17:40:37.701406+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-1.5,True,
+2026-05-29T17:40:40.107523+00:00,12.1,1,remote,30.7,58,0.0,True,CAUTION,1,False,on your left,0.232,0.3,True,
+2026-05-29T17:40:42.205226+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:44.345110+00:00,12.4,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:46.477874+00:00,14.3,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:48.651918+00:00,11.9,0,,0,-1,0,True,NONE,0,False,,-1,-1.3,True,
+2026-05-29T17:40:50.910150+00:00,15.1,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:52.912428+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,1.3,True,
+2026-05-29T17:40:55.181394+00:00,12.0,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:57.220745+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:40:59.416942+00:00,12.5,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:41:01.756935+00:00,12.8,3,tv,27.0,69,0.0,True,CAUTION,1,False,on your left,0.228,1.5,True,
+2026-05-29T17:41:06.221971+00:00,5.2,2,mouse,36.3,51,0.0,True,CAUTION,1,False,on your left,0.083,-2.7,True,
+2026-05-29T17:41:09.795984+00:00,6.9,1,mouse,35.9,52,0.0,True,CAUTION,1,False,on your left,0.12,0.0,True,mouse:52cm:on your left
+2026-05-29T17:41:13.326129+00:00,10.0,1,mouse,36.3,51,0.0,True,CAUTION,1,False,on your left,0.144,0.0,True,mouse:51cm:on your left
+2026-05-29T17:41:16.928009+00:00,8.5,1,mouse,30.3,59,0.0,True,CAUTION,1,False,on your left,0.111,-0.8,True,mouse:59cm:on your left
+2026-05-29T17:41:19.599099+00:00,14.9,1,car,76.0,74,0.0,True,WARNING,1,False,ahead,0.502,-2.1,False,
+2026-05-29T17:41:21.701676+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:23.768899+00:00,15.3,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:25.741462+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:27.974695+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:29.972979+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:32.374099+00:00,13.4,0,,0,-1,0,True,NONE,0,False,,-1,-2.1,False,
+2026-05-29T17:41:36.007728+00:00,9.3,1,person,100.5,33,0.0,True,CRITICAL,1,False,on your right,0.723,1.4,True,person:33cm:on your right
+2026-05-29T17:41:38.646177+00:00,12.5,3,person,102.0,32,0.0,True,CRITICAL,1,False,on your right,0.736,-0.7,False,person:32cm:on your right
+2026-05-29T17:41:41.408679+00:00,15.2,0,,0,-1,0,True,NONE,0,False,,-1,0.0,False,
+2026-05-29T17:41:43.780803+00:00,13.3,0,,0,-1,0,True,NONE,0,False,,-1,0.6,True,
+2026-05-29T17:41:46.278749+00:00,11.7,0,,0,-1,0,True,NONE,0,False,,-1,1.8,True,
+2026-05-29T17:41:49.784002+00:00,10.7,0,,0,-1,0,True,NONE,0,False,,-1,0.0,True,
+2026-05-29T17:41:52.156665+00:00,13.4,1,laptop,25.0,75,0.0,True,CAUTION,1,False,on your left,0.149,-2.2,True,
+2026-05-29T17:41:54.494471+00:00,15.0,0,,0,-1,0,True,NONE,0,False,,-1,4.5,True,
+2026-05-29T17:41:56.636742+00:00,14.9,0,,0,-1,0,True,NONE,0,False,,-1,-1.5,True,
+2026-05-29T17:41:58.896415+00:00,14.2,0,,0,-1,0,True,NONE,0,False,,-1,1.5,True,
+2026-05-29T17:42:01.661176+00:00,14.2,1,mouse,72.0,28,0.0,True,WARNING,1,False,on your left,0.102,0.0,False,
