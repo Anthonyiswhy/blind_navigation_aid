@@ -1809,12 +1809,25 @@ class TestVoiceCommandParsing:
         ("status", "status"),
         ("say that again", "repeat"),
         ("stop listening", "cancel"),
+        ("cancel", "cancel"),
         ("banana weather", None),
     ])
     def test_parse_voice_command(self, text, intent):
         parsed = MOD.parse_voice_command(text)
         assert parsed.intent == intent
         assert parsed.normalized
+
+    def test_prompt_echo_is_not_parsed_as_cancel(self):
+        parsed = MOD.parse_voice_command(
+            "BlindNav voice commands: describe, nearest, people, status, repeat, cancel."
+        )
+        assert parsed.intent is None
+        assert parsed.reason == "prompt_echo"
+
+    def test_cancel_inside_prompt_like_text_is_not_enough(self):
+        parsed = MOD.parse_voice_command("describe nearest people status repeat cancel")
+        assert parsed.intent is None
+        assert parsed.reason == "prompt_echo"
 
     def test_empty_transcript_is_unknown(self):
         parsed = MOD.parse_voice_command("   ")
@@ -1893,6 +1906,13 @@ class TestCommandRouter:
         router, voice, _, _ = self._router()
         router.handle_transcript("turn on the headlights")
         assert voice.infos[-1] == "Command not recognized"
+
+    def test_prompt_echo_speaks_no_command_heard(self):
+        router, voice, _, _ = self._router()
+        router.handle_transcript(
+            "BlindNav voice commands: describe, nearest, people, status, repeat, cancel."
+        )
+        assert voice.infos[-1] == "No command heard"
 
     def test_repeat_replays_last_info_response(self):
         router, voice, _, _ = self._router()

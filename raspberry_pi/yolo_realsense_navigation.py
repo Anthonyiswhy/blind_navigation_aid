@@ -1864,15 +1864,25 @@ def _normalize_voice_command(text):
     return text
 
 
+def _looks_like_stt_prompt_echo(normalized):
+    command_words = ("describe", "nearest", "people", "status", "repeat", "cancel")
+    if normalized.startswith("blindnav voice commands"):
+        return True
+    return sum(1 for word in command_words if word in normalized) >= 4
+
+
 def parse_voice_command(transcript):
     normalized = _normalize_voice_command(transcript)
     if not normalized:
         return CommandIntent(None, 0.0, transcript, normalized, "empty")
+    if _looks_like_stt_prompt_echo(normalized):
+        return CommandIntent(None, 0.0, transcript, normalized, "prompt_echo")
 
     def has_any(phrases):
         return any(phrase in normalized for phrase in phrases)
 
-    if has_any(("cancel", "never mind", "nevermind", "stop listening", "stop listen")):
+    cancel_phrases = ("cancel", "never mind", "nevermind", "stop listening", "stop listen")
+    if normalized in cancel_phrases:
         return CommandIntent("cancel", 0.95, transcript, normalized, "cancel")
     if has_any(("repeat", "say that again", "again")):
         return CommandIntent("repeat", 0.9, transcript, normalized, "repeat")
@@ -1983,6 +1993,8 @@ class CommandRouter:
             self._handle_repeat()
         elif parsed.intent == "cancel":
             self._speak_info("Voice command canceled")
+        elif parsed.reason in {"empty", "prompt_echo"}:
+            self._speak_info("No command heard")
         else:
             self._speak_info("Command not recognized")
         return parsed
@@ -2071,7 +2083,12 @@ class OpenAICommandTranscriber:
                 model=self.model,
                 file=audio_file,
                 response_format="text",
-                prompt="BlindNav voice commands: describe, nearest, people, status, repeat, cancel.",
+                prompt=(
+                    "Short push-to-talk command for a navigation aid. "
+                    "Transcribe only the user's spoken words. "
+                    "Likely commands include scene description, nearest object, "
+                    "people nearby, system status, and repeat."
+                ),
             )
         if isinstance(result, str):
             return result.strip()
