@@ -1,0 +1,700 @@
+[17:45:46.015] [VOICE_CMD] Enabled: press 'v' for voice command, or 'd' for scene description
+[17:45:46.273] [VOICE] URGENT: "Obstacle, 0.8 meters"
+[17:45:49.109] [LATENCY] label=URGENT text="Obstacle, 0.8 meters" event_created=1780076746.273 enqueued=0.000s tts_start=0.001s play_start=0.008s play_end=2.836s queue_wait=0.001s synth=0.007s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:45:49.938] [VOICE_CMD] recording command
+[17:45:53.009] [VOICE] CLEAR: "path clear"
+[17:45:54.523] [LATENCY] label=CLEAR text="path clear" event_created=1780076753.009 enqueued=0.000s tts_start=0.001s play_start=0.008s play_end=1.513s queue_wait=0.001s synth=0.007s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:45:58.692] [VOICE] INFO: "Still processing voice command"
+[17:46:01.154] [LATENCY] label=INFO text="Still processing voice command" event_created=1780076758.692 enqueued=0.000s tts_start=0.034s play_start=0.132s play_end=2.460s queue_wait=0.034s synth=0.098s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:46:02.392] [VOICE_CMD] transcript="Path clear." intent=unknown confidence=0.20
+[17:46:02.412] [VOICE] INFO: "Command not recognized"
+[17:46:02.416] [VOICE_CMD] timing capture=4.21s transcribe=8.24s model=gpt-4o-mini-transcribe
+[17:46:03.027] [TONE] keyboard ahead: dist=58cm interval=0.24s score=30.7 mode=balanced voice_busy=1
+[17:46:03.997] [TTC]  keyboard#6(f7) ahead: dist=33cm vel=-17.0cm/s TTC=1.9s tier=URGENT ego=OK
+[17:46:04.249] [VOICE_CMD] recording command
+[17:46:04.355] [TTC]  keyboard#6(f7) ahead: dist=30cm vel=-42.6cm/s TTC=0.7s tier=URGENT ego=OK
+[17:46:04.396] [TTC]  keyboard#6(f7) ahead: dist=27cm vel=-49.7cm/s TTC=0.5s tier=URGENT ego=OK
+[17:46:04.627] [LATENCY] label=INFO text="Command not recognized" event_created=1780076762.412 enqueued=0.000s tts_start=0.003s play_start=0.008s play_end=2.215s queue_wait=0.003s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:04.684] [VOICE] URGENT: "obstacle ahead, 0.2 meters"
+[17:46:04.916] [TTC]  keyboard#6(f7) ahead: dist=27cm vel=-37.0cm/s TTC=0.7s tier=URGENT ego=OK
+[17:46:04.926] [TTC]  keyboard#6(f7) ahead: dist=27cm vel=-18.5cm/s TTC=1.5s tier=URGENT ego=OK
+[17:46:05.686] [VOICE_POLICY] keyboard#8(f3) ahead: dist=71cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=26.3 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:46:05.691] [TONE] keyboard ahead: dist=71cm interval=0.28s score=26.3 mode=balanced voice_busy=1
+[17:46:06.023] [VOICE_POLICY] tv#7(f4) ahead: dist=77cm raw_vel=0.8cm/s eff_vel=0.0cm/s ttc=n/a score=26.8 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:46:06.393] [TTC]  keyboard#8(f5) ahead: dist=59cm vel=-5.9cm/s TTC=10.0s tier=NONE ego=OK
+[17:46:06.989] [TTC]  keyboard#8(f6) ahead: dist=45cm vel=-11.5cm/s TTC=3.9s tier=WARN ego=OK
+[17:46:07.220] [TTC]  keyboard#8(f6) ahead: dist=45cm vel=-26.8cm/s TTC=1.7s tier=URGENT ego=OK
+[17:46:07.334] [TTC]  keyboard#8(f6) ahead: dist=45cm vel=-28.9cm/s TTC=1.6s tier=URGENT ego=OK
+[17:46:07.586] [LATENCY] label=URGENT text="obstacle ahead, 0.2 meters" event_created=1780076764.393 enqueued=0.000s tts_start=0.293s play_start=0.295s play_end=3.192s queue_wait=0.293s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:07.611] [VOICE] WARN: "obstacle ahead, 0.5 meters"
+[17:46:07.792] [TTC]  keyboard#8(f6) ahead: dist=45cm vel=-19.1cm/s TTC=2.4s tier=WARN ego=OK
+[17:46:07.815] [TONE] keyboard ahead: dist=45cm interval=0.20s score=246.1 mode=balanced voice_busy=1
+[17:46:10.868] [LATENCY] label=WARN text="obstacle ahead, 0.5 meters" event_created=1780076767.334 enqueued=0.000s tts_start=0.296s play_start=0.320s play_end=3.534s queue_wait=0.296s synth=0.024s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:10.868] [VOICE] WARN: "obstacle ahead, 0.8 meters"
+[17:46:14.228] [LATENCY] label=WARN text="obstacle ahead, 0.8 meters" event_created=1780076767.827 enqueued=0.000s tts_start=3.044s play_start=3.078s play_end=6.096s queue_wait=3.044s synth=0.034s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:18.394] [VOICE_CMD] transcript="Obstacle ahead, 0.2 meters. Obstacle ahead." intent=unknown confidence=0.20
+[17:46:18.395] [VOICE] INFO: "Command not recognized"
+[17:46:18.397] [VOICE_CMD] timing capture=4.25s transcribe=9.90s model=gpt-4o-mini-transcribe
+[17:46:20.798] [LATENCY] label=INFO text="Command not recognized" event_created=1780076778.395 enqueued=0.000s tts_start=0.002s play_start=0.007s play_end=2.386s queue_wait=0.002s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:46:24.102] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:46:24.128] [TONE] person on your left: dist=33cm interval=0.18s score=110.6 mode=balanced voice_busy=1
+[17:46:26.300] [TONE] person on your left: dist=33cm interval=0.18s score=110.6 mode=balanced voice_busy=1
+[17:46:27.198] [VOICE] Dropped CLEAR (busy_audio_channel): "person moved aside"
+[17:46:27.743] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076784.103 enqueued=0.000s tts_start=0.001s play_start=0.064s play_end=3.641s queue_wait=0.001s synth=0.063s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:46:27.769] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:46:28.540] [VOICE] Dropped AWARE (busy_audio_channel): "obstacle on your right, 0.8 meters"
+[17:46:28.540] [TTC]  keyboard#15(f3) on your right: dist=75cm vel=-15.9cm/s TTC=4.7s tier=AWARE ego=BAD
+[17:46:28.546] [TONE] keyboard on your right: dist=75cm interval=0.30s score=184.3 mode=balanced voice_busy=1
+[17:46:29.637] [VOICE_POLICY] keyboard#17(f3) on your right: dist=80cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=23.3 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:46:29.941] [VOICE] Dropped AWARE (busy_audio_channel): "obstacle on your right, 0.8 meters"
+[17:46:29.941] [TTC]  keyboard#17(f4) on your right: dist=73cm vel=-10.5cm/s TTC=7.0s tier=AWARE ego=BAD
+[17:46:30.236] [VOICE] Dropped AWARE (busy_audio_channel): "obstacle on your right, 0.8 meters"
+[17:46:30.236] [TTC]  keyboard#17(f5) on your right: dist=78cm vel=-11.8cm/s TTC=6.6s tier=AWARE ego=BAD
+[17:46:30.637] [TONE] keyboard on your right: dist=77cm interval=0.30s score=24.3 mode=balanced voice_busy=1
+[17:46:31.049] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076787.168 enqueued=0.000s tts_start=0.603s play_start=0.607s play_end=3.880s queue_wait=0.603s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:31.051] [VOICE] WARN: "person on your left, 0.5 meters"
+[17:46:31.703] [VOICE_POLICY] keyboard#17(f8) on your right: dist=72cm raw_vel=-0.0cm/s eff_vel=0.0cm/s ttc=n/a score=26.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:46:31.708] [TTC]  keyboard#17(f8) on your right: dist=50cm vel=-12.7cm/s TTC=3.9s tier=WARN ego=BAD
+[17:46:32.004] [TTC]  keyboard#17(f8) on your right: dist=50cm vel=-30.5cm/s TTC=1.6s tier=URGENT ego=BAD
+[17:46:32.175] [TTC]  keyboard#17(f8) on your right: dist=50cm vel=-35.5cm/s TTC=1.4s tier=URGENT ego=BAD
+[17:46:33.079] [TONE] tv ahead: dist=88cm interval=0.35s score=20.7 mode=balanced voice_busy=1
+[17:46:33.487] [TTC]  tv#16(f11) ahead: dist=55cm vel=-33.8cm/s TTC=1.6s tier=URGENT ego=BAD
+[17:46:34.574] [LATENCY] label=WARN text="person on your left, 0.5 meters" event_created=1780076788.011 enqueued=0.000s tts_start=3.095s play_start=3.104s play_end=6.563s queue_wait=3.095s synth=0.009s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:34.576] [VOICE] WARN: "obstacle ahead, 0.5 meters"
+[17:46:35.175] [TONE] tv ahead: dist=84cm interval=0.33s score=223.9 mode=balanced voice_busy=1
+[17:46:37.580] [TONE] keyboard ahead: dist=56cm interval=0.23s score=34.5 mode=balanced voice_busy=1
+[17:46:37.950] [LATENCY] label=WARN text="obstacle ahead, 0.5 meters" event_created=1780076793.487 enqueued=0.000s tts_start=1.119s play_start=1.147s play_end=4.463s queue_wait=1.119s synth=0.028s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:37.972] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:46:38.487] [TTC]  person#31(f3) on your left: dist=36cm vel=-3.9cm/s TTC=9.2s tier=NONE ego=OK
+[17:46:38.810] [TTC]  person#31(f4) on your left: dist=36cm vel=-4.2cm/s TTC=8.6s tier=NONE ego=OK
+[17:46:38.853] [TTC]  person#31(f4) on your left: dist=37cm vel=-4.9cm/s TTC=7.6s tier=AWARE ego=OK
+[17:46:39.219] [TTC]  person#31(f5) on your left: dist=36cm vel=-5.2cm/s TTC=6.9s tier=AWARE ego=OK
+[17:46:39.378] [TTC]  person#31(f5) on your left: dist=37cm vel=-10.8cm/s TTC=3.4s tier=WARN ego=OK
+[17:46:39.711] [TTC]  person#31(f6) on your left: dist=36cm vel=-13.6cm/s TTC=2.7s tier=WARN ego=OK
+[17:46:39.718] [TONE] person on your left: dist=36cm interval=0.18s score=299.5 mode=balanced voice_busy=1
+[17:46:39.749] [TTC]  person#31(f6) on your left: dist=37cm vel=-15.0cm/s TTC=2.5s tier=WARN ego=OK
+[17:46:40.172] [TTC]  person#31(f7) on your left: dist=37cm vel=-15.6cm/s TTC=2.4s tier=WARN ego=OK
+[17:46:40.316] [TTC]  person#31(f7) on your left: dist=37cm vel=-10.6cm/s TTC=3.5s tier=WARN ego=OK
+[17:46:40.641] [TTC]  person#31(f8) on your left: dist=37cm vel=-8.1cm/s TTC=4.6s tier=AWARE ego=OK
+[17:46:40.750] [TTC]  person#31(f8) on your left: dist=35cm vel=-6.9cm/s TTC=5.1s tier=AWARE ego=OK
+[17:46:41.076] [TTC]  person#31(f9) on your left: dist=35cm vel=-6.2cm/s TTC=5.6s tier=AWARE ego=BAD
+[17:46:41.242] [TTC]  mouse#32(f7) on your right: dist=44cm vel=-15.1cm/s TTC=2.9s tier=WARN ego=BAD
+[17:46:41.351] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076795.606 enqueued=0.000s tts_start=2.370s play_start=2.371s play_end=5.745s queue_wait=2.370s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:41.353] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:46:41.680] [TTC]  mouse#32(f7) on your right: dist=43cm vel=-23.9cm/s TTC=1.8s tier=URGENT ego=BAD
+[17:46:42.117] [TONE] person on your left: dist=34cm interval=0.18s score=108.9 mode=balanced voice_busy=1
+[17:46:44.352] [TONE] person on your left: dist=35cm interval=0.18s score=97.5 mode=balanced voice_busy=1
+[17:46:44.883] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076801.076 enqueued=0.000s tts_start=0.336s play_start=0.339s play_end=3.767s queue_wait=0.336s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:44.883] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:46:46.746] [TONE] person on your left: dist=34cm interval=0.18s score=108.9 mode=balanced voice_busy=1
+[17:46:46.756] [TTC]  mouse#34(f6) on your right: dist=34cm vel=-13.6cm/s TTC=2.5s tier=WARN ego=OK
+[17:46:47.156] [TTC]  mouse#34(f6) on your right: dist=30cm vel=-29.7cm/s TTC=1.0s tier=URGENT ego=OK
+[17:46:47.321] [VOICE] Dropped CLEAR (busy_audio_channel): "person moving away"
+[17:46:47.322] [TTC]  tv#20(f33) ahead: dist=25cm vel=-45.9cm/s TTC=0.5s tier=URGENT ego=OK
+[17:46:47.680] [TTC]  tv#20(f33) ahead: dist=25cm vel=-56.4cm/s TTC=0.4s tier=URGENT ego=OK
+[17:46:47.692] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:46:48.287] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076804.681 enqueued=0.000s tts_start=0.204s play_start=0.230s play_end=3.605s queue_wait=0.204s synth=0.027s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:48.288] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:46:49.048] [TONE] person on your left: dist=52cm interval=0.22s score=9.8 mode=balanced voice_busy=1
+[17:46:49.719] [TTC]  person#36(f3) on your left: dist=31cm vel=-13.2cm/s TTC=2.3s tier=WARN ego=OK
+[17:46:49.734] [TTC]  person#36(f3) on your left: dist=32cm vel=-9.0cm/s TTC=3.6s tier=WARN ego=OK
+[17:46:50.049] [TTC]  person#36(f4) on your left: dist=32cm vel=-6.9cm/s TTC=4.7s tier=AWARE ego=OK
+[17:46:51.449] [TONE] person on your left: dist=32cm interval=0.18s score=112.2 mode=balanced voice_busy=1
+[17:46:51.520] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076808.019 enqueued=0.000s tts_start=0.272s play_start=0.299s play_end=3.501s queue_wait=0.272s synth=0.027s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:51.527] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:46:53.092] [VOICE] Dropped CLEAR (busy_audio_channel): "person moving away"
+[17:46:53.525] [TONE] tv ahead: dist=89cm interval=0.35s score=22.4 mode=balanced voice_busy=1
+[17:46:54.056] [TTC]  keyboard#40(f3) ahead: dist=33cm vel=-14.5cm/s TTC=2.3s tier=WARN ego=BAD
+[17:46:54.385] [TTC]  keyboard#40(f3) ahead: dist=34cm vel=-30.3cm/s TTC=1.1s tier=URGENT ego=BAD
+[17:46:54.421] [TTC]  tv#37(f16) ahead: dist=30cm vel=-52.8cm/s TTC=0.6s tier=URGENT ego=BAD
+[17:46:54.822] [TTC]  tv#37(f16) ahead: dist=23cm vel=-72.8cm/s TTC=0.3s tier=URGENT ego=BAD
+[17:46:54.859] [TTC]  tv#37(f16) ahead: dist=22cm vel=-77.5cm/s TTC=0.3s tier=URGENT ego=BAD
+[17:46:55.005] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076811.461 enqueued=0.000s tts_start=0.072s play_start=0.074s play_end=3.545s queue_wait=0.072s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:46:55.006] [VOICE] URGENT: "obstacle ahead, 0.2 meters"
+[17:46:57.895] [LATENCY] label=URGENT text="obstacle ahead, 0.2 meters" event_created=1780076814.856 enqueued=0.000s tts_start=0.152s play_start=0.153s play_end=3.038s queue_wait=0.152s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:03.526] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:47:03.535] [TONE] mouse on your left: dist=61cm interval=0.25s score=29.7 mode=balanced voice_busy=1
+[17:47:05.768] [TONE] tv on your left: dist=75cm interval=0.30s score=25.0 mode=balanced voice_busy=1
+[17:47:06.131] [TTC]  tv#42(f3) on your left: dist=67cm vel=-8.2cm/s TTC=8.2s tier=NONE ego=OK
+[17:47:06.169] [TTC]  tv#42(f3) on your left: dist=69cm vel=-9.6cm/s TTC=7.2s tier=AWARE ego=OK
+[17:47:07.378] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780076823.527 enqueued=0.000s tts_start=0.001s play_start=0.178s play_end=3.819s queue_wait=0.001s synth=0.177s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:47:07.379] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:47:08.628] [TONE] mouse on your left: dist=57cm interval=0.24s score=34.1 mode=balanced voice_busy=1
+[17:47:10.895] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076824.906 enqueued=0.000s tts_start=2.546s play_start=2.601s play_end=5.989s queue_wait=2.546s synth=0.055s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:14.906] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:47:14.941] [TONE] mouse on your left: dist=58cm interval=0.24s score=30.7 mode=balanced voice_busy=1
+[17:47:17.445] [TONE] mouse on your left: dist=58cm interval=0.24s score=33.7 mode=balanced voice_busy=1
+[17:47:18.144] [VOICE_POLICY] mouse#49(f10) on your left: dist=77cm raw_vel=16.2cm/s eff_vel=16.2cm/s ttc=n/a score=5.4 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:47:18.628] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076834.906 enqueued=0.000s tts_start=0.001s play_start=0.041s play_end=3.721s queue_wait=0.001s synth=0.040s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:47:18.628] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:47:20.581] [VOICE_POLICY] chair#50(f3) ahead: dist=105cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=12.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:47:20.603] [TONE] chair ahead: dist=105cm interval=0.43s score=12.0 mode=balanced voice_busy=1
+[17:47:22.088] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780076838.142 enqueued=0.000s tts_start=0.519s play_start=0.618s play_end=3.947s queue_wait=0.519s synth=0.098s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:22.385] [VOICE_POLICY] chair#51(f3) ahead: dist=104cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=12.3 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:47:23.005] [TONE] chair ahead: dist=104cm interval=0.42s score=12.3 mode=balanced voice_busy=0
+[17:47:23.715] [VOICE] URGENT: "obstacle ahead, 0.2 meters"
+[17:47:23.718] [TTC]  chair#51(f5) ahead: dist=19cm vel=-40.4cm/s TTC=0.5s tier=URGENT ego=BAD
+[17:47:26.959] [LATENCY] label=URGENT text="obstacle ahead, 0.2 meters" event_created=1780076843.712 enqueued=0.000s tts_start=0.005s play_start=0.099s play_end=3.247s queue_wait=0.005s synth=0.094s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:47:29.408] [VOICE] CLEAR: "path clear"
+[17:47:30.956] [LATENCY] label=CLEAR text="path clear" event_created=1780076849.408 enqueued=0.000s tts_start=0.001s play_start=0.006s play_end=1.518s queue_wait=0.001s synth=0.006s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:47:32.950] [VOICE_POLICY] tv#55(f3) on your left: dist=77cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=26.8 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:47:32.956] [TONE] tv on your left: dist=77cm interval=0.30s score=26.8 mode=balanced voice_busy=0
+[17:47:33.384] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:47:34.822] [TTC]  tv#55(f8) on your left: dist=23cm vel=-29.6cm/s TTC=0.8s tier=URGENT ego=OK
+[17:47:35.217] [TTC]  tv#55(f8) on your left: dist=21cm vel=-56.5cm/s TTC=0.4s tier=URGENT ego=OK
+[17:47:35.224] [TONE] tv on your left: dist=21cm interval=0.18s score=592.0 mode=balanced voice_busy=1
+[17:47:35.257] [TTC]  tv#55(f8) on your left: dist=19cm vel=-69.5cm/s TTC=0.3s tier=URGENT ego=OK
+[17:47:35.622] [TTC]  tv#55(f8) on your left: dist=18cm vel=-58.4cm/s TTC=0.3s tier=URGENT ego=OK
+[17:47:35.649] [TTC]  tv#55(f8) on your left: dist=32cm vel=-26.9cm/s TTC=1.2s tier=URGENT ego=OK
+[17:47:37.070] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076853.385 enqueued=0.000s tts_start=0.001s play_start=0.121s play_end=3.666s queue_wait=0.001s synth=0.120s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:47:37.113] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:47:37.927] [TONE] person on your left: dist=25cm interval=0.18s score=112.5 mode=balanced voice_busy=1
+[17:47:37.959] [TTC]  person#61(f3) on your left: dist=25cm vel=-3.5cm/s TTC=7.1s tier=AWARE ego=OK
+[17:47:38.358] [TTC]  person#61(f4) on your left: dist=25cm vel=-3.8cm/s TTC=6.5s tier=AWARE ego=OK
+[17:47:39.959] [TONE] person on your left: dist=26cm interval=0.18s score=111.0 mode=balanced voice_busy=1
+[17:47:40.502] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780076855.648 enqueued=0.000s tts_start=1.469s play_start=1.471s play_end=4.854s queue_wait=1.469s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:40.502] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:41.956] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:47:41.962] [TONE] person on your left: dist=24cm interval=0.18s score=114.0 mode=balanced voice_busy=1
+[17:47:43.763] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076860.391 enqueued=0.000s tts_start=0.138s play_start=0.140s play_end=3.371s queue_wait=0.138s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:43.763] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:44.089] [TONE] person on your left: dist=23cm interval=0.18s score=115.5 mode=balanced voice_busy=1
+[17:47:46.498] [TONE] person on your left: dist=22cm interval=0.18s score=117.0 mode=balanced voice_busy=1
+[17:47:47.150] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076863.567 enqueued=0.000s tts_start=0.197s play_start=0.200s play_end=3.548s queue_wait=0.197s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:47.170] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:48.934] [TONE] person on your left: dist=23cm interval=0.18s score=115.5 mode=balanced voice_busy=1
+[17:47:50.512] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076866.927 enqueued=0.000s tts_start=0.266s play_start=0.268s play_end=3.584s queue_wait=0.266s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:50.512] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:51.332] [TONE] person on your left: dist=23cm interval=0.18s score=127.1 mode=balanced voice_busy=1
+[17:47:51.337] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:47:53.672] [TONE] person on your left: dist=24cm interval=0.18s score=114.0 mode=balanced voice_busy=1
+[17:47:53.849] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076870.402 enqueued=0.000s tts_start=0.143s play_start=0.146s play_end=3.447s queue_wait=0.143s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:53.849] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:55.976] [TONE] person on your left: dist=24cm interval=0.18s score=125.4 mode=balanced voice_busy=1
+[17:47:57.268] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076873.730 enqueued=0.000s tts_start=0.156s play_start=0.243s play_end=3.538s queue_wait=0.156s synth=0.087s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:47:57.269] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:47:58.327] [TONE] person on your left: dist=24cm interval=0.18s score=125.4 mode=balanced voice_busy=1
+[17:48:00.531] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076877.136 enqueued=0.000s tts_start=0.135s play_start=0.137s play_end=3.395s queue_wait=0.135s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:00.532] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:48:00.878] [TONE] person on your left: dist=24cm interval=0.18s score=125.4 mode=balanced voice_busy=1
+[17:48:03.244] [TONE] person on your left: dist=24cm interval=0.18s score=125.4 mode=balanced voice_busy=1
+[17:48:03.743] [VOICE_CMD] recording command
+[17:48:04.022] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076880.413 enqueued=0.000s tts_start=0.216s play_start=0.320s play_end=3.609s queue_wait=0.216s synth=0.104s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:04.041] [VOICE] URGENT: "person on your left, 0.5 meters"
+[17:48:04.504] [TTC]  person#64(f39) on your left: dist=19cm vel=-7.9cm/s TTC=2.4s tier=WARN ego=BAD
+[17:48:04.739] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:48:05.968] [TONE] mouse on your left: dist=59cm interval=0.24s score=30.3 mode=balanced voice_busy=1
+[17:48:07.465] [LATENCY] label=URGENT text="person on your left, 0.5 meters" event_created=1780076883.712 enqueued=0.000s tts_start=0.331s play_start=0.335s play_end=3.754s queue_wait=0.331s synth=0.004s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:07.466] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:48:08.284] [TONE] mouse on your left: dist=60cm interval=0.25s score=33.0 mode=balanced voice_busy=1
+[17:48:08.615] [VOICE_POLICY] mouse#68(f9) on your left: dist=75cm raw_vel=8.8cm/s eff_vel=8.8cm/s ttc=n/a score=5.0 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:48:09.311] [VOICE] Dropped AWARE (busy_audio_channel): "obstacle on your left, 0.8 meters"
+[17:48:09.311] [TTC]  mouse#68(f9) on your left: dist=71cm vel=-16.7cm/s TTC=4.3s tier=AWARE ego=BAD
+[17:48:09.590] [VOICE_CMD] transcript="Person on your left, 0.5 meters. Person..." intent=unknown confidence=0.20
+[17:48:09.590] [VOICE_CMD] timing capture=4.41s transcribe=1.44s model=gpt-4o-mini-transcribe
+[17:48:10.741] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780076884.504 enqueued=0.000s tts_start=3.005s play_start=3.007s play_end=6.237s queue_wait=3.005s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:10.745] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:48:14.184] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780076888.611 enqueued=0.000s tts_start=2.135s play_start=2.141s play_end=5.574s queue_wait=2.135s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:14.206] [VOICE] INFO: "Command not recognized"
+[17:48:14.715] [VOICE_CMD] recording command
+[17:48:16.317] [LATENCY] label=INFO text="Command not recognized" event_created=1780076889.590 enqueued=0.000s tts_start=4.660s play_start=4.663s play_end=6.727s queue_wait=4.660s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:19.783] [VOICE_CMD] transcript="Command not recognized." intent=unknown confidence=0.20
+[17:48:19.783] [VOICE] INFO: "Command not recognized"
+[17:48:19.784] [VOICE_CMD] timing capture=4.25s transcribe=0.82s model=gpt-4o-mini-transcribe
+[17:48:21.887] [VOICE_CMD] recording command
+[17:48:22.115] [LATENCY] label=INFO text="Command not recognized" event_created=1780076899.783 enqueued=0.000s tts_start=0.001s play_start=0.006s play_end=2.331s queue_wait=0.001s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:48:27.025] [VOICE_CMD] transcript="scene description, nearest object, people nearby, system status, and repeat." intent=unknown confidence=0.00
+[17:48:27.025] [VOICE] INFO: "No command heard"
+[17:48:27.026] [VOICE_CMD] timing capture=4.24s transcribe=0.90s model=gpt-4o-mini-transcribe
+[17:48:27.758] [VOICE_POLICY] laptop#71(f3) on your left: dist=81cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=23.0 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:48:27.763] [TONE] laptop on your left: dist=81cm interval=0.32s score=23.0 mode=balanced voice_busy=1
+[17:48:28.823] [LATENCY] label=INFO text="No command heard" event_created=1780076907.026 enqueued=0.000s tts_start=0.001s play_start=0.029s play_end=1.797s queue_wait=0.001s synth=0.029s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:48:28.857] [VOICE_CMD] recording command
+[17:48:29.457] [VOICE_POLICY] laptop#71(f6) on your left: dist=70cm raw_vel=-6.1cm/s eff_vel=-6.1cm/s ttc=11.4s score=88.1 tier=NONE reason=no_actionable_distance_or_ttc user=still ego=BAD
+[17:48:29.457] [TTC]  laptop#71(f6) on your left: dist=70cm vel=-6.1cm/s TTC=11.4s tier=NONE ego=BAD
+[17:48:29.656] [VOICE] AWARE: "obstacle on your left, 0.8 meters"
+[17:48:29.657] [TTC]  laptop#71(f6) on your left: dist=70cm vel=-11.8cm/s TTC=5.9s tier=AWARE ego=BAD
+[17:48:33.063] [LATENCY] label=AWARE text="obstacle on your left, 0.8 meters" event_created=1780076909.657 enqueued=0.000s tts_start=0.001s play_start=0.007s play_end=3.406s queue_wait=0.001s synth=0.007s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:33.260] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:48:33.304] [TONE] mouse on your left: dist=58cm interval=0.24s score=33.7 mode=balanced voice_busy=1
+[17:48:34.159] [VOICE_CMD] transcript="Obstacle on your left, 0.8 metres." intent=unknown confidence=0.20
+[17:48:34.159] [VOICE_CMD] timing capture=4.30s transcribe=1.00s model=gpt-4o-mini-transcribe
+[17:48:36.636] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076913.261 enqueued=0.000s tts_start=0.001s play_start=0.002s play_end=3.375s queue_wait=0.001s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:36.637] [VOICE] INFO: "Command not recognized"
+[17:48:38.734] [LATENCY] label=INFO text="Command not recognized" event_created=1780076914.159 enqueued=0.000s tts_start=2.479s play_start=2.481s play_end=4.574s queue_wait=2.479s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:48:39.129] [VOICE_CMD] recording command
+[17:48:44.530] [VOICE_CMD] transcript="Scene description." intent=describe confidence=0.90
+[17:48:44.531] [VOICE_CMD] describe requested
+[17:48:44.531] [VOICE_CMD] timing capture=4.28s transcribe=1.10s model=gpt-4o-mini-transcribe
+[17:48:44.535] [VOICE] INFO: "Analyzing scene"
+[17:48:46.361] [LATENCY] label=INFO text="Analyzing scene" event_created=1780076924.536 enqueued=0.000s tts_start=0.001s play_start=0.034s play_end=1.825s queue_wait=0.001s synth=0.034s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:48:46.775] [VOICE] INFO: "You're in a small enclosed space with a wooden desk on your left holding a small black object. Ahead is a glass partition or door with metal framing, approximately 1 meter away. The space appears to be a cubicle or office booth with white walls and a red-trimmed top edge."
+[17:48:51.852] [TONE] keyboard ahead: dist=19cm interval=0.18s score=81.0 mode=balanced voice_busy=1
+[17:48:52.677] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:48:53.980] [TONE] keyboard ahead: dist=19cm interval=0.18s score=81.0 mode=balanced voice_busy=1
+[17:48:54.853] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:48:56.578] [TONE] keyboard ahead: dist=20cm interval=0.18s score=80.0 mode=balanced voice_busy=1
+[17:48:57.518] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:49:00.711] [TTC]  mouse#83(f3) on your left: dist=57cm vel=-6.3cm/s TTC=9.1s tier=NONE ego=OK
+[17:49:00.718] [TTC]  mouse#83(f3) on your left: dist=57cm vel=-5.0cm/s TTC=11.5s tier=NONE ego=OK
+[17:49:00.719] [TONE] mouse on your left: dist=57cm interval=0.24s score=102.9 mode=balanced voice_busy=1
+[17:49:03.054] [TONE] mouse on your left: dist=60cm interval=0.25s score=30.0 mode=balanced voice_busy=1
+[17:49:05.388] [TONE] mouse on your left: dist=59cm interval=0.24s score=33.4 mode=balanced voice_busy=1
+[17:49:06.963] [LATENCY] label=INFO text="You're in a small enclosed space with a " event_created=1780076926.775 enqueued=0.000s tts_start=0.002s play_start=0.157s play_end=20.135s queue_wait=0.002s synth=0.154s launch_wait=0.000s mode=espeak_alert cache=fallback cold_stream=no silence_ms=0
+[17:49:07.027] [VOICE] Expired (9.5s old, TTL=3.0s): "obstacle ahead, 0.2 meters"
+[17:49:07.048] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:49:07.651] [TONE] mouse on your left: dist=58cm interval=0.24s score=30.7 mode=balanced voice_busy=1
+[17:49:10.025] [TONE] mouse on your left: dist=24cm interval=0.18s score=523.6 mode=balanced voice_busy=1
+[17:49:10.425] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076946.790 enqueued=0.000s tts_start=0.259s play_start=0.263s play_end=3.634s queue_wait=0.259s synth=0.004s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:10.427] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:49:11.055] [TTC]  keyboard#89(f4) on your left: dist=25cm vel=-6.8cm/s TTC=3.7s tier=WARN ego=OK
+[17:49:12.120] [TONE] keyboard on your left: dist=23cm interval=0.18s score=77.0 mode=balanced voice_busy=1
+[17:49:13.884] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780076947.918 enqueued=0.000s tts_start=2.515s play_start=2.517s play_end=5.966s queue_wait=2.515s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:13.931] [VOICE] URGENT: "obstacle on your left, 0.2 meters"
+[17:49:17.258] [LATENCY] label=URGENT text="obstacle on your left, 0.2 meters" event_created=1780076952.094 enqueued=0.000s tts_start=1.841s play_start=1.847s play_end=5.163s queue_wait=1.840s synth=0.007s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:22.329] [VOICE_CMD] recording command
+[17:49:27.304] [VOICE_CMD] transcript="What's the nearest object?" intent=nearest confidence=0.90
+[17:49:27.304] [VOICE] INFO: "No confirmed objects nearby"
+[17:49:27.305] [VOICE_CMD] timing capture=4.24s transcribe=0.74s model=gpt-4o-mini-transcribe
+[17:49:29.937] [LATENCY] label=INFO text="No confirmed objects nearby" event_created=1780076967.305 enqueued=0.000s tts_start=0.001s play_start=0.028s play_end=2.633s queue_wait=0.001s synth=0.027s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:49:33.040] [TONE] keyboard on your left: dist=26cm interval=0.18s score=74.0 mode=balanced voice_busy=0
+[17:49:35.181] [TONE] keyboard on your left: dist=31cm interval=0.18s score=69.0 mode=balanced voice_busy=0
+[17:49:36.067] [VOICE] URGENT: "person on your right, 0.5 meters"
+[17:49:37.538] [TONE] person on your right: dist=38cm interval=0.19s score=93.0 mode=balanced voice_busy=1
+[17:49:39.614] [TONE] person on your right: dist=34cm interval=0.18s score=99.0 mode=balanced voice_busy=1
+[17:49:39.653] [LATENCY] label=URGENT text="person on your right, 0.5 meters" event_created=1780076976.046 enqueued=0.000s tts_start=0.024s play_start=0.132s play_end=3.607s queue_wait=0.024s synth=0.108s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:49:39.657] [VOICE] URGENT: "person on your right, 0.5 meters"
+[17:49:40.240] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:49:41.644] [TONE] keyboard on your left: dist=29cm interval=0.18s score=71.0 mode=balanced voice_busy=1
+[17:49:43.114] [LATENCY] label=URGENT text="person on your right, 0.5 meters" event_created=1780076979.603 enqueued=0.000s tts_start=0.080s play_start=0.148s play_end=3.477s queue_wait=0.080s synth=0.068s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:43.190] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:49:44.174] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:49:46.595] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780076981.878 enqueued=0.000s tts_start=1.316s play_start=1.353s play_end=4.718s queue_wait=1.316s synth=0.037s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:46.596] [VOICE] URGENT: "obstacle on your left, 0.2 meters"
+[17:49:47.686] [TONE] keyboard on your left: dist=28cm interval=0.18s score=72.0 mode=balanced voice_busy=1
+[17:49:48.818] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:49:49.911] [LATENCY] label=URGENT text="obstacle on your left, 0.2 meters" event_created=1780076983.836 enqueued=0.000s tts_start=2.776s play_start=2.778s play_end=6.075s queue_wait=2.776s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:49.911] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:49:50.246] [TONE] keyboard on your left: dist=31cm interval=0.18s score=75.9 mode=balanced voice_busy=1
+[17:49:52.585] [TONE] keyboard on your left: dist=30cm interval=0.18s score=70.0 mode=balanced voice_busy=1
+[17:49:53.283] [VOICE] Dropped CLEAR (busy_audio_channel): "keyboard moved aside"
+[17:49:53.430] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780076989.654 enqueued=0.000s tts_start=0.258s play_start=0.260s play_end=3.734s queue_wait=0.258s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:53.488] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:49:54.687] [TTC]  keyboard#100(f21) on your left: dist=56cm vel=-22.8cm/s TTC=2.5s tier=WARN ego=OK
+[17:49:54.694] [TONE] keyboard on your left: dist=56cm interval=0.23s score=285.5 mode=balanced voice_busy=1
+[17:49:54.882] [TTC]  keyboard#100(f21) on your left: dist=54cm vel=-32.2cm/s TTC=1.7s tier=URGENT ego=OK
+[17:49:55.480] [TTC]  tv#104(f4) on your left: dist=64cm vel=-7.6cm/s TTC=8.4s tier=NONE ego=OK
+[17:49:56.762] [TONE] mouse on your left: dist=53cm interval=0.23s score=35.6 mode=balanced voice_busy=1
+[17:49:56.956] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780076993.023 enqueued=0.000s tts_start=0.471s play_start=0.494s play_end=3.933s queue_wait=0.471s synth=0.023s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:49:56.999] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:49:59.028] [TONE] mouse on your left: dist=54cm interval=0.23s score=32.0 mode=balanced voice_busy=1
+[17:50:00.422] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780076996.758 enqueued=0.000s tts_start=0.270s play_start=0.272s play_end=3.640s queue_wait=0.270s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:00.423] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:50:01.094] [TONE] mouse on your left: dist=54cm interval=0.23s score=32.0 mode=balanced voice_busy=1
+[17:50:03.453] [TONE] mouse on your left: dist=53cm interval=0.23s score=35.6 mode=balanced voice_busy=1
+[17:50:03.765] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077000.260 enqueued=0.000s tts_start=0.168s play_start=0.170s play_end=3.505s queue_wait=0.168s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:03.769] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:50:05.869] [TONE] mouse on your left: dist=67cm interval=0.27s score=5.5 mode=balanced voice_busy=1
+[17:50:05.870] [VOICE_POLICY] mouse#111(f5) on your left: dist=71cm raw_vel=20.2cm/s eff_vel=20.2cm/s ttc=n/a score=5.3 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:50:07.259] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077003.697 enqueued=0.000s tts_start=0.107s play_start=0.109s play_end=3.535s queue_wait=0.107s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:07.259] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:50:10.762] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780077005.435 enqueued=0.000s tts_start=1.827s play_start=1.832s play_end=5.327s queue_wait=1.827s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:22.572] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:50:22.602] [TONE] mouse on your left: dist=65cm interval=0.26s score=28.3 mode=balanced voice_busy=1
+[17:50:23.308] [TTC]  mouse#114(f3) on your left: dist=49cm vel=-7.3cm/s TTC=6.7s tier=AWARE ego=BAD
+[17:50:23.504] [TTC]  mouse#114(f3) on your left: dist=49cm vel=-18.0cm/s TTC=2.7s tier=WARN ego=BAD
+[17:50:23.512] [TTC]  mouse#114(f3) on your left: dist=48cm vel=-27.0cm/s TTC=1.8s tier=URGENT ego=BAD
+[17:50:26.372] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780077022.573 enqueued=0.000s tts_start=0.001s play_start=0.049s play_end=3.799s queue_wait=0.001s synth=0.048s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:50:26.372] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:50:29.842] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077023.512 enqueued=0.000s tts_start=2.862s play_start=2.971s play_end=6.329s queue_wait=2.862s synth=0.109s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:30.977] [VOICE_POLICY] laptop#116(f3) on your left: dist=76cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=24.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:50:30.982] [TONE] laptop on your left: dist=76cm interval=0.30s score=24.7 mode=balanced voice_busy=0
+[17:50:32.748] [VOICE] WARN: "obstacle on your left, 0.8 meters"
+[17:50:32.749] [TTC]  laptop#116(f4) on your left: dist=66cm vel=-11.5cm/s TTC=5.7s tier=AWARE ego=BAD
+[17:50:33.053] [VOICE_CMD] recording command
+[17:50:36.421] [LATENCY] label=WARN text="obstacle on your left, 0.8 meters" event_created=1780077032.749 enqueued=0.000s tts_start=0.001s play_start=0.008s play_end=3.672s queue_wait=0.001s synth=0.007s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:50:38.315] [VOICE_CMD] transcript="Obstacle on your left, 0.8 meters." intent=unknown confidence=0.20
+[17:50:38.316] [VOICE] INFO: "Command not recognized"
+[17:50:38.316] [VOICE_CMD] timing capture=4.24s transcribe=1.02s model=gpt-4o-mini-transcribe
+[17:50:39.683] [VOICE_CMD] recording command
+[17:50:40.726] [LATENCY] label=INFO text="Command not recognized" event_created=1780077038.316 enqueued=0.000s tts_start=0.000s play_start=0.005s play_end=2.386s queue_wait=0.000s synth=0.004s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:50:44.720] [VOICE_CMD] transcript="Recognized." intent=unknown confidence=0.20
+[17:50:44.720] [VOICE] INFO: "Command not recognized"
+[17:50:44.721] [VOICE_CMD] timing capture=4.21s transcribe=0.83s model=gpt-4o-mini-transcribe
+[17:50:46.256] [VOICE_CMD] recording command
+[17:50:47.093] [LATENCY] label=INFO text="Command not recognized" event_created=1780077044.721 enqueued=0.000s tts_start=0.002s play_start=0.007s play_end=2.372s queue_wait=0.002s synth=0.006s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:50:52.032] [VOICE_CMD] transcript="Recognized." intent=unknown confidence=0.20
+[17:50:52.033] [VOICE] INFO: "Command not recognized"
+[17:50:52.038] [VOICE_CMD] timing capture=4.24s transcribe=1.51s model=gpt-4o-mini-transcribe
+[17:50:54.235] [TONE] mouse on your left: dist=54cm interval=0.23s score=32.0 mode=balanced voice_busy=1
+[17:50:54.460] [LATENCY] label=INFO text="Command not recognized" event_created=1780077052.033 enqueued=0.000s tts_start=0.006s play_start=0.074s play_end=2.428s queue_wait=0.006s synth=0.067s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:50:54.461] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:50:56.531] [VOICE_CMD] recording command
+[17:50:56.686] [TONE] mouse on your left: dist=53cm interval=0.23s score=35.6 mode=balanced voice_busy=1
+[17:50:57.894] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077054.338 enqueued=0.000s tts_start=0.128s play_start=0.130s play_end=3.513s queue_wait=0.128s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:50:57.895] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:50:59.029] [TONE] mouse on your left: dist=52cm interval=0.22s score=35.9 mode=balanced voice_busy=1
+[17:51:01.371] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077057.732 enqueued=0.000s tts_start=0.213s play_start=0.264s play_end=3.639s queue_wait=0.213s synth=0.051s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:01.372] [VOICE] WARN: "obstacle on your left, 0.5 meters"
+[17:51:01.662] [TONE] mouse on your left: dist=52cm interval=0.22s score=35.9 mode=balanced voice_busy=1
+[17:51:01.865] [VOICE_CMD] transcript="Obstacle on your left, 0.5 meters." intent=unknown confidence=0.20
+[17:51:01.865] [VOICE_CMD] timing capture=4.20s transcribe=1.11s model=gpt-4o-mini-transcribe
+[17:51:03.806] [TONE] mouse on your left: dist=52cm interval=0.22s score=35.9 mode=balanced voice_busy=1
+[17:51:04.679] [TTC]  mouse#119(f31) on your left: dist=23cm vel=-25.3cm/s TTC=0.9s tier=URGENT ego=OK
+[17:51:04.753] [LATENCY] label=WARN text="obstacle on your left, 0.5 meters" event_created=1780077061.271 enqueued=0.000s tts_start=0.109s play_start=0.137s play_end=3.483s queue_wait=0.109s synth=0.029s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:04.755] [VOICE] URGENT: "obstacle on your left, 0.2 meters"
+[17:51:05.132] [TTC]  mouse#119(f31) on your left: dist=20cm vel=-39.9cm/s TTC=0.5s tier=URGENT ego=OK
+[17:51:05.143] [TTC]  mouse#119(f31) on your left: dist=22cm vel=-44.2cm/s TTC=0.5s tier=URGENT ego=OK
+[17:51:05.431] [TTC]  mouse#119(f31) on your left: dist=22cm vel=-36.2cm/s TTC=0.6s tier=URGENT ego=OK
+[17:51:05.435] [TTC]  mouse#119(f31) on your left: dist=21cm vel=-21.5cm/s TTC=1.0s tier=URGENT ego=OK
+[17:51:06.310] [TONE] keyboard ahead: dist=27cm interval=0.18s score=123.1 mode=balanced voice_busy=1
+[17:51:06.704] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:51:07.037] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:51:07.038] [TTC]  keyboard#124(f4) ahead: dist=18cm vel=-16.9cm/s TTC=1.1s tier=URGENT ego=OK
+[17:51:07.634] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:51:07.899] [TTC]  person#125(f3) ahead: dist=17cm vel=-8.4cm/s TTC=2.0s tier=WARN ego=OK
+[17:51:07.939] [TTC]  person#125(f3) ahead: dist=16cm vel=-7.0cm/s TTC=2.3s tier=WARN ego=OK
+[17:51:08.215] [LATENCY] label=URGENT text="obstacle on your left, 0.2 meters" event_created=1780077064.675 enqueued=0.000s tts_start=0.152s play_start=0.200s play_end=3.513s queue_wait=0.152s synth=0.047s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:08.230] [VOICE] URGENT: "person ahead approaching, 0.2 meters"
+[17:51:08.397] [TTC]  person#125(f4) ahead: dist=16cm vel=-6.3cm/s TTC=2.5s tier=WARN ego=OK
+[17:51:08.403] [TONE] person ahead: dist=16cm interval=0.18s score=220.9 mode=balanced voice_busy=1
+[17:51:12.546] [LATENCY] label=URGENT text="person ahead approaching, 0.2 meters" event_created=1780077067.939 enqueued=0.000s tts_start=0.292s play_start=0.299s play_end=3.667s queue_wait=0.292s synth=0.006s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:12.546] [VOICE] URGENT: "person ahead, 0.2 meters"
+[17:51:12.579] [TONE] person ahead: dist=17cm interval=0.18s score=124.5 mode=balanced voice_busy=1
+[17:51:14.683] [TONE] person ahead: dist=16cm interval=0.18s score=126.0 mode=balanced voice_busy=1
+[17:51:15.413] [LATENCY] label=URGENT text="person ahead, 0.2 meters" event_created=1780077072.003 enqueued=0.000s tts_start=0.546s play_start=0.564s play_end=3.410s queue_wait=0.546s synth=0.018s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:15.413] [VOICE] URGENT: "person ahead, 0.2 meters"
+[17:51:17.080] [VOICE] Dropped CLEAR (busy_audio_channel): "person moved away"
+[17:51:17.080] [VOICE_POLICY] person#125(f38) ahead: dist=117cm raw_vel=80.6cm/s eff_vel=80.6cm/s ttc=n/a score=3.3 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:17.083] [VOICE_POLICY] person#125(f38) ahead: dist=135cm raw_vel=169.9cm/s eff_vel=0.0cm/s ttc=n/a score=7.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:17.320] [TONE] person ahead: dist=45cm interval=0.20s score=16.5 mode=balanced voice_busy=1
+[17:51:17.610] [TTC]  person#125(f38) ahead: dist=32cm vel=-56.6cm/s TTC=0.6s tier=URGENT ego=BAD
+[17:51:17.652] [TTC]  person#125(f38) ahead: dist=33cm vel=-103.3cm/s TTC=0.3s tier=URGENT ego=BAD
+[17:51:18.051] [LATENCY] label=URGENT text="person ahead, 0.2 meters" event_created=1780077075.178 enqueued=0.000s tts_start=0.236s play_start=0.238s play_end=2.873s queue_wait=0.236s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:18.057] [VOICE] URGENT: "person ahead, 0.5 meters"
+[17:51:19.315] [TTC]  keyboard#133(f4) ahead: dist=34cm vel=-17.5cm/s TTC=1.9s tier=URGENT ego=BAD
+[17:51:19.540] [TTC]  keyboard#133(f4) ahead: dist=32cm vel=-29.4cm/s TTC=1.1s tier=URGENT ego=BAD
+[17:51:19.546] [TONE] keyboard ahead: dist=32cm interval=0.18s score=361.8 mode=balanced voice_busy=1
+[17:51:19.553] [TTC]  tv#129(f7) ahead: dist=28cm vel=-39.9cm/s TTC=0.7s tier=URGENT ego=BAD
+[17:51:19.874] [TTC]  tv#129(f7) ahead: dist=26cm vel=-76.8cm/s TTC=0.3s tier=URGENT ego=BAD
+[17:51:19.888] [TTC]  tv#129(f7) ahead: dist=26cm vel=-90.1cm/s TTC=0.3s tier=URGENT ego=BAD
+[17:51:20.277] [TTC]  tv#129(f7) ahead: dist=26cm vel=-71.4cm/s TTC=0.4s tier=URGENT ego=BAD
+[17:51:21.121] [LATENCY] label=URGENT text="person ahead, 0.5 meters" event_created=1780077077.652 enqueued=0.000s tts_start=0.407s play_start=0.507s play_end=3.469s queue_wait=0.407s synth=0.100s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:21.122] [VOICE] URGENT: "person ahead, 0.2 meters"
+[17:51:21.384] [TTC]  person#134(f4) on your left: dist=18cm vel=-34.9cm/s TTC=0.5s tier=URGENT ego=BAD
+[17:51:21.722] [TTC]  person#134(f5) on your left: dist=18cm vel=-20.9cm/s TTC=0.9s tier=URGENT ego=OK
+[17:51:21.748] [TONE] person on your left: dist=18cm interval=0.18s score=436.2 mode=balanced voice_busy=1
+[17:51:21.752] [TTC]  person#134(f5) on your left: dist=18cm vel=-10.4cm/s TTC=1.7s tier=URGENT ego=OK
+[17:51:22.184] [TTC]  person#134(f6) on your left: dist=18cm vel=-5.2cm/s TTC=3.4s tier=WARN ego=OK
+[17:51:23.825] [LATENCY] label=URGENT text="person ahead, 0.2 meters" event_created=1780077080.882 enqueued=0.000s tts_start=0.262s play_start=0.263s play_end=2.943s queue_wait=0.262s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:23.825] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:51:24.096] [TONE] person on your left: dist=18cm interval=0.18s score=123.0 mode=balanced voice_busy=1
+[17:51:26.165] [TONE] person on your left: dist=18cm interval=0.18s score=123.0 mode=balanced voice_busy=1
+[17:51:27.163] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077083.652 enqueued=0.000s tts_start=0.175s play_start=0.180s play_end=3.474s queue_wait=0.175s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:27.181] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:51:27.921] [VOICE] Dropped CLEAR (busy_audio_channel): "person moving away"
+[17:51:28.284] [TONE] person on your left: dist=45cm interval=0.20s score=16.5 mode=balanced voice_busy=1
+[17:51:28.588] [TTC]  person#134(f20) on your left: dist=21cm vel=-15.0cm/s TTC=1.4s tier=URGENT ego=BAD
+[17:51:29.230] [TTC]  mouse#139(f4) on your left: dist=44cm vel=-31.5cm/s TTC=1.4s tier=URGENT ego=BAD
+[17:51:29.592] [TTC]  mouse#139(f5) on your left: dist=43cm vel=-8.0cm/s TTC=5.4s tier=AWARE ego=BAD
+[17:51:29.790] [TTC]  mouse#139(f5) on your left: dist=44cm vel=-4.0cm/s TTC=11.0s tier=NONE ego=BAD
+[17:51:30.527] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077086.957 enqueued=0.000s tts_start=0.226s play_start=0.228s play_end=3.570s queue_wait=0.226s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:30.528] [VOICE] URGENT: "obstacle on your left, 0.2 meters"
+[17:51:30.852] [TONE] mouse on your left: dist=41cm interval=0.19s score=59.0 mode=balanced voice_busy=1
+[17:51:31.521] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:51:32.061] [TTC]  keyboard#141(f8) on your right: dist=46cm vel=-5.3cm/s TTC=8.7s tier=NONE ego=BAD
+[17:51:32.461] [TTC]  keyboard#141(f9) on your right: dist=46cm vel=-7.1cm/s TTC=6.5s tier=AWARE ego=OK
+[17:51:32.856] [TONE] keyboard on your right: dist=52cm interval=0.22s score=7.2 mode=balanced voice_busy=1
+[17:51:33.638] [TTC]  keyboard#141(f10) on your right: dist=33cm vel=-9.6cm/s TTC=3.4s tier=WARN ego=OK
+[17:51:33.831] [LATENCY] label=URGENT text="obstacle on your left, 0.2 meters" event_created=1780077088.852 enqueued=0.000s tts_start=1.746s play_start=1.810s play_end=4.978s queue_wait=1.746s synth=0.063s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:33.831] [VOICE] URGENT: "Stop! obstacle on your right, 0.5 meters"
+[17:51:33.931] [TTC]  tv#140(f12) on your right: dist=53cm vel=-20.7cm/s TTC=2.6s tier=WARN ego=OK
+[17:51:34.165] [TTC]  tv#140(f12) on your right: dist=57cm vel=-16.3cm/s TTC=3.5s tier=WARN ego=OK
+[17:51:34.963] [TONE] person on your left: dist=31cm interval=0.18s score=47.7 mode=balanced voice_busy=1
+[17:51:35.520] [TTC]  person#146(f7) on your left: dist=15cm vel=-6.2cm/s TTC=2.4s tier=WARN ego=OK
+[17:51:35.863] [TTC]  keyboard#148(f3) ahead: dist=32cm vel=-11.9cm/s TTC=2.7s tier=WARN ego=OK
+[17:51:36.259] [TTC]  keyboard#148(f3) ahead: dist=26cm vel=-17.2cm/s TTC=1.5s tier=URGENT ego=OK
+[17:51:36.272] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:51:37.735] [LATENCY] label=URGENT text="Stop! obstacle on your right, 0.5 meters" event_created=1780077093.638 enqueued=0.000s tts_start=0.197s play_start=0.230s play_end=4.097s queue_wait=0.197s synth=0.033s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:37.737] [VOICE] URGENT: "Obstacle, 0.2 meters"
+[17:51:38.660] [VOICE_POLICY] person#151(f3) on your left: dist=100cm raw_vel=-226.2cm/s eff_vel=0.0cm/s ttc=n/a score=57.2 tier=WARNING reason=side_pass_warning user=moving ego=BAD
+[17:51:38.665] [TONE] person on your left: dist=100cm interval=0.40s score=57.2 mode=balanced voice_busy=1
+[17:51:38.832] [VOICE_POLICY] person#151(f3) on your left: dist=86cm raw_vel=-193.2cm/s eff_vel=-193.2cm/s ttc=0.4s score=600.0 tier=WARNING reason=side_pass_warning user=still ego=BAD
+[17:51:38.832] [TTC]  person#151(f3) on your left: dist=86cm vel=-193.2cm/s TTC=0.4s tier=URGENT ego=BAD
+[17:51:39.134] [TTC]  person#151(f4) on your left: dist=85cm vel=-136.2cm/s TTC=0.6s tier=URGENT ego=BAD
+[17:51:39.195] [TTC]  person#151(f4) ahead: dist=74cm vel=-80.8cm/s TTC=0.9s tier=URGENT ego=BAD
+[17:51:39.566] [TTC]  person#151(f5) ahead: dist=62cm vel=-58.7cm/s TTC=1.1s tier=URGENT ego=BAD
+[17:51:39.674] [VOICE_POLICY] person#151(f5) ahead: dist=143cm raw_vel=-14.3cm/s eff_vel=0.0cm/s ttc=n/a score=3.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:40.330] [VOICE_POLICY] person#151(f6) ahead: dist=343cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:51:40.372] [LATENCY] label=URGENT text="Obstacle, 0.2 meters" event_created=1780077096.659 enqueued=0.000s tts_start=1.101s play_start=1.110s play_end=3.714s queue_wait=1.101s synth=0.001s launch_wait=0.007s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:40.373] [VOICE] URGENT: "person ahead, 0.8 meters"
+[17:51:43.453] [LATENCY] label=URGENT text="person ahead, 0.8 meters" event_created=1780077099.174 enqueued=0.000s tts_start=1.204s play_start=1.241s play_end=4.280s queue_wait=1.204s synth=0.037s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:43.488] [VOICE] WARN: "person ahead, 0.8 meters"
+[17:51:46.600] [LATENCY] label=WARN text="person ahead, 0.8 meters" event_created=1780077099.567 enqueued=0.000s tts_start=3.967s play_start=3.969s play_end=7.008s queue_wait=3.967s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:51:48.297] [VOICE_POLICY] tv#170(f3) on your right: dist=195cm raw_vel=-57.1cm/s eff_vel=0.0cm/s ttc=n/a score=3.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:49.039] [VOICE_POLICY] tv#172(f3) on your right: dist=146cm raw_vel=-83.2cm/s eff_vel=0.0cm/s ttc=n/a score=1.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:49.067] [TONE] tv on your right: dist=146cm interval=0.72s score=1.5 mode=balanced voice_busy=0
+[17:51:49.439] [VOICE_POLICY] tv#172(f3) on your right: dist=116cm raw_vel=-48.6cm/s eff_vel=-48.6cm/s ttc=2.4s score=452.5 tier=WARNING reason=tone_replaces_obstacle_voice user=still ego=BAD
+[17:51:49.440] [TTC]  tv#172(f3) on your right: dist=116cm vel=-48.6cm/s TTC=2.4s tier=WARN ego=BAD
+[17:51:49.701] [TTC]  tv#172(f3) on your right: dist=111cm vel=-49.0cm/s TTC=2.3s tier=WARN ego=BAD
+[17:51:49.869] [VOICE] URGENT: "obstacle on your right, 1.1 meters"
+[17:51:49.869] [TTC]  tv#172(f3) on your right: dist=95cm vel=-56.8cm/s TTC=1.7s tier=URGENT ego=BAD
+[17:51:50.204] [TTC]  tv#173(f3) ahead: dist=76cm vel=-52.5cm/s TTC=1.4s tier=URGENT ego=BAD
+[17:51:50.245] [TTC]  tv#173(f3) ahead: dist=71cm vel=-47.0cm/s TTC=1.5s tier=URGENT ego=BAD
+[17:51:50.672] [VOICE_POLICY] tv#173(f3) ahead: dist=212cm raw_vel=23.1cm/s eff_vel=0.0cm/s ttc=n/a score=2.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:50.675] [VOICE_POLICY] tv#173(f3) ahead: dist=299cm raw_vel=119.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:50.902] [VOICE_POLICY] tv#173(f3) ahead: dist=315cm raw_vel=251.9cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:51:52.139] [VOICE_POLICY] tv#175(f3) on your left: dist=311cm raw_vel=-96.8cm/s eff_vel=-96.8cm/s ttc=3.2s score=593.7 tier=WARNING reason=tone_replaces_obstacle_voice user=still ego=OK
+[17:51:52.140] [TTC]  tv#175(f3) on your left: dist=311cm vel=-96.8cm/s TTC=3.2s tier=WARN ego=OK
+[17:51:52.144] [VOICE_POLICY] tv#175(f3) on your left: dist=283cm raw_vel=-50.4cm/s eff_vel=-50.4cm/s ttc=5.6s score=501.3 tier=AWARENESS reason=tone_replaces_obstacle_voice user=still ego=OK
+[17:51:52.144] [TTC]  tv#175(f3) on your left: dist=283cm vel=-50.4cm/s TTC=5.6s tier=AWARE ego=OK
+[17:51:52.436] [VOICE_POLICY] tv#175(f3) on your left: dist=280cm raw_vel=-28.3cm/s eff_vel=-28.3cm/s ttc=9.9s score=283.7 tier=NONE reason=no_actionable_distance_or_ttc user=still ego=OK
+[17:51:52.436] [TTC]  tv#175(f3) on your left: dist=280cm vel=-28.3cm/s TTC=9.9s tier=NONE ego=OK
+[17:51:52.440] [VOICE_POLICY] tv#175(f3) on your left: dist=267cm raw_vel=-9.0cm/s eff_vel=0.0cm/s ttc=n/a score=1.1 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:51:53.477] [LATENCY] label=URGENT text="obstacle on your right, 1.1 meters" event_created=1780077109.869 enqueued=0.000s tts_start=0.001s play_start=0.014s play_end=3.605s queue_wait=0.001s synth=0.013s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:51:53.479] [VOICE] Expired (3.2s old, TTL=3.0s): "obstacle ahead, 0.8 meters"
+[17:52:00.508] [VOICE_POLICY] person#182(f3) on your left: dist=211cm raw_vel=-56.5cm/s eff_vel=0.0cm/s ttc=n/a score=4.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:00.512] [VOICE_POLICY] person#182(f3) on your left: dist=195cm raw_vel=-67.8cm/s eff_vel=0.0cm/s ttc=n/a score=5.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:01.477] [VOICE_POLICY] person#182(f6) on your left: dist=499cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:01.709] [VOICE_POLICY] person#182(f6) on your left: dist=690cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:01.947] [VOICE_POLICY] person#182(f6) on your left: dist=458cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:01.950] [VOICE_POLICY] person#182(f6) on your left: dist=558cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:02.178] [VOICE_POLICY] person#182(f6) on your left: dist=579cm raw_vel=448.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:04.543] [VOICE] CLEAR: "path clear"
+[17:52:05.846] [VOICE_POLICY] person#184(f3) on your left: dist=476cm raw_vel=17.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:05.849] [VOICE_POLICY] person#184(f3) on your left: dist=487cm raw_vel=8.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:06.079] [LATENCY] label=CLEAR text="path clear" event_created=1780077124.543 enqueued=0.000s tts_start=0.001s play_start=0.011s play_end=1.536s queue_wait=0.001s synth=0.010s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:52:06.351] [VOICE_POLICY] person#184(f4) on your left: dist=633cm raw_vel=104.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:06.615] [VOICE_POLICY] person#184(f4) on your left: dist=614cm raw_vel=160.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:07.049] [VOICE_POLICY] person#184(f4) on your left: dist=660cm raw_vel=106.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:07.407] [VOICE_POLICY] person#186(f4) ahead: dist=596cm raw_vel=94.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:11.254] [VOICE_POLICY] person#188(f4) on your left: dist=777cm raw_vel=86.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:13.256] [VOICE_POLICY] person#188(f8) on your left: dist=767cm raw_vel=36.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.287] [VOICE_POLICY] person#188(f10) on your left: dist=749cm raw_vel=7.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.292] [VOICE_POLICY] person#188(f10) on your left: dist=626cm raw_vel=-7.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.589] [VOICE_POLICY] person#188(f10) on your left: dist=520cm raw_vel=-26.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.593] [VOICE_POLICY] person#188(f10) on your left: dist=391cm raw_vel=-376.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.819] [VOICE_POLICY] person#188(f10) on your left: dist=381cm raw_vel=-538.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:14.822] [VOICE_POLICY] person#188(f10) on your left: dist=435cm raw_vel=-478.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:15.052] [VOICE_POLICY] person#188(f10) on your left: dist=345cm raw_vel=-367.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:18.621] [VOICE] CLEAR: "path clear"
+[17:52:19.998] [TONE] person ahead: dist=23cm interval=0.18s score=127.1 mode=balanced voice_busy=1
+[17:52:20.188] [LATENCY] label=CLEAR text="path clear" event_created=1780077138.621 enqueued=0.000s tts_start=0.001s play_start=0.006s play_end=1.550s queue_wait=0.001s synth=0.006s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:52:20.189] [VOICE] URGENT: "person ahead, 0.2 meters"
+[17:52:22.129] [VOICE_POLICY] person#194(f7) ahead: dist=487cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:22.162] [VOICE_POLICY] person#194(f7) ahead: dist=426cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:22.766] [LATENCY] label=URGENT text="person ahead, 0.2 meters" event_created=1780077140.000 enqueued=0.000s tts_start=0.190s play_start=0.191s play_end=2.766s queue_wait=0.190s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:52:22.771] [VOICE] URGENT: "person ahead, 0.2 meters"
+[17:52:25.581] [LATENCY] label=URGENT text="person ahead, 0.2 meters" event_created=1780077141.762 enqueued=0.000s tts_start=1.216s play_start=1.235s play_end=3.820s queue_wait=1.216s synth=0.019s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:52:41.875] [VOICE_POLICY] chair#197(f3) on your right: dist=219cm raw_vel=-119.4cm/s eff_vel=0.0cm/s ttc=n/a score=2.4 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:41.902] [VOICE_POLICY] chair#197(f3) on your right: dist=186cm raw_vel=-116.2cm/s eff_vel=0.0cm/s ttc=n/a score=3.3 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:42.212] [VOICE_POLICY] chair#197(f4) on your right: dist=171cm raw_vel=-94.6cm/s eff_vel=0.0cm/s ttc=n/a score=3.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:44.174] [VOICE_POLICY] person#200(f6) on your right: dist=227cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=3.6 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:44.471] [VOICE_POLICY] person#200(f7) on your right: dist=195cm raw_vel=-35.0cm/s eff_vel=0.0cm/s ttc=n/a score=5.2 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:45.239] [TONE] dining table on your right: dist=135cm interval=0.62s score=3.5 mode=balanced voice_busy=0
+[17:52:46.843] [VOICE_POLICY] dining table#205(f5) on your right: dist=133cm raw_vel=-12.3cm/s eff_vel=0.0cm/s ttc=n/a score=4.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:47.477] [VOICE_POLICY] person#209(f3) on your right: dist=153cm raw_vel=7.8cm/s eff_vel=0.0cm/s ttc=n/a score=8.1 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:48.049] [TONE] person ahead: dist=147cm interval=0.72s score=1.7 mode=balanced voice_busy=0
+[17:52:48.785] [VOICE] AWARE: "person on your right, 1.1 meters"
+[17:52:48.786] [VOICE_POLICY] person#209(f6) on your right: dist=111cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=21.5 tier=AWARENESS reason=side_pass_awareness user=still ego=BAD
+[17:52:48.831] [VOICE_POLICY] person#209(f6) on your right: dist=105cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=24.8 tier=WARNING reason=side_pass_warning user=still ego=BAD
+[17:52:51.119] [VOICE_POLICY] person#216(f3) on your right: dist=103cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=23.5 tier=WARNING reason=side_pass_warning user=still ego=OK
+[17:52:51.152] [TONE] person on your right: dist=103cm interval=0.42s score=23.5 mode=balanced voice_busy=1
+[17:52:51.822] [TTC]  person#210(f13) ahead: dist=105cm vel=-25.8cm/s TTC=4.1s tier=AWARE ego=OK
+[17:52:52.089] [LATENCY] label=AWARE text="person on your right, 1.1 meters" event_created=1780077168.786 enqueued=0.000s tts_start=0.001s play_start=0.036s play_end=3.304s queue_wait=0.001s synth=0.035s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:52:52.090] [VOICE] URGENT: "Watch out, person on your right, 1.1 meters"
+[17:52:52.352] [VOICE_POLICY] person#210(f14) ahead: dist=150cm raw_vel=-12.9cm/s eff_vel=-12.9cm/s ttc=11.6s score=220.9 tier=NONE reason=no_actionable_distance_or_ttc user=still ego=OK
+[17:52:52.352] [TTC]  person#210(f14) ahead: dist=150cm vel=-12.9cm/s TTC=11.6s tier=NONE ego=OK
+[17:52:53.123] [VOICE_POLICY] person#216(f7) on your right: dist=108cm raw_vel=-2.2cm/s eff_vel=0.0cm/s ttc=n/a score=21.0 tier=WARNING reason=side_pass_warning user=still ego=OK
+[17:52:53.552] [TONE] person on your right: dist=105cm interval=0.43s score=24.8 mode=balanced voice_busy=1
+[17:52:54.008] [TTC]  person#218(f3) ahead: dist=105cm vel=-19.2cm/s TTC=5.5s tier=AWARE ego=OK
+[17:52:54.026] [TTC]  person#216(f9) on your right: dist=96cm vel=-9.6cm/s TTC=10.0s tier=NONE ego=OK
+[17:52:54.486] [TTC]  person#216(f9) on your right: dist=92cm vel=-12.5cm/s TTC=7.4s tier=AWARE ego=OK
+[17:52:55.390] [VOICE_POLICY] person#210(f20) ahead: dist=167cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=6.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:52:55.721] [LATENCY] label=URGENT text="Watch out, person on your right, 1.1 met" event_created=1780077171.779 enqueued=0.000s tts_start=0.350s play_start=0.374s play_end=3.942s queue_wait=0.350s synth=0.024s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:52:55.721] [VOICE] URGENT: "Watch out, person on your right, 1.1 meters"
+[17:52:56.349] [VOICE_POLICY] person#210(f20) ahead: dist=520cm raw_vel=-82.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:52:59.273] [LATENCY] label=URGENT text="Watch out, person on your right, 1.1 met" event_created=1780077174.486 enqueued=0.000s tts_start=1.236s play_start=1.238s play_end=4.787s queue_wait=1.236s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:53:05.660] [VOICE_POLICY] person#229(f3) ahead: dist=596cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:05.934] [VOICE_POLICY] person#229(f3) ahead: dist=543cm raw_vel=-68.4cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:06.233] [VOICE_POLICY] person#229(f3) ahead: dist=534cm raw_vel=-87.9cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:06.497] [VOICE_POLICY] person#230(f4) on your left: dist=308cm raw_vel=-71.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:06.825] [VOICE_POLICY] person#230(f5) on your left: dist=285cm raw_vel=-29.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:07.157] [VOICE_POLICY] person#230(f5) on your left: dist=495cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:07.159] [VOICE_POLICY] person#230(f5) on your left: dist=596cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:07.428] [VOICE_POLICY] person#230(f6) on your left: dist=372cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=OK
+[17:53:07.724] [VOICE_POLICY] person#230(f6) on your left: dist=396cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:07.993] [VOICE_POLICY] person#230(f7) on your left: dist=337cm raw_vel=-175.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:08.493] [VOICE_POLICY] person#230(f7) on your left: dist=328cm raw_vel=12.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:08.789] [VOICE_POLICY] person#230(f7) on your left: dist=525cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:09.292] [VOICE_POLICY] person#232(f3) on your left: dist=325cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:09.297] [VOICE_POLICY] person#232(f3) on your left: dist=339cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:09.560] [VOICE_POLICY] person#232(f3) on your left: dist=406cm raw_vel=382.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:09.794] [VOICE_POLICY] person#232(f3) on your left: dist=563cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:09.801] [VOICE_POLICY] person#232(f3) on your left: dist=698cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:10.064] [VOICE_POLICY] person#232(f3) on your left: dist=626cm raw_vel=155.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:10.293] [VOICE_POLICY] person#233(f4) on your left: dist=345cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:10.735] [VOICE_POLICY] person#233(f6) on your left: dist=372cm raw_vel=30.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:11.197] [VOICE_POLICY] person#233(f8) on your left: dist=483cm raw_vel=95.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:11.901] [VOICE_POLICY] person#233(f9) on your left: dist=529cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:11.930] [VOICE_POLICY] person#233(f9) on your left: dist=558cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:12.168] [VOICE_POLICY] person#233(f9) on your left: dist=574cm raw_vel=147.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:12.400] [VOICE_POLICY] person#233(f10) on your left: dist=476cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:12.896] [VOICE_POLICY] person#233(f11) on your left: dist=381cm raw_vel=81.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:12.902] [VOICE_POLICY] person#233(f11) on your left: dist=393cm raw_vel=-57.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:13.633] [VOICE_POLICY] person#233(f13) on your left: dist=438cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:14.092] [VOICE_POLICY] person#233(f14) on your left: dist=608cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:14.296] [VOICE_POLICY] person#233(f14) on your left: dist=555cm raw_vel=-162.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:15.330] [VOICE_POLICY] person#233(f16) on your left: dist=646cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:15.596] [VOICE_POLICY] person#233(f17) on your left: dist=465cm raw_vel=-729.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:16.465] [VOICE_POLICY] person#233(f18) on your left: dist=614cm raw_vel=99.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:16.472] [VOICE_POLICY] person#233(f18) on your left: dist=585cm raw_vel=169.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:17.036] [VOICE_POLICY] person#241(f3) on your left: dist=476cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:17.062] [VOICE_POLICY] person#241(f3) on your left: dist=574cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:17.327] [VOICE_POLICY] person#241(f3) on your left: dist=602cm raw_vel=354.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:17.571] [VOICE_POLICY] person#241(f3) on your left: dist=646cm raw_vel=304.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:17.596] [VOICE_POLICY] person#241(f3) on your left: dist=516cm raw_vel=139.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:18.099] [VOICE_POLICY] person#241(f4) on your left: dist=767cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:19.373] [VOICE_POLICY] person#241(f6) on your left: dist=626cm raw_vel=-79.9cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:19.700] [VOICE_POLICY] person#245(f3) on your left: dist=516cm raw_vel=-79.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:20.000] [VOICE_POLICY] person#245(f4) on your left: dist=479cm raw_vel=-39.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:20.299] [VOICE_POLICY] person#245(f4) on your left: dist=614cm raw_vel=81.5cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:20.839] [VOICE_POLICY] person#245(f5) on your left: dist=238cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=3.4 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:21.137] [VOICE_POLICY] person#245(f5) on your left: dist=386cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:21.406] [VOICE_POLICY] person#245(f5) on your left: dist=326cm raw_vel=284.9cm/s eff_vel=284.9cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=OK
+[17:53:21.668] [VOICE_POLICY] person#245(f5) on your left: dist=288cm raw_vel=89.9cm/s eff_vel=89.9cm/s ttc=n/a score=0.1 tier=NONE reason=static_stationary_suppression user=still ego=OK
+[17:53:24.504] [VOICE_POLICY] person#246(f3) on your left: dist=758cm raw_vel=74.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:24.506] [VOICE_POLICY] person#246(f3) on your left: dist=787cm raw_vel=116.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:24.740] [VOICE_POLICY] person#246(f4) on your left: dist=749cm raw_vel=103.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:25.644] [VOICE_POLICY] person#246(f4) on your left: dist=682cm raw_vel=-1.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:28.141] [VOICE_POLICY] person#253(f3) ahead: dist=398cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:28.806] [VOICE_POLICY] person#254(f3) on your left: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:28.812] [VOICE_POLICY] person#255(f3) ahead: dist=256cm raw_vel=-337.9cm/s eff_vel=0.0cm/s ttc=n/a score=2.4 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:29.771] [VOICE_POLICY] person#254(f5) on your left: dist=343cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:31.004] [VOICE_POLICY] person#255(f6) ahead: dist=305cm raw_vel=-133.1cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:31.509] [VOICE_POLICY] person#264(f4) ahead: dist=787cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:32.713] [VOICE_POLICY] person#271(f3) on your left: dist=639cm raw_vel=-34.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:33.478] [VOICE_POLICY] person#273(f3) on your left: dist=675cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:33.480] [VOICE_POLICY] person#273(f3) on your left: dist=653cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:34.214] [VOICE_POLICY] person#275(f4) ahead: dist=230cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=3.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:34.479] [VOICE] WARN: "Watch out, person ahead, 2.0 meters"
+[17:53:34.480] [TTC]  person#275(f4) ahead: dist=198cm vel=-56.6cm/s TTC=3.5s tier=WARN ego=OK
+[17:53:34.487] [TTC]  person#275(f4) ahead: dist=198cm vel=-56.6cm/s TTC=3.5s tier=WARN ego=OK
+[17:53:34.488] [TONE] person ahead: dist=198cm interval=1.37s score=600.0 mode=balanced voice_busy=1
+[17:53:34.939] [TTC]  person#275(f4) ahead: dist=198cm vel=-56.6cm/s TTC=3.5s tier=WARN ego=OK
+[17:53:34.940] [VOICE_POLICY] person#277(f3) ahead: dist=-1cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=OK
+[17:53:35.677] [VOICE_POLICY] person#277(f3) ahead: dist=639cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:35.683] [VOICE_POLICY] person#277(f3) ahead: dist=507cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:37.733] [LATENCY] label=WARN text="Watch out, person ahead, 2.0 meters" event_created=1780077214.480 enqueued=0.000s tts_start=0.001s play_start=0.039s play_end=3.253s queue_wait=0.001s synth=0.039s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:53:38.986] [VOICE_POLICY] person#282(f4) on your left: dist=574cm raw_vel=-76.6cm/s eff_vel=-76.6cm/s ttc=7.5s score=600.0 tier=NONE reason=beyond_voice_distance user=still ego=OK
+[17:53:38.986] [TTC]  person#282(f4) on your left: dist=574cm vel=-76.6cm/s TTC=7.5s tier=AWARE ego=OK
+[17:53:39.283] [VOICE_POLICY] person#282(f5) on your left: dist=568cm raw_vel=-57.8cm/s eff_vel=-57.8cm/s ttc=9.8s score=600.0 tier=NONE reason=beyond_voice_distance user=still ego=OK
+[17:53:39.283] [TTC]  person#282(f5) on your left: dist=568cm vel=-57.8cm/s TTC=9.8s tier=NONE ego=OK
+[17:53:39.847] [VOICE_POLICY] person#282(f6) on your left: dist=667cm raw_vel=76.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:39.853] [VOICE_POLICY] person#282(f6) on your left: dist=714cm raw_vel=152.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:40.157] [VOICE_POLICY] person#282(f6) on your left: dist=639cm raw_vel=79.9cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:40.453] [VOICE_POLICY] person#282(f6) on your left: dist=722cm raw_vel=-5.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:40.715] [VOICE_POLICY] person#284(f7) ahead: dist=602cm raw_vel=-0.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:40.719] [VOICE_POLICY] person#284(f7) ahead: dist=698cm raw_vel=58.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:41.079] [VOICE_POLICY] person#284(f7) ahead: dist=740cm raw_vel=151.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:42.753] [VOICE_POLICY] chair#289(f3) on your right: dist=157cm raw_vel=-105.7cm/s eff_vel=0.0cm/s ttc=n/a score=3.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:43.083] [VOICE_POLICY] chair#289(f3) on your right: dist=264cm raw_vel=64.5cm/s eff_vel=0.0cm/s ttc=n/a score=1.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:43.413] [VOICE_POLICY] chair#289(f3) on your right: dist=195cm raw_vel=3.5cm/s eff_vel=0.0cm/s ttc=n/a score=2.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:53:43.991] [VOICE_POLICY] person#285(f12) ahead: dist=538cm raw_vel=-49.8cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:44.328] [VOICE_POLICY] person#285(f13) ahead: dist=543cm raw_vel=-58.4cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:44.684] [VOICE_POLICY] person#285(f14) ahead: dist=495cm raw_vel=-58.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:46.286] [VOICE_POLICY] person#285(f19) on your left: dist=529cm raw_vel=75.3cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:47.019] [VOICE_POLICY] person#293(f3) on your left: dist=758cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:47.559] [VOICE_POLICY] person#295(f3) on your left: dist=660cm raw_vel=-343.6cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:47.790] [VOICE_POLICY] person#295(f3) on your left: dist=690cm raw_vel=-219.4cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:53:47.817] [VOICE_POLICY] person#295(f3) on your left: dist=767cm raw_vel=-53.2cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=beyond_voice_distance user=still ego=BAD
+[17:54:37.000] [VOICE_POLICY] person#305(f5) on your left: dist=195cm raw_vel=-34.3cm/s eff_vel=0.0cm/s ttc=n/a score=5.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:37.652] [VOICE_POLICY] person#305(f6) on your left: dist=302cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=0.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:38.990] [VOICE_POLICY] person#316(f3) ahead: dist=211cm raw_vel=-99.7cm/s eff_vel=0.0cm/s ttc=n/a score=4.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:39.026] [VOICE_POLICY] person#316(f3) ahead: dist=193cm raw_vel=-86.6cm/s eff_vel=0.0cm/s ttc=n/a score=5.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:39.590] [VOICE] WARN: "Watch out, person on your left, 1.7 meters"
+[17:54:39.591] [TTC]  person#316(f5) on your left: dist=165cm vel=-52.0cm/s TTC=3.2s tier=WARN ego=OK
+[17:54:39.623] [TONE] person on your left: dist=165cm interval=0.91s score=600.0 mode=balanced voice_busy=1
+[17:54:39.793] [VOICE] Dropped AWARE (busy_audio_channel): "person on your left, 1.4 meters"
+[17:54:39.793] [VOICE_POLICY] person#316(f5) on your left: dist=148cm raw_vel=-28.7cm/s eff_vel=-28.7cm/s ttc=5.2s score=474.9 tier=AWARENESS reason=side_pass_awareness user=still ego=OK
+[17:54:39.793] [TTC]  person#316(f5) on your left: dist=148cm vel=-28.7cm/s TTC=5.2s tier=AWARE ego=OK
+[17:54:40.063] [VOICE] Dropped AWARE (busy_audio_channel): "person on your left, 1.4 meters"
+[17:54:40.063] [TTC]  person#316(f5) on your left: dist=148cm vel=-14.4cm/s TTC=10.3s tier=NONE ego=OK
+[17:54:40.292] [VOICE_POLICY] person#316(f5) on your left: dist=159cm raw_vel=16.1cm/s eff_vel=0.0cm/s ttc=n/a score=7.8 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:41.825] [VOICE_POLICY] tv#326(f3) on your left: dist=100cm raw_vel=24.5cm/s eff_vel=24.5cm/s ttc=n/a score=3.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:41.830] [TONE] tv on your left: dist=100cm interval=0.40s score=3.7 mode=balanced voice_busy=1
+[17:54:41.870] [TTC]  tv#326(f3) on your left: dist=86cm vel=-27.8cm/s TTC=3.1s tier=WARN ego=BAD
+[17:54:42.195] [TTC]  tv#326(f4) on your left: dist=81cm vel=-61.3cm/s TTC=1.3s tier=URGENT ego=BAD
+[17:54:42.283] [VOICE_POLICY] tv#326(f4) on your left: dist=166cm raw_vel=-20.0cm/s eff_vel=0.0cm/s ttc=n/a score=4.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:42.593] [VOICE_POLICY] tv#326(f4) on your left: dist=187cm raw_vel=55.3cm/s eff_vel=0.0cm/s ttc=n/a score=4.1 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:42.596] [VOICE_POLICY] tv#326(f4) on your left: dist=281cm raw_vel=144.7cm/s eff_vel=0.0cm/s ttc=n/a score=0.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:43.900] [LATENCY] label=WARN text="Watch out, person on your left, 1.7 mete" event_created=1780077279.590 enqueued=0.000s tts_start=0.001s play_start=0.045s play_end=4.282s queue_wait=0.001s synth=0.044s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=yes silence_ms=220
+[17:54:43.901] [VOICE] URGENT: "obstacle on your left, 0.8 meters"
+[17:54:46.397] [VOICE_POLICY] person#334(f3) ahead: dist=202cm raw_vel=-17.3cm/s eff_vel=0.0cm/s ttc=n/a score=5.4 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:46.696] [VOICE_POLICY] person#334(f4) ahead: dist=175cm raw_vel=-46.9cm/s eff_vel=0.0cm/s ttc=n/a score=6.9 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:47.030] [VOICE_POLICY] person#340(f3) on your left: dist=164cm raw_vel=-69.9cm/s eff_vel=0.0cm/s ttc=n/a score=7.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:47.268] [LATENCY] label=URGENT text="obstacle on your left, 0.8 meters" event_created=1780077282.196 enqueued=0.000s tts_start=1.706s play_start=1.707s play_end=5.072s queue_wait=1.706s synth=0.001s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:54:47.365] [VOICE_POLICY] person#336(f3) on your right: dist=182cm raw_vel=105.3cm/s eff_vel=0.0cm/s ttc=n/a score=6.5 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:47.371] [TONE] person on your left: dist=144cm interval=0.70s score=3.0 mode=balanced voice_busy=0
+[17:54:47.527] [VOICE] AWARE: "person on your left, 1.1 meters"
+[17:54:47.528] [VOICE_POLICY] person#340(f4) on your left: dist=115cm raw_vel=-65.0cm/s eff_vel=-65.0cm/s ttc=1.8s score=600.0 tier=AWARENESS reason=side_pass_awareness user=still ego=BAD
+[17:54:47.528] [TTC]  person#340(f4) on your left: dist=115cm vel=-65.0cm/s TTC=1.8s tier=URGENT ego=BAD
+[17:54:47.865] [VOICE_POLICY] person#340(f5) on your left: dist=110cm raw_vel=-66.8cm/s eff_vel=-66.8cm/s ttc=1.6s score=600.0 tier=WARNING reason=side_pass_warning user=still ego=BAD
+[17:54:47.865] [TTC]  person#340(f5) on your left: dist=110cm vel=-66.8cm/s TTC=1.6s tier=URGENT ego=BAD
+[17:54:48.297] [VOICE_POLICY] person#336(f5) on your right: dist=112cm raw_vel=-41.4cm/s eff_vel=-41.4cm/s ttc=2.7s score=600.0 tier=AWARENESS reason=side_pass_awareness user=still ego=BAD
+[17:54:48.297] [TTC]  person#336(f5) on your right: dist=112cm vel=-41.4cm/s TTC=2.7s tier=WARN ego=BAD
+[17:54:48.966] [VOICE_POLICY] person#345(f3) on your right: dist=214cm raw_vel=-178.5cm/s eff_vel=0.0cm/s ttc=n/a score=4.7 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:48.999] [VOICE_POLICY] person#345(f3) on your right: dist=188cm raw_vel=-181.5cm/s eff_vel=0.0cm/s ttc=n/a score=6.2 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:49.265] [VOICE_POLICY] person#336(f5) on your right: dist=173cm raw_vel=0.0cm/s eff_vel=0.0cm/s ttc=n/a score=7.0 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:49.297] [VOICE_POLICY] person#345(f4) on your right: dist=153cm raw_vel=-115.4cm/s eff_vel=0.0cm/s ttc=n/a score=8.1 tier=NONE reason=static_stationary_suppression user=still ego=BAD
+[17:54:49.543] [TONE] person on your right: dist=145cm interval=0.71s score=2.8 mode=balanced voice_busy=1
+[17:54:49.605] [VOICE_POLICY] person#345(f5) on your right: dist=129cm raw_vel=-108.4cm/s eff_vel=0.0cm/s ttc=n/a score=11.6 tier=AWARENESS reason=side_pass_awareness user=still ego=BAD
+[17:54:50.402] [VOICE_POLICY] person#345(f5) on your right: dist=105cm raw_vel=-19.5cm/s eff_vel=-19.5cm/s ttc=5.4s score=346.3 tier=WARNING reason=side_pass_warning user=still ego=BAD
+[17:54:50.402] [TTC]  person#345(f5) on your right: dist=105cm vel=-19.5cm/s TTC=5.4s tier=AWARE ego=BAD
+[17:54:50.850] [LATENCY] label=AWARE text="person on your left, 1.1 meters" event_created=1780077287.510 enqueued=0.000s tts_start=0.019s play_start=0.027s play_end=3.337s queue_wait=0.019s synth=0.008s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:54:50.852] [VOICE] URGENT: "Watch out, person on your right, 1.1 meters"
+[17:54:51.799] [VOICE_POLICY] tv#353(f3) on your left: dist=101cm raw_vel=-68.4cm/s eff_vel=-68.4cm/s ttc=1.5s score=553.1 tier=URGENT reason=tone_replaces_obstacle_voice user=still ego=BAD
+[17:54:51.799] [TTC]  tv#353(f3) on your left: dist=101cm vel=-68.4cm/s TTC=1.5s tier=URGENT ego=BAD
+[17:54:51.805] [TONE] tv on your left: dist=101cm interval=0.41s score=553.1 mode=balanced voice_busy=1
+[17:54:52.701] [TTC]  tv#353(f4) on your left: dist=44cm vel=-16.1cm/s TTC=2.7s tier=WARN ego=OK
+[17:54:52.832] [TTC]  tv#353(f4) on your left: dist=37cm vel=-25.7cm/s TTC=1.4s tier=URGENT ego=OK
+[17:54:54.369] [LATENCY] label=URGENT text="Watch out, person on your right, 1.1 met" event_created=1780077290.402 enqueued=0.000s tts_start=0.473s play_start=0.476s play_end=3.966s queue_wait=0.473s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:54:54.369] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:54:54.700] [TONE] tv ahead: dist=54cm interval=0.23s score=35.2 mode=balanced voice_busy=1
+[17:54:55.535] [TTC]  tv#363(f4) ahead: dist=32cm vel=-13.3cm/s TTC=2.4s tier=WARN ego=BAD
+[17:54:55.907] [TTC]  tv#363(f4) ahead: dist=28cm vel=-25.9cm/s TTC=1.1s tier=URGENT ego=BAD
+[17:54:55.941] [TTC]  tv#363(f4) ahead: dist=67cm vel=-15.0cm/s TTC=4.5s tier=AWARE ego=BAD
+[17:54:57.506] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:54:57.855] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780077292.782 enqueued=0.000s tts_start=1.652s play_start=1.730s play_end=5.073s queue_wait=1.652s synth=0.079s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:54:57.855] [VOICE] URGENT: "obstacle ahead, 0.2 meters"
+[17:54:58.377] [TONE] keyboard ahead: dist=27cm interval=0.18s score=80.3 mode=balanced voice_busy=1
+[17:55:00.312] [TTC]  keyboard#370(f8) on your left: dist=33cm vel=-12.4cm/s TTC=2.7s tier=WARN ego=BAD
+[17:55:00.638] [TTC]  keyboard#370(f9) on your left: dist=33cm vel=-19.2cm/s TTC=1.7s tier=URGENT ego=BAD
+[17:55:00.644] [TONE] keyboard on your left: dist=33cm interval=0.18s score=284.5 mode=balanced voice_busy=1
+[17:55:00.754] [LATENCY] label=URGENT text="obstacle ahead, 0.2 meters" event_created=1780077295.907 enqueued=0.000s tts_start=1.950s play_start=1.953s play_end=4.847s queue_wait=1.950s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:00.755] [VOICE] URGENT: "obstacle on your left, 0.5 meters"
+[17:55:00.768] [TTC]  keyboard#370(f9) on your left: dist=32cm vel=-15.3cm/s TTC=2.1s tier=WARN ego=BAD
+[17:55:01.175] [TTC]  keyboard#370(f10) on your left: dist=33cm vel=-7.7cm/s TTC=4.3s tier=AWARE ego=BAD
+[17:55:01.337] [TTC]  keyboard#370(f10) on your left: dist=36cm vel=-3.8cm/s TTC=9.4s tier=NONE ego=BAD
+[17:55:02.203] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:55:02.506] [TTC]  keyboard#373(f6) ahead: dist=27cm vel=-7.5cm/s TTC=3.6s tier=WARN ego=BAD
+[17:55:02.974] [TONE] keyboard ahead: dist=40cm interval=0.19s score=66.0 mode=balanced voice_busy=1
+[17:55:03.077] [VOICE] Dropped CLEAR (busy_audio_channel): "keyboard moved aside"
+[17:55:04.146] [LATENCY] label=URGENT text="obstacle on your left, 0.5 meters" event_created=1780077300.638 enqueued=0.000s tts_start=0.118s play_start=0.120s play_end=3.507s queue_wait=0.118s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:04.147] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:55:05.077] [TONE] person on your left: dist=29cm interval=0.18s score=106.5 mode=balanced voice_busy=1
+[17:55:07.308] [TONE] person on your left: dist=29cm interval=0.18s score=117.2 mode=balanced voice_busy=1
+[17:55:07.465] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077303.811 enqueued=0.000s tts_start=0.338s play_start=0.363s play_end=3.654s queue_wait=0.338s synth=0.025s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:07.534] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:55:09.508] [TONE] person on your left: dist=29cm interval=0.18s score=106.5 mode=balanced voice_busy=1
+[17:55:10.842] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077307.326 enqueued=0.000s tts_start=0.211s play_start=0.252s play_end=3.517s queue_wait=0.211s synth=0.041s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:10.842] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:55:11.646] [TONE] person on your left: dist=30cm interval=0.18s score=115.5 mode=balanced voice_busy=1
+[17:55:13.889] [TONE] person on your left: dist=29cm interval=0.18s score=117.2 mode=balanced voice_busy=1
+[17:55:14.125] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077310.722 enqueued=0.000s tts_start=0.122s play_start=0.125s play_end=3.403s queue_wait=0.122s synth=0.003s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:14.128] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:55:16.127] [VOICE] Dropped CLEAR (busy_audio_channel): "path clear"
+[17:55:16.153] [TONE] person on your left: dist=30cm interval=0.18s score=105.0 mode=balanced voice_busy=1
+[17:55:17.384] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077313.924 enqueued=0.000s tts_start=0.206s play_start=0.212s play_end=3.460s queue_wait=0.206s synth=0.005s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
+[17:55:17.384] [VOICE] URGENT: "person on your left, 0.2 meters"
+[17:55:20.580] [LATENCY] label=URGENT text="person on your left, 0.2 meters" event_created=1780077317.100 enqueued=0.000s tts_start=0.285s play_start=0.287s play_end=3.480s queue_wait=0.285s synth=0.002s launch_wait=0.000s mode=clip_alert cache=hit cold_stream=no silence_ms=0
