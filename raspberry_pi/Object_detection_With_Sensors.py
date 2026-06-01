@@ -1030,7 +1030,7 @@ def main():
                 'tof1': t1_med,  # Right
                 'tof2': t2_med   # Left
             }
-            SensorFusion.assign_distances_to_tracks(tracks, sensor_data, sensor_health, w, h)
+            SensorFusion.assign_distances_to_tracks(tracks, sensor_data, w)
             
             # Threat assessment
             prioritized_threats = ThreatAssessment.prioritize_threats(tracks)
